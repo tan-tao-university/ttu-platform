@@ -1,0 +1,64 @@
+name: ttu-platform-production
+
+# PostgreSQL and MinIO are not part of this compose project — they live in the sibling
+# ttu-data-infra repo and are reached over the shared `ttu-backend` external network by fixed
+# container name (ttu-postgres, ttu-minio). Deploy/start ttu-data-infra first; it owns and
+# creates that network. Keycloak (ttu-identity) joins the same network as a third sibling.
+
+x-site: &site-common
+  restart: unless-stopped
+  depends_on:
+    api:
+      condition: service_healthy
+  networks:
+    - ttu-backend
+
+services:
+  api:
+    image: ttu-platform/api:latest
+    container_name: ttu-platform-prod-api
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.api
+    restart: unless-stopped
+    env_file:
+      - env/production/api.env
+    ports:
+      - '127.0.0.1:4001:4001'
+    networks:
+      - ttu-backend
+
+  web:
+    <<: *site-common
+    image: ttu-platform/web:latest
+    container_name: ttu-platform-prod-web
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.next
+      args:
+        APP: web
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://platform-api.ttu.edu.vn/api/v1}
+    env_file:
+      - env/production/site.env
+    ports:
+      - '127.0.0.1:3000:3000'
+
+  admin:
+    <<: *site-common
+    image: ttu-platform/admin:latest
+    container_name: ttu-platform-prod-admin
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.next
+      args:
+        APP: admin
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://platform-api.ttu.edu.vn/api/v1}
+    env_file:
+      - env/production/site.env
+    ports:
+      - '127.0.0.1:3011:3000'
+
+networks:
+  ttu-backend:
+    name: ttu-backend
+    external: true

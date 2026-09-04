@@ -1,0 +1,37 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+language: 'typescript'
+stack: 'backend'
+layer: 'application'
+tags: ['nestjs']
+
+tasks:
+  dev:
+    command: 'nest start --watch'
+    preset: 'server'
+
+  build:
+    command: 'nest build'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+      - 'tsconfig.build.json'
+      - 'nest-cli.json'
+    outputs:
+      - 'dist'
+
+  start:
+    command: 'node dist/main.js'
+
+  test:
+    command: 'jest'
+    deps:
+      - '^:build'
+
+  lint:
+    command: 'eslint'
+    args:
+      - 'src/**/*.ts'
+    inputs:
+      - 'src/**/*'
+      - 'eslint.config.*'

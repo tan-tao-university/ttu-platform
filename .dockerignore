@@ -1,0 +1,44 @@
+# Version control
+.git
+.gitignore
+
+# Dependencies
+node_modules
+.bun
+bun.lockb
+
+# Build outputs and temporary caches
+.next
+dist
+build
+coverage
+.moon/cache
+.turbo
+
+# Environment variables & secrets (CRITICAL)
+.env
+.env.*
+!.env.example
+apps/*/.env
+apps/*/.env.*
+!apps/*/.env.example
+env/production/*.env
+
+# IDE and OS files
+.idea
+.vscode
+.claude
+*.DS_Store
+Thumbs.db
+
+# Documentation & Media
+docs/
+*.md
+!packages/*/package.json
+!apps/*/package.json
+
+# Test outputs & logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

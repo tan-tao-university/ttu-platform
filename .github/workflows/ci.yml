@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.0'
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - uses: moonrepo/setup-toolchain@v0
+        with:
+          auto-install: true
+
+      - run: bun install --frozen-lockfile
+
+      # Moon skips tasks whose inputs are unchanged, so a one-app PR does not rebuild the others.
+      - uses: actions/cache@v4
+        with:
+          path: .moon/cache
+          key: moon-${{ github.sha }}
+          restore-keys: moon-
+
+      - run: bun run format:check
+      - run: bun run lint
+      - run: bun run duplication
+      - run: moon run :typecheck
+      - run: moon run api:test
+      - run: moon run :build

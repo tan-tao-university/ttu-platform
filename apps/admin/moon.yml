@@ -1,0 +1,25 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+language: 'typescript'
+stack: 'frontend'
+layer: 'application'
+tags: ['nextjs']
+
+tasks:
+  dev:
+    command: 'next dev --port 3011'
+    preset: 'server'
+
+  build:
+    command: 'next build'
+    inputs:
+      - 'src/**/*'
+      - 'public/**/*'
+      - 'next.config.*'
+      - 'tsconfig.json'
+    outputs:
+      - '.next'
+
+  start:
+    command: 'next start'
+    preset: 'server'

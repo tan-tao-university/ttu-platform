@@ -1,0 +1,17 @@
+# Lefthook - Fast, powerful Git hooks manager
+# https://github.com/evilmartians/lefthook
+
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      run: bun run format:check
+    lint:
+      env:
+        PATH: '$HOME/.proto/bin:$HOME/.proto/shims:$PATH'
+      run: bun run lint
+
+commit-msg:
+  commands:
+    commitlint:
+      run: bunx commitlint --edit {1}

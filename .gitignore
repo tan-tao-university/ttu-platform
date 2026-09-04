@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+dist/
+build/
+out/
+coverage/
+# tsc's incremental cache. Committing it makes a fresh checkout or Docker build skip
+# emitting output, because tsc believes the work is already done.
+*.tsbuildinfo
+
+# Moon — task cache and local state. Config files (.moon/*.yml) are committed.
+.moon/cache/
+
+# Environment — commit examples only, never real env files.
+# `env/production/` needs its own rule: files like `api.env` match neither `.env` nor `.env.*`.
+.env
+.env.*
+env/production/
+!.env.example
+!**/*.env.example
+
+# Local data volumes
+data/
+uploads/
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+
+# Claude Code — settings.json is shared, settings.local.json is personal
+.claude/settings.local.json
+
+# Secrets
+*.pem
+*.key
+*.crt

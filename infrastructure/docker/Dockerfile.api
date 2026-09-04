@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1
+
+# Stage 1: Base runtime with Node 24 and Bun
+FROM node:24-alpine AS base
+WORKDIR /app
+RUN apk add --no-cache libc6-compat curl bash
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:$PATH"
+
+# Stage 2: Dependencies
+FROM base AS deps
+WORKDIR /app
+COPY package.json bun.lock ./
+COPY packages/ ./packages/
+COPY apps/ ./apps/
+
+RUN bun install --frozen-lockfile
+
+# Stage 3: Builder
+FROM deps AS builder
+WORKDIR /app
+COPY . .
+RUN cd apps/api && bun run build
+
+# Stage 4: Production runner
+FROM node:24-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=4001
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nestjs
+
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./package.json
+
+USER nestjs
+
+EXPOSE 4001
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:4001/api/v1/health || exit 1
+
+CMD ["node", "dist/main.js"]

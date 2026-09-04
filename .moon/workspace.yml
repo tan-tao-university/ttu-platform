@@ -1,0 +1,20 @@
+$schema: 'https://moonrepo.dev/schemas/workspace.json'
+
+projects:
+  - 'apps/*'
+
+vcs:
+  client: 'git'
+  defaultBranch: 'main'
+
+pipeline:
+  cacheLifetime: '3 days'
+
+cache:
+  cas:
+    maxSize: '5gb'
+
+experiments:
+  casOutputsCache: true
+
+telemetry: false

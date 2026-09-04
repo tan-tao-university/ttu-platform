@@ -1,0 +1,18 @@
+{
+  "threshold": 15,
+  "minTokens": 75,
+  "minLines": 10,
+  "path": ["apps"],
+  "ignore": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/.moon/**",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/next-env.d.ts"
+  ],
+  "reporters": ["console"],
+  "format": ["typescript", "javascript", "tsx", "jsx"]
+}

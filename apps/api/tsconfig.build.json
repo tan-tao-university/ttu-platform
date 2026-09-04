@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  // drizzle.config.ts lives at the app root. Including it widens tsc's inferred rootDir to
+  // the whole app, which emits dist/src/main.js instead of dist/main.js and breaks `start`.
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts", "drizzle.config.ts"]
+}

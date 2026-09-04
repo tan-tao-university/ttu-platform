@@ -1,0 +1,12 @@
+$schema: 'https://moonrepo.dev/schemas/tasks.json'
+
+inheritedBy:
+  toolchain: 'bun'
+  layer: 'application'
+
+tasks:
+  lint:
+    command: 'eslint'
+    inputs:
+      - 'src/**/*'
+      - 'eslint.config.*'
