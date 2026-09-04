@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { AdminHeader } from '@/components/AdminHeader';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -11,7 +12,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="vi">
-      <body>{children}</body>
+      <body className="flex min-h-screen flex-col">
+        <AdminHeader />
+        <div className="flex-1">{children}</div>
+      </body>
     </html>
   );
 }

@@ -28,10 +28,14 @@ tasks:
     deps:
       - '^:build'
 
+  test-e2e:
+    command: 'jest --config ./test/jest-e2e.json'
+
   lint:
     command: 'eslint'
     args:
-      - 'src/**/*.ts'
+      - '{src,test}/**/*.ts'
     inputs:
       - 'src/**/*'
+      - 'test/**/*'
       - 'eslint.config.*'

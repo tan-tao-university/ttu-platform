@@ -5,11 +5,15 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
     "build": "nest build",
     "start": "node dist/main.js",
     "lint": "eslint \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
     "clean": "rm -rf dist coverage"
   },
   "dependencies": {
@@ -29,9 +33,11 @@
     "@types/compression": "^1.8.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
+    "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "globals": "^17.0.0",
     "jest": "^30.0.0",
+    "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
