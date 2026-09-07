@@ -14,6 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # moon diffs against the local `main` branch to compute affected projects; a checkout
+      # of a PR ref leaves that pointer missing even with full history.
+      - run: git rev-parse --verify main || git branch main origin/main
 
       - uses: oven-sh/setup-bun@v2
         with:

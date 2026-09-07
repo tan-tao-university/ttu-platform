@@ -18,7 +18,12 @@ tasks:
       - 'next.config.*'
       - 'tsconfig.json'
     outputs:
-      - '.next'
+      - '.next/**/*'
+      # bun symlinks workspace deps inside the standalone bundle's node_modules; moon's output
+      # hasher can't follow a symlink into a directory ("Is a directory", os error 21). Nothing
+      # reads this cached copy — the production Docker build runs `next build` fresh, outside
+      # moon — so excluding it from the moon cache is safe.
+      - '!.next/standalone/**/node_modules/**'
 
   start:
     command: 'next start'
