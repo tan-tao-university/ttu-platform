@@ -3,11 +3,14 @@
 Target workflow once this doc's prerequisite is met:
 
 ```
-feature/* → PR + CI → main → PR (main only) + CI → prod → production deploy
+feature/* → PR + CI → main → PR (review + source-branch guard only) → prod → production deploy
 ```
 
 No one — including admins — pushes directly to `main` or `prod`; every change lands through a
-pull request with required status checks green.
+pull request. CI (`verify`) only runs once, on PRs targeting `main` — a PR from `main` into
+`prod` re-runs a check that already passed, so `prod` only requires review and the
+`validate-prod-source` guard, not the full `verify` job again. Direct pushes to any other
+branch never trigger CI at all.
 
 ## Current blocker: GitHub plan
 
@@ -29,6 +32,8 @@ whoever has org billing access can apply them the moment the plan changes.
 - `.github/workflows/branch-policy.yml` — `validate-prod-source` fails any PR into `prod` whose
   source branch isn't `main`. This runs today regardless of plan; it just isn't yet a required
   check because required checks need a ruleset.
+- `.github/workflows/ci.yml` — `pull_request` is scoped to `branches: [main]`, so `verify` only
+  runs for PRs targeting `main`; PRs into `prod` and pushes to any other branch skip it.
 - `prod` branch exists (created off `main`, no production CD wired to it yet — see root
   [README.md](../README.md) Status).
 - `.github/CODEOWNERS`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/*`, `.github/dependabot.yml`, and the `auto-assign*` workflows — repo hygiene modeled on [`sit-ttu/sit-website`](https://github.com/sit-ttu/sit-website/tree/main/.github). None of these need the plan upgrade; CODEOWNERS review enforcement (`Require review from Code Owners`) does, once it's added as a `pull_request` rule parameter below.
@@ -96,10 +101,7 @@ gh api repos/tan-tao-university/ttu-platform/rulesets -X POST --input - <<'JSON'
       "type": "required_status_checks",
       "parameters": {
         "strict_required_status_checks_policy": true,
-        "required_status_checks": [
-          { "context": "verify" },
-          { "context": "validate-prod-source" }
-        ]
+        "required_status_checks": [{ "context": "validate-prod-source" }]
       }
     }
   ]
@@ -107,10 +109,7 @@ gh api repos/tan-tao-university/ttu-platform/rulesets -X POST --input - <<'JSON'
 JSON
 ```
 
-`verify` is the CI job name in [`ci.yml`](../.github/workflows/ci.yml);
-`validate-prod-source` is the job in `branch-policy.yml` above. If either workflow's job name
-changes, update the `context` values here to match — GitHub matches required checks by the
-job/check name reported on the commit, not by workflow file name.
+`verify` (required on `main` only — it never runs on `prod` PRs, see above) is the CI job name in [`ci.yml`](../.github/workflows/ci.yml); `validate-prod-source` is the job in `branch-policy.yml` above. If either workflow's job name changes, update the `context` values here to match — GitHub matches required checks by the job/check name reported on the commit, not by workflow file name.
 
 ## Why rulesets, not legacy branch protection
 
