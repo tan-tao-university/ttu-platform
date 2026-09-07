@@ -46,6 +46,13 @@ env/production/
 
 Real env files are never committed — only `apps/*/.env.example` is checked in.
 
+## Branch protection & release flow
+
+`main` and `prod` are meant to be PR-only (CI required, no direct pushes, not even for
+admins). See [branch-protection.md](branch-protection.md) for the target workflow, the
+GitHub-plan prerequisite currently blocking it, and the exact commands to apply once
+unblocked.
+
 ## Next steps (tracked outside this repo)
 
 1. Design the ERD for ttu.edu.vn's content — see [content-audit.md](content-audit.md) for what

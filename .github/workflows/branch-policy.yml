@@ -1,0 +1,17 @@
+name: Branch Policy
+
+on:
+  pull_request:
+    branches: [prod]
+
+jobs:
+  validate-prod-source:
+    name: validate-prod-source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure prod only receives PRs from main
+        run: |
+          if [ "${{ github.head_ref }}" != "main" ]; then
+            echo "PRs targeting prod must come from main (got '${{ github.head_ref }}')."
+            exit 1
+          fi
