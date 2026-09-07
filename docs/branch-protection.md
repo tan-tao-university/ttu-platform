@@ -31,6 +31,7 @@ whoever has org billing access can apply them the moment the plan changes.
   check because required checks need a ruleset.
 - `prod` branch exists (created off `main`, no production CD wired to it yet — see root
   [README.md](../README.md) Status).
+- `.github/CODEOWNERS`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/*`, `.github/dependabot.yml`, and the `auto-assign*` workflows — repo hygiene modeled on [`sit-ttu/sit-website`](https://github.com/sit-ttu/sit-website/tree/main/.github). None of these need the plan upgrade; CODEOWNERS review enforcement (`Require review from Code Owners`) does, once it's added as a `pull_request` rule parameter below.
 
 ## Rulesets to create once the plan supports it
 
@@ -54,7 +55,7 @@ gh api repos/tan-tao-university/ttu-platform/rulesets -X POST --input - <<'JSON'
       "parameters": {
         "required_approving_review_count": 1,
         "dismiss_stale_reviews_on_push": true,
-        "require_code_owner_review": false,
+        "require_code_owner_review": true,
         "require_last_push_approval": true,
         "required_review_thread_resolution": true
       }
@@ -86,7 +87,7 @@ gh api repos/tan-tao-university/ttu-platform/rulesets -X POST --input - <<'JSON'
       "parameters": {
         "required_approving_review_count": 1,
         "dismiss_stale_reviews_on_push": true,
-        "require_code_owner_review": false,
+        "require_code_owner_review": true,
         "require_last_push_approval": true,
         "required_review_thread_resolution": true
       }
