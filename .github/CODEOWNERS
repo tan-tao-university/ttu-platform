@@ -1,3 +1,2 @@
-# Default owners for everything not matched below — kept in sync with the repo's admin/
-# maintainer collaborators. Split by app directory here once ownership diverges.
-* @louisdevzz @NguyenTuMinhLong
+# Default owner for everything not matched below.
+* @louisdevzz
