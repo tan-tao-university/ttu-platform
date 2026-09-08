@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/PostgreSQL-shared-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL, shared">
   <img src="https://img.shields.io/badge/MinIO-shared-C72E49?style=flat-square&logo=minio&logoColor=white" alt="MinIO, shared">
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose">
-  <img src="https://img.shields.io/badge/status-scaffold-lightgrey?style=flat-square" alt="Scaffold — no domain schema yet">
+  <img src="https://img.shields.io/badge/status-database--wired-blue?style=flat-square" alt="apps/api connected to ttu_main; auth and CMS modules not wired up yet">
 </p>
 
 Replacement for the WordPress site at [ttu.edu.vn](https://ttu.edu.vn) — Tan Tao University's
@@ -14,13 +14,14 @@ main public website, its content admin dashboard, and the API behind both.
 
 ## Status
 
-This repo is initialized (toolchain, monorepo layout, three bare apps) but has **no content
-schema or business logic yet**. The current ttu.edu.vn runs WordPress with a large number of
-post types across many categories (Giới thiệu, Tuyển sinh, Đào tạo, Nghiên cứu, Các khoa, Tin
-tức & Sự kiện, Vinh danh, Đóng góp, Lịch công tác — see
-[docs/content-audit.md](docs/content-audit.md)); the ERD that will replace it has not been
-designed yet, so `apps/api` intentionally has no database connection, schema, or auth wired up.
-Do not add tables, DTOs, or content modules until that design lands.
+`apps/api` now has a database connection: the ERD/physical schema is designed (see the
+project's Notion workspace) and wired up via Drizzle ORM against `ttu-data-infra`'s `ttu_main`
+— see [docs/setup.md](docs/setup.md#database). Auth (Keycloak/`ttu-identity`) and the CMS
+business modules (DTOs, controllers, media/storage endpoints) are not wired up yet; do not add
+those speculatively. The current ttu.edu.vn runs WordPress with a large number of post types
+across many categories (Giới thiệu, Tuyển sinh, Đào tạo, Nghiên cứu, Các khoa, Tin tức & Sự
+kiện, Vinh danh, Đóng góp, Lịch công tác — see [docs/content-audit.md](docs/content-audit.md)),
+which the new schema replaces.
 
 ## Part of the TTU platform
 
@@ -35,7 +36,7 @@ All four are meant to be checked out as sibling directories on the same host. `t
 already reserved a `ttu_main` database and `ttu_user` role for this repo — see that repo's
 [README](https://github.com/tan-tao-university/ttu-data-infra#databases) — and
 `ttu-identity`'s realm reserves the client id `ttu-web` for this app's future admin login. Wire
-both up when the schema and auth flow are actually designed, not before.
+that up when the auth flow is actually implemented — see docs/setup.md Next steps.
 
 ## Applications
 
@@ -59,7 +60,8 @@ Docker (optional, for production-parity builds).
 
 Next.js 16 + React 19 + Tailwind 4 (`web`, `admin`), NestJS 11 (`api`), Bun workspaces + Moon.
 PostgreSQL, MinIO, and Keycloak are shared infrastructure from the sibling repos above — this
-repo does not run its own copies, and does not connect to them yet either (see Status).
+repo does not run its own copies. `apps/api` connects to `ttu-data-infra`'s PostgreSQL
+(`ttu_main`) but not yet to MinIO or Keycloak (see Status).
 
 ## Running
 
@@ -89,9 +91,9 @@ moon run api:test                           # NestJS unit tests (Jest)
 apps/
   web/      Public website — Next.js 16, empty homepage, no content model yet
   admin/    Content admin dashboard — Next.js 16, no auth wired up yet
-  api/      Backend API — NestJS 11, bare bootstrap, no database or auth yet
+  api/      Backend API — NestJS 11, wired to ttu_main (Drizzle ORM); no auth yet
 infrastructure/  Dockerfiles for production builds
-docs/            Setup guide and the WordPress content audit informing the future ERD
+docs/            Setup guide, database wiring, and the WordPress content audit
 ```
 
 ## Deployment notes
