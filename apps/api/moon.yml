@@ -41,6 +41,12 @@ tasks:
     command: 'drizzle-kit studio'
     preset: 'server'
 
+  db-seed:
+    command: 'bun run src/db/seed.ts'
+
+  db-create-super-admin:
+    command: 'bun run src/db/create-super-admin.ts'
+
   lint:
     command: 'eslint'
     args:

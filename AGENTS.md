@@ -9,12 +9,14 @@ touched from here.
 
 ## Do not build ahead of the wiring order
 
-`apps/api` now has a database connection: the ERD/physical schema is designed (project's
-Notion workspace) and `apps/api` is wired to `ttu-data-infra`'s `ttu_main` via Drizzle ORM —
-see root [README.md](README.md) Status and [docs/setup.md](docs/setup.md#database). It still
-has **no auth guard or storage integration**. Do not add a Keycloak guard, an S3/MinIO client,
-or CMS business modules (DTOs, controllers, content endpoints) speculatively — wait for the
-auth flow to be wired (docs/setup.md's "Next steps" step 3) before step 4.
+`apps/api` now has a database connection and a Keycloak auth guard: the ERD/physical schema
+is designed (project's Notion workspace), `apps/api` is wired to `ttu-data-infra`'s `ttu_main`
+via Drizzle ORM, and `apps/api` verifies `ttu-identity`-issued tokens and enforces CMS RBAC
+from `ttu_main`'s own role/permission tables (`src/access/`) — see root [README.md](README.md)
+Status and [docs/setup.md](docs/setup.md#identity--authorization). It still has **no storage
+integration and no CMS business modules**. Do not add an S3/MinIO client or content
+modules/DTOs/controllers speculatively — `apps/admin`'s actual sign-in UI is still open
+(docs/setup.md's "Next steps" step 3); wait for that before step 4.
 
 ## Toolchain & stack
 

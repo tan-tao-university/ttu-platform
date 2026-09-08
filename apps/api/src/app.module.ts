@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
+import { AccessModule } from './access/access.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-// Domain modules (content, auth, storage) land here once the CMS's schema and auth flow
-// are designed — see docs/setup.md. Kept to a bare bootstrap until then.
+// Further domain modules (content, media, ...) land here once each is designed and
+// implemented — see docs/setup.md.
 @Module({
+  imports: [AccessModule],
   controllers: [AppController],
   providers: [AppService],
 })

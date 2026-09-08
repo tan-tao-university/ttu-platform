@@ -13,10 +13,7 @@ if (existsSync(envFile)) process.loadEnvFile(envFile);
 // The API process still fails fast on a missing variable: importing this module throws
 // immediately if `DATABASE_URL` is unset, so the app fails at boot rather than on its first
 // query.
-const rawDatabaseUrl = process.env.DATABASE_URL;
-if (!rawDatabaseUrl) throw new Error('Missing required environment variable: DATABASE_URL');
-export const databaseUrl = rawDatabaseUrl;
-
+export const databaseUrl = requireEnv('DATABASE_URL');
 export const databasePool = {
   max: positiveIntegerEnv('DB_POOL_MAX', '10'),
   connectTimeoutSeconds: positiveIntegerEnv('DB_CONNECT_TIMEOUT_SECONDS', '10'),
@@ -24,8 +21,20 @@ export const databasePool = {
   maxLifetimeSeconds: positiveIntegerEnv('DB_MAX_LIFETIME_SECONDS', '1800'),
 } as const;
 
+/** Shared by every `config/*` module (`config/auth.ts` reuses this for Keycloak settings) so
+ *  a missing required variable always fails the same way — one error shape, at import time. */
+export function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`Missing required environment variable: ${name}`);
+  return value;
+}
+
+export function optionalEnv(name: string, fallback: string): string {
+  return process.env[name] || fallback;
+}
+
 function positiveIntegerEnv(name: string, fallback: string): number {
-  const value = Number(process.env[name] || fallback);
+  const value = Number(optionalEnv(name, fallback));
   if (!Number.isInteger(value) || value <= 0) {
     throw new Error(`${name} must be a positive integer`);
   }
