@@ -9,14 +9,19 @@ touched from here.
 
 ## Do not build ahead of the wiring order
 
-`apps/api` now has a database connection and a Keycloak auth guard: the ERD/physical schema
-is designed (project's Notion workspace), `apps/api` is wired to `ttu-data-infra`'s `ttu_main`
-via Drizzle ORM, and `apps/api` verifies `ttu-identity`-issued tokens and enforces CMS RBAC
-from `ttu_main`'s own role/permission tables (`src/access/`) — see root [README.md](README.md)
-Status and [docs/setup.md](docs/setup.md#identity--authorization). It still has **no storage
-integration and no CMS business modules**. Do not add an S3/MinIO client or content
-modules/DTOs/controllers speculatively — `apps/admin`'s actual sign-in UI is still open
-(docs/setup.md's "Next steps" step 3); wait for that before step 4.
+`apps/api` has a database connection, a Keycloak auth guard (`src/access/`), and its first
+business domain, Content (`src/content/`, `src/taxonomy/`) — see root [README.md](README.md)
+Status and [docs/setup.md](docs/setup.md#content--taxonomy-api). It still has **no storage
+integration and no CMS Page Builder domain**.
+
+- Do not add an S3/MinIO client speculatively — wire it when a real upload endpoint needs it
+  (doc 08).
+- Do not add `pages`/`page_sections` endpoints, and do not invent components/schemas to
+  unblock them: the CMS Page Builder domain (doc 02-03) depends on a Component Registry
+  (`packages/cms-registry`) and a real ~15-20-component set that don't exist in this repo yet
+  — that is real product/design work, not something to fabricate to fill the gap.
+- `apps/admin`'s actual sign-in UI (the browser-side OIDC redirect against `ttu-web`) is still
+  open — nothing in `apps/admin` calls the API yet.
 
 ## Toolchain & stack
 

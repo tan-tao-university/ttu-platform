@@ -1,9 +1,12 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import compression from 'compression';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { ApiError } from './common/http/api-error';
+import { AllExceptionsFilter } from './common/http/all-exceptions.filter';
+import { flattenValidationErrors } from './common/http/validation-errors.util';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -18,8 +21,24 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // ValidationPipe (class-validator) lands once the first DTO does — no route accepts a
-  // request body yet.
+  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      // Reject, don't silently strip — an unknown field is a signal of client/API drift
+      // (design doc 02 §11, 06 §13), not something to quietly ignore.
+      forbidNonWhitelisted: true,
+      exceptionFactory: (validationErrors) =>
+        new ApiError(
+          422,
+          'validation_error',
+          'Dữ liệu không hợp lệ',
+          'Request failed validation',
+          flattenValidationErrors(validationErrors),
+        ),
+    }),
+  );
 
   // Every route lives under /api/v1 so the Nginx on the server can route by path prefix.
   // The root info route (GET /) stays excluded so hitting the host directly reports service info.

@@ -1,7 +1,30 @@
 import { sql } from 'drizzle-orm';
 import { db, client } from './index';
 import { PERMISSION_CATALOG } from './permissions.catalog';
-import { permissions, rolePermissions, roles } from './schema';
+import { locales, permissions, rolePermissions, roles } from './schema';
+
+/** doc 01 §8: `vi` and `en` are the minimum supported locales. `vi` is the default —
+ *  Tan Tao University's primary audience. */
+const LOCALES = [
+  { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', isDefault: true, sortOrder: 0 },
+  { code: 'en', name: 'English', nativeName: 'English', isDefault: false, sortOrder: 1 },
+] as const;
+
+async function seedLocales() {
+  await db
+    .insert(locales)
+    .values([...LOCALES])
+    .onConflictDoUpdate({
+      target: locales.code,
+      set: {
+        name: sql`excluded.name`,
+        nativeName: sql`excluded.native_name`,
+        isDefault: sql`excluded.is_default`,
+        sortOrder: sql`excluded.sort_order`,
+      },
+    });
+  return db.select({ code: locales.code }).from(locales);
+}
 
 /**
  * The 5 roles design doc 07 §10 names. `code` is the stable, machine-readable identifier;
@@ -79,10 +102,12 @@ async function seedSuperAdminGrants(
 }
 
 async function seed() {
+  const localeRows = await seedLocales();
   const permissionRows = await seedPermissions();
   const roleRows = await seedRoles();
   await seedSuperAdminGrants(roleRows, permissionRows);
 
+  console.log(`Seeded ${localeRows.length} locales: ${localeRows.map((l) => l.code).join(', ')}.`);
   console.log(`Seeded ${permissionRows.length} permissions.`);
   console.log(`Seeded ${roleRows.length} roles: ${roleRows.map((r) => r.code).join(', ')}.`);
   console.log(`Granted "super_admin" all ${permissionRows.length} permissions.`);
