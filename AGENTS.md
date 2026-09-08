@@ -7,14 +7,14 @@ Postgres + MinIO) and [ttu-identity](https://github.com/tan-tao-university/ttu-i
 (Keycloak SSO); [ttu-faculty-platform](https://github.com/tan-tao-university/ttu-faculty-platform) is the separate repo hosting the 7 faculty sites and is not
 touched from here.
 
-## Do not build ahead of the ERD
+## Do not build ahead of the wiring order
 
-This repo is intentionally a scaffold: toolchain, monorepo layout, three apps that boot and
-serve a placeholder page. **`apps/api` has no database connection, schema, auth guard, or
-storage integration** — see root [README.md](README.md) Status and
-[docs/content-audit.md](docs/content-audit.md). Do not add Drizzle, a schema, DTOs, a Keycloak
-guard, or an S3 client speculatively. Wait for an explicit content/data model decision, then
-follow [docs/setup.md](docs/setup.md)'s "Next steps".
+`apps/api` now has a database connection: the ERD/physical schema is designed (project's
+Notion workspace) and `apps/api` is wired to `ttu-data-infra`'s `ttu_main` via Drizzle ORM —
+see root [README.md](README.md) Status and [docs/setup.md](docs/setup.md#database). It still
+has **no auth guard or storage integration**. Do not add a Keycloak guard, an S3/MinIO client,
+or CMS business modules (DTOs, controllers, content endpoints) speculatively — wait for the
+auth flow to be wired (docs/setup.md's "Next steps" step 3) before step 4.
 
 ## Toolchain & stack
 

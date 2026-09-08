@@ -31,6 +31,16 @@ tasks:
   test-e2e:
     command: 'jest --config ./test/jest-e2e.json'
 
+  db-generate:
+    command: 'drizzle-kit generate'
+
+  db-migrate:
+    command: 'drizzle-kit migrate'
+
+  db-studio:
+    command: 'drizzle-kit studio'
+    preset: 'server'
+
   lint:
     command: 'eslint'
     args:
