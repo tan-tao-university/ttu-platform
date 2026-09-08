@@ -24,12 +24,12 @@ Do not add tables, DTOs, or content modules until that design lands.
 
 ## Part of the TTU platform
 
-| Repo                                                                            | Role                                        |
-| ------------------------------------------------------------------------------- | ------------------------------------------- |
-| [TTU Data Infrastructure](https://github.com/tan-tao-university/ttu-data-infra) | Shared PostgreSQL + MinIO                   |
-| [TTU Identity](https://github.com/tan-tao-university/ttu-identity)              | Keycloak — authentication & SSO             |
-| [TTU Web Platform](https://github.com/tan-tao-university/ttu-web-platform)      | The 7 faculty sites, their admin, their API |
-| **TTU Platform** (this repo)                                                    | ttu.edu.vn, its admin dashboard, its API    |
+| Repo                                                                               | Role                                        |
+| ---------------------------------------------------------------------------------- | ------------------------------------------- |
+| [TTU Data Infrastructure](https://github.com/tan-tao-university/ttu-data-infra)    | Shared PostgreSQL + MinIO                   |
+| [TTU Identity](https://github.com/tan-tao-university/ttu-identity)                 | Keycloak — authentication & SSO             |
+| [TTU Faculty Platform](https://github.com/tan-tao-university/ttu-faculty-platform) | The 7 faculty sites, their admin, their API |
+| **TTU Platform** (this repo)                                                       | ttu.edu.vn, its admin dashboard, its API    |
 
 All four are meant to be checked out as sibling directories on the same host. `ttu-data-infra`
 already reserved a `ttu_main` database and `ttu_user` role for this repo — see that repo's
@@ -45,7 +45,7 @@ both up when the schema and auth flow are actually designed, not before.
 | Content admin dashboard     | `@ttu/admin` | `apps/admin` |     3011 |
 | Backend API                 | `@ttu/api`   | `apps/api`   |     4001 |
 
-Ports are chosen to not collide with `ttu-web-platform`'s `api.ttu.edu.vn` (4000) and
+Ports are chosen to not collide with `ttu-faculty-platform`'s `api.ttu.edu.vn` (4000) and
 `admin.ttu.edu.vn` (3010) on the same host. In production every Next.js container listens on
 port 3000; Docker host mapping is what separates them (see `compose.production.yml`).
 
