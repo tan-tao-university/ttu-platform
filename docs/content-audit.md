@@ -15,7 +15,7 @@ before designing the schema — it changes independently of this repo.
 - **Nghiên cứu** (Research) — separate subdomain (`research.ttu.edu.vn`).
 - **Các khoa** (Faculties) — links out to each faculty's own site, plus the K-12 school
   (`ttst.edu.vn`) and the teaching hospital (`benhvientantao.com`). The 7 faculties already have
-  a home in the sibling `ttu-web-platform` repo; this repo only needs to link to them, not host
+  a home in the sibling `ttu-faculty-platform` repo; this repo only needs to link to them, not host
   their content.
 - **Tin tức & Sự kiện** (News & Events) — five WordPress categories: Bản tin tháng, Báo chí viết
   về TTU, Nhật ký thực tập, Sự kiện, Tin tức. These read as one underlying "post" content type

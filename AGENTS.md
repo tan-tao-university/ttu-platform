@@ -4,7 +4,7 @@
 content admin dashboard (`apps/admin`), and the API behind both (`apps/api`). It is a sibling
 repo to [ttu-data-infra](https://github.com/tan-tao-university/ttu-data-infra) (shared
 Postgres + MinIO) and [ttu-identity](https://github.com/tan-tao-university/ttu-identity)
-(Keycloak SSO); `ttu-web-platform` is the separate repo hosting the 7 faculty sites and is not
+(Keycloak SSO); [ttu-faculty-platform](https://github.com/tan-tao-university/ttu-faculty-platform) is the separate repo hosting the 7 faculty sites and is not
 touched from here.
 
 ## Do not build ahead of the ERD
