@@ -3,7 +3,12 @@
   "workspaces": {
     ".": {},
     "apps/api": {
-      "entry": ["src/main.ts", "src/db/index.ts", "test/**/*.ts"],
+      "entry": [
+        "src/main.ts",
+        "src/db/index.ts",
+        "src/access/decorators/require-permission.decorator.ts",
+        "test/**/*.ts",
+      ],
       "project": ["src/**/*.ts", "test/**/*.ts"],
     },
     "apps/admin": {
