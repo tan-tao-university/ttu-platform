@@ -8,7 +8,7 @@ current state of the backend build-out.
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
-## 2026-09-09 — Database schema alignment with updated Notion spec
+## 2026-09-09 — Database schema alignment with updated Notion spec ([#12](https://github.com/tan-tao-university/ttu-platform/pull/12))
 
 ### Changed
 
