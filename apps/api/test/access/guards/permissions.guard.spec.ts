@@ -1,8 +1,8 @@
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { AuthenticatedRequest, AuthenticatedUser } from '../access.types';
-import { REQUIRE_PERMISSION_KEY } from '../decorators/require-permission.decorator';
-import { PermissionsGuard } from './permissions.guard';
+import type { AuthenticatedRequest, AuthenticatedUser } from '../../../src/access/access.types';
+import { REQUIRE_PERMISSION_KEY } from '../../../src/access/decorators/require-permission.decorator';
+import { PermissionsGuard } from '../../../src/access/guards/permissions.guard';
 
 function contextRequiring(
   permission: string | undefined,

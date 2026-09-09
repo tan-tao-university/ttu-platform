@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { UpsertContentTranslationDto } from './upsert-content-translation.dto';
+import { UpsertContentTranslationDto } from '../../../src/content/dto/upsert-content-translation.dto';
 
 async function validateDto(overrides: Partial<UpsertContentTranslationDto>) {
   const dto = plainToInstance(UpsertContentTranslationDto, {

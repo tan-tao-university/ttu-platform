@@ -46,6 +46,11 @@ All code comments must adhere to standard JSDoc (`/** ... */`) format:
   - Code must be self-documenting with expressive naming and clear structure.
 - **Rationale-only comments**: Comments inside implementation blocks are strictly reserved for explaining _why_ (non-obvious domain rules, hardware/protocol constraints, security invariants). When necessary, use structured JSDoc or clean block comments rather than inline trailing noise.
 
+## Testing & Spec Location
+
+- **Dedicated `test/` directory**: All test files (unit specs, integration specs, e2e tests) for `apps/api` must be placed inside `apps/api/test/`, mirroring the `src/` directory structure (e.g., `test/access/guards/jwt-auth.guard.spec.ts`, `test/content/dto/upsert-content-translation.dto.spec.ts`).
+- **Never colocate tests in `src/`**: Do not place `*.spec.ts` or `*.test.ts` files inside `apps/api/src/`. Keep source and test code strictly separated.
+
 ## Quality gates & verification
 
 Run before finishing any task, opening a PR, or creating a commit:
