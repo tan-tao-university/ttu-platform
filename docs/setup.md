@@ -69,6 +69,38 @@ Every other account gets a `users` row automatically (JIT-provisioned, no role) 
 it calls an authenticated route — `GET /api/v1/admin/me` is the one to try first; it returns the
 caller's identity and effective permission list.
 
+## Content & Taxonomy API
+
+`apps/api/src/content/` and `apps/api/src/taxonomy/` implement the Content domain (news,
+announcements, press releases, research articles, events) and its categories/tags — design
+docs 05 §8-9, 06 §5, §10. **Not** the CMS Page Builder domain (`pages`/`page_sections`): that
+depends on a Component Registry (`packages/cms-registry`) that does not exist yet — see
+AGENTS.md.
+
+```plain text
+POST   /api/v1/admin/content                               create (type only; NEWS/ANNOUNCEMENT/PRESS_RELEASE/RESEARCH_ARTICLE/EVENT)
+GET    /api/v1/admin/content?locale=vi                      list drafts (locale required)
+GET    /api/v1/admin/content/:id                            item + every locale's translation + event + assignments
+PATCH  /api/v1/admin/content/:id                             featuredMediaId only — type is immutable after creation
+DELETE /api/v1/admin/content/:id                             soft delete
+POST   /api/v1/admin/content/:id/translations/:locale        upsert draft translation (title/body/seo/...)
+POST   /api/v1/admin/content/:id/event                       upsert event details — only valid when type = EVENT
+POST   /api/v1/admin/content/:id/locales/:locale/publish     validate, snapshot, publish, sync public_routes + redirects — one transaction
+GET    /api/v1/admin/content/:id/locales/:locale/revisions   immutable publish history for this locale
+POST   /api/v1/admin/content/:id/locales/:locale/restore/:revisionId   copy a past revision back onto the draft (doc 06 §11 — never republishes automatically)
+POST/DELETE /api/v1/admin/content/:id/categories, /tags      taxonomy assignment
+
+GET    /api/v1/public/content?locale=vi                      published only, reads the published revision snapshot — never the live draft
+GET    /api/v1/public/content/:slug?locale=vi                 same; slug is matched against the published snapshot's slug, not the draft's
+
+/api/v1/admin/categories, /api/v1/admin/tags                  full CRUD + per-locale translations
+```
+
+Gated by `content.read`/`content.create`/`content.edit`/`content.delete`/`content.publish`/
+`content.restore` (categories/tags reuse `content.read`/`content.edit` — no dedicated
+`taxonomy.*` permission exists in the catalog). `bun run db:seed` must have run first
+(locales, permission catalog) — see Identity & Authorization above.
+
 ## Checks
 
 ```bash
@@ -115,4 +147,11 @@ unblocked.
      & Authorization above.
    - `apps/admin`'s actual sign-in UI (the Authorization Code + PKCE redirect flow against the
      `ttu-web` client) is still open — nothing in `apps/admin` calls the API yet.
-4. Only then add content modules, DTOs, and media/storage endpoints to `apps/api`.
+4. ~~Add content modules and DTOs to `apps/api`~~ — done for the Content domain (news,
+   announcements, events, ...) and its taxonomy; see Content & Taxonomy API above.
+5. Media/storage endpoints (doc 08) — not started; needs MinIO wiring (`S3_*` env, upload
+   validation).
+6. CMS Page Builder (`pages`/`page_sections`, doc 02-03) — blocked on a Component Registry
+   (`packages/cms-registry`) and a real component set, neither of which exist yet. Do not
+   add `pages`/`page_sections` endpoints or invent components to unblock this speculatively
+   — see AGENTS.md.

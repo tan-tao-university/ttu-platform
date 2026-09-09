@@ -18,6 +18,10 @@ import { IdentityService } from './services/identity.service';
 @Module({
   controllers: [MeController],
   providers: [UsersRepository, IdentityService, JwtAuthGuard, PermissionsGuard],
-  exports: [JwtAuthGuard, PermissionsGuard],
+  // `@UseGuards(JwtAuthGuard)` constructs the guard using the *consuming* module's DI
+  // subtree, not AccessModule's — so `JwtAuthGuard`'s own constructor dependency
+  // (`IdentityService`, which in turn needs `UsersRepository`) must be exported too, or
+  // resolution fails in every module that isn't AccessModule itself.
+  exports: [JwtAuthGuard, PermissionsGuard, IdentityService, UsersRepository],
 })
 export class AccessModule {}

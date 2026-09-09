@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/PostgreSQL-shared-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL, shared">
   <img src="https://img.shields.io/badge/MinIO-shared-C72E49?style=flat-square&logo=minio&logoColor=white" alt="MinIO, shared">
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose">
-  <img src="https://img.shields.io/badge/status-auth--wired-blue?style=flat-square" alt="apps/api connected to ttu_main and verifying Keycloak tokens; CMS business modules not wired up yet">
+  <img src="https://img.shields.io/badge/status-content--api-blue?style=flat-square" alt="apps/api serves the Content domain and admin auth; CMS Page Builder and media not wired up yet">
 </p>
 
 Replacement for the WordPress site at [ttu.edu.vn](https://ttu.edu.vn) — Tan Tao University's
@@ -14,17 +14,17 @@ main public website, its content admin dashboard, and the API behind both.
 
 ## Status
 
-`apps/api` has a database connection and a Keycloak-verified Admin API: the ERD/physical
-schema is designed (see the project's Notion workspace) and wired up via Drizzle ORM against
-`ttu-data-infra`'s `ttu_main`, and `apps/api` verifies `ttu-identity`-issued tokens and
-enforces CMS RBAC from `ttu_main`'s own role/permission tables — see
-[docs/setup.md](docs/setup.md#database) and
-[docs/setup.md](docs/setup.md#identity--authorization). `apps/admin`'s actual sign-in UI and
-the CMS business modules (DTOs, controllers, media/storage endpoints) are not wired up yet; do
-not add those speculatively. The current ttu.edu.vn runs WordPress with a large number of post
-types across many categories (Giới thiệu, Tuyển sinh, Đào tạo, Nghiên cứu, Các khoa, Tin tức &
-Sự kiện, Vinh danh, Đóng góp, Lịch công tác — see
-[docs/content-audit.md](docs/content-audit.md)), which the new schema replaces.
+`apps/api` has a database connection, a Keycloak-verified Admin API, and its first business
+domain: Content (news, announcements, press releases, research articles, events — draft,
+publish, revision, rollback, per locale) and its taxonomy (categories/tags), gated by
+`ttu_main`'s own RBAC — see [docs/setup.md](docs/setup.md#content--taxonomy-api). The CMS
+**Page Builder** domain (`pages`/`page_sections`) is not implemented: it depends on a
+Component Registry (`packages/cms-registry`) and a real component set that don't exist yet —
+see AGENTS.md. `apps/admin`'s actual sign-in UI and media/storage endpoints are also not
+wired up yet. The current ttu.edu.vn runs WordPress with a large number of post types across
+many categories (Giới thiệu, Tuyển sinh, Đào tạo, Nghiên cứu, Các khoa, Tin tức & Sự kiện,
+Vinh danh, Đóng góp, Lịch công tác — see [docs/content-audit.md](docs/content-audit.md)),
+which the new schema replaces.
 
 ## Part of the TTU platform
 
@@ -95,7 +95,7 @@ moon run api:test                           # NestJS unit tests (Jest)
 apps/
   web/      Public website — Next.js 16, empty homepage, no content model yet
   admin/    Content admin dashboard — Next.js 16, no auth wired up yet
-  api/      Backend API — NestJS 11, wired to ttu_main (Drizzle ORM) and Keycloak (RBAC guard)
+  api/      Backend API — NestJS 11, ttu_main (Drizzle), Keycloak auth, Content+Taxonomy API
 infrastructure/  Dockerfiles for production builds
 docs/            Setup guide, database wiring, and the WordPress content audit
 ```
