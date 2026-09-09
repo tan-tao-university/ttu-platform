@@ -15,11 +15,11 @@ Read this file before modifying `apps/admin` to understand implemented surfaces,
 | # | Feature Domain | Status | API Dependency | Notes |
 | --: | :-- | :-- | :-- | :-- |
 | 1 | **Application Scaffold** | ✅ Complete | None | Next.js 16 (App Router), React 19, Tailwind CSS 4 |
-| 2 | **Authentication & Session** | 🟡 Next | Keycloak (`ttu-web`), `GET /api/v1/admin/me` | Browser-side OIDC login redirect, token storage, user profile hydration |
+| 2 | **Authentication & Session** | ✅ Complete | Keycloak (`ttu-web`), `GET /api/v1/admin/me` | Browser-side OIDC Authorization Code + PKCE, encrypted `HttpOnly` session cookie, automatic refresh |
 | 3 | **Admin Shell & Navigation** | 🟡 Next | `GET /api/v1/admin/me` (permissions) | Responsive sidebar, header, breadcrumbs, permission-gated nav links |
 | 4 | **Content Management UI** | ⚪ Not started | `/api/v1/admin/content/*` | Editorial list, draft editor, multi-locale translation tabs, publish/rollback modals |
 | 5 | **Taxonomy Management UI** | ⚪ Not started | `/api/v1/admin/categories`, `/api/v1/admin/tags` | Category hierarchy tree editor, tag management table |
-| 6 | **Media Asset Library** | ⚪ Not started | `/api/v1/admin/media/*` | Media browser, drag-and-drop upload modal; blocked on backend MinIO wiring |
+| 6 | **Media Asset Library** | ⚪ Not started | `/api/v1/admin/media/*` | Media browser, drag-and-drop upload modal — backend MinIO wiring now available (PR #16) |
 | 7 | **CMS Page Builder UI** | 🔴 Blocked | `/api/v1/admin/pages/*` | Visual page sections, component palette; blocked on `@ttu/cms-registry` |
 | 8 | **User & Role Administration** | ⚪ Backlog | `/api/v1/admin/users`, `/api/v1/admin/roles` | User listing, role assignment dialog, permission matrix inspector |
 | 9 | **Navigation / Menu Editor** | ⚪ Backlog | `/api/v1/admin/menus/*` | Hierarchical menu builder with link picker |
@@ -43,9 +43,9 @@ Read this file before modifying `apps/admin` to understand implemented surfaces,
 The current frontend implementation sequence for `apps/admin` is:
 
 ```text
-1. OIDC Authentication Flow (Keycloak redirect via ttu-web client)
+1. ~~OIDC Authentication Flow (Keycloak redirect via ttu-web client)~~ — done
    ↓
-2. Session Management & User Profile Hydration (GET /api/v1/admin/me)
+2. ~~Session Management & User Profile Hydration (GET /api/v1/admin/me)~~ — done
    ↓
 3. Application Shell (Sidebar, Header, Permission-gated routes)
    ↓
@@ -56,13 +56,17 @@ The current frontend implementation sequence for `apps/admin` is:
 
 ## 3. Detailed Domain Specifications
 
-### 3.1 Authentication & Session Management (Priority 1)
+### 3.1 Authentication & Session Management (Priority 1) — ✅ Complete
 
-- **Identity Provider**: Keycloak realm `ttu`, client `ttu-web`.
-- **Flow**: Authorization Code Flow with PKCE in the browser.
-- **Session State**: Store access token / refresh token securely; intercept API calls to append `Authorization: Bearer <token>`.
-- **Profile & Authorization**: Call `GET /api/v1/admin/me` on application boot to retrieve local database identity, assigned roles, and permission list (`permissions[]`).
-- **Route Guarding**: Restrict access to admin routes if the user lacks the required permission (e.g. `content.read` for `/content`, `role.manage` for `/roles`).
+`apps/admin/src/lib/auth/`, `apps/admin/src/app/api/auth/`, `apps/admin/src/proxy.ts` implement a server-side (BFF) Authorization Code + PKCE flow against Keycloak realm `ttu`, client `ttu-web` — design doc 07 §4-6.
+
+- **`GET /api/auth/login`**: generates `state`/`nonce`/PKCE `code_verifier`, stashes them in a short-lived encrypted transaction cookie, redirects to Keycloak's `/protocol/openid-connect/auth`.
+- **`GET /api/auth/callback`**: validates `state`, exchanges the code (with `code_verifier`) at the token endpoint, verifies the ID token's signature/issuer/`azp`/`nonce` via `jose`, then sets the session — an AES-256-GCM-encrypted (`jose` `EncryptJWT`), `HttpOnly`, `SameSite=Lax` cookie. The browser never receives the access/refresh token in any form JS can read (doc 07 §5).
+- **`proxy.ts`** (Next.js 16's `middleware.ts` successor): gates every page except `/api/auth/*`. No session → redirect to login with `returnTo`. Access token expiring within 30s → transparently refreshes via the token endpoint and rewrites the cookie (the only place in the request lifecycle that can — Server Components can read `cookies()` but never set one). Refresh token also expired → redirect to login.
+- **`POST /api/auth/logout`**: clears the local session cookie only — doc 07 §5 explicitly scopes Admin logout to ending "TTU Platform's session"; SSO-wide logout is TTU Identity's own policy, not this app's to enforce. `POST`-only so a prefetched/embedded link can never trigger it.
+- **`GET /api/v1/admin/me`** is called server-side (`lib/api/admin-me.ts`) with the session's access token on every page load; the home page renders identity, active status, and the full permission list.
+
+**Verified against real infra**: a live browser drove the entire flow through the actual `ttu-identity` Keycloak dev instance (`admin.test` user) and the actual `apps/api` dev server — login redirect, form submission, callback, session cookie confirmed `HttpOnly` (`document.cookie` returns empty), `/admin/me` permission list rendered, logout confirmed to clear the local cookie (a fresh SSO-silent re-auth cycle only happens because the old cookie was actually gone).
 
 ### 3.2 Content Management UI (Priority 2)
 
@@ -77,4 +81,3 @@ The current frontend implementation sequence for `apps/admin` is:
 ### 3.3 Blocked Domains
 
 - **CMS Page Builder UI**: Intentionally blocked. Do not fabricate page builder components or section editors until `packages/cms-registry` defines the official component catalog and validation schemas.
-- **Media Asset Library**: Blocked until `apps/api` wires MinIO object storage and exposes multipart upload endpoints (design doc 08).

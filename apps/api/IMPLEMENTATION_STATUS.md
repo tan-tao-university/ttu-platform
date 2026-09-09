@@ -22,22 +22,22 @@ Cross-application trackers:
 
 ## 1. Current Status
 
-|   # | Domain                      | Status         | PR / Reference    |
-| --: | --------------------------- | -------------- | ----------------- |
-|   1 | Database schema             | ✅ Complete    | Design docs       |
-|   2 | Database infrastructure     | ✅ Complete    | PR #9             |
-|   3 | Identity & authorization    | ✅ Complete    | PR #10            |
-|   4 | Content & taxonomy          | ✅ Complete    | PR #11            |
-|   5 | Role → permission grants    | ✅ Complete    | PR #15            |
-|   6 | Media / MinIO               | ⚪ Not started | Design doc 08     |
-|   7 | Admin authentication UI     | ⚪ Not started | —                 |
-|   8 | CMS Page Builder            | 🔴 Blocked     | Design docs 02–03 |
-|   9 | Navigation                  | ⚪ Backlog     | —                 |
-|  10 | Redirect administration     | ⚪ Backlog     | —                 |
-|  11 | Site settings               | ⚪ Backlog     | Design doc 06 §12 |
-|  12 | Audit log API               | ⚪ Backlog     | —                 |
-|  13 | Public website integration  | ⚪ Backlog     | —                 |
-|  14 | WordPress migration tooling | ⚪ Backlog     | Design doc 09     |
+|   # | Domain                      | Status      | PR / Reference    |
+| --: | --------------------------- | ----------- | ----------------- |
+|   1 | Database schema             | ✅ Complete | Design docs       |
+|   2 | Database infrastructure     | ✅ Complete | PR #9             |
+|   3 | Identity & authorization    | ✅ Complete | PR #10            |
+|   4 | Content & taxonomy          | ✅ Complete | PR #11            |
+|   5 | Role → permission grants    | ✅ Complete | PR #15            |
+|   6 | Media / MinIO               | ✅ Complete | PR #16            |
+|   7 | Admin authentication UI     | ✅ Complete | `apps/admin` PR   |
+|   8 | CMS Page Builder            | 🔴 Blocked  | Design docs 02–03 |
+|   9 | Navigation                  | ⚪ Backlog  | —                 |
+|  10 | Redirect administration     | ⚪ Backlog  | —                 |
+|  11 | Site settings               | ⚪ Backlog  | Design doc 06 §12 |
+|  12 | Audit log API               | ⚪ Backlog  | —                 |
+|  13 | Public website integration  | ⚪ Backlog  | —                 |
+|  14 | WordPress migration tooling | ⚪ Backlog  | Design doc 09     |
 
 ### Status legend
 
@@ -53,21 +53,16 @@ Cross-application trackers:
 
 # 2. Current Priority
 
-The current backend implementation order is:
+Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) is now complete.
+
+No backend domain is currently prioritized ahead of the others. The next concrete step is either:
 
 ```text
-Admin OIDC sign-in
+promote a Backlog item (§5) to Next explicitly, or
+unblock CMS Page Builder via the Component Registry (§4.1)
 ```
 
 The CMS Page Builder must **not** be implemented yet because its Component Registry does not exist.
-
-Current implementation target:
-
-```text
-#7 Admin authentication UI
-```
-
----
 
 # 3. Completed
 
@@ -563,79 +558,22 @@ S3_PUBLIC_URL_BASE   (optional, defaults to S3_ENDPOINT)
 
 ---
 
-# 4. Next Implementation
+## 3.7 Admin Authentication UI
 
-## 4.1 Admin Authentication UI
+**Status:** ✅ Complete **Reference:** `apps/admin` (see [`apps/admin/IMPLEMENTATION_STATUS.md`](../admin/IMPLEMENTATION_STATUS.md) §3.1)
 
-**Status:** ⚪ Not started
+`apps/api` already validated Keycloak tokens; the missing piece was `apps/admin`'s browser-side login. Implemented as a server-side (BFF) Authorization Code + PKCE flow — `apps/admin/src/lib/auth/`, `apps/admin/src/app/api/auth/`, `apps/admin/src/proxy.ts`:
 
-### Current state
+- Login redirects to Keycloak with `state`/`nonce`/PKCE `code_challenge`; callback validates `state`, exchanges the code, verifies the ID token (signature, issuer, `azp`, `nonce`) via `jose`.
+- Session is an AES-256-GCM-encrypted, `HttpOnly`, `SameSite=Lax` cookie — the browser never receives a token in any form its own JS can read (doc 07 §5).
+- `proxy.ts` gates every page, transparently refreshing an about-to-expire access token and redirecting an unrecoverable session back to login.
+- `GET /api/v1/admin/me` is called server-side with the session's access token on every page load to hydrate identity and the permission list.
 
-The API already validates Keycloak tokens.
+Verified with a live browser against the real `ttu-identity` Keycloak dev instance and the real `apps/api` dev server: full login redirect through Keycloak's actual login form, callback, session cookie confirmed genuinely `HttpOnly` (`document.cookie` returns empty), `/admin/me` permission list rendered, and logout confirmed to clear the local session cookie.
 
-However:
+# 4. Blocked
 
-```text
-apps/admin
-```
-
-does not currently perform the browser-side login flow.
-
-Nothing in `apps/admin` currently authenticates with Keycloak or consumes the admin API.
-
----
-
-### Required flow
-
-Use:
-
-```text
-OpenID Connect
-Authorization Code Flow
-PKCE
-```
-
-with the existing Keycloak client:
-
-```text
-ttu-web
-```
-
-Expected browser flow:
-
-```text
-Admin
-  ↓
-apps/admin
-  ↓
-Keycloak login
-  ↓
-Authorization Code
-  ↓
-PKCE token exchange
-  ↓
-Access Token
-  ↓
-ttu-platform API
-```
-
----
-
-### Initial integration target
-
-After authentication:
-
-```http
-GET /api/v1/admin/me
-```
-
-should be used to obtain the current local admin identity and permission state.
-
----
-
-# 5. Blocked
-
-## 5.1 CMS Page Builder
+## 4.1 CMS Page Builder
 
 **Status:** 🔴 Blocked
 
@@ -730,13 +668,13 @@ Database tables may remain unused until the dependency is implemented.
 
 ---
 
-# 6. Backlog
+# 5. Backlog
 
 The following domains are known but are not currently part of the implementation queue.
 
 ---
 
-## 6.1 Navigation
+## 5.1 Navigation
 
 **Status:** ⚪ Not started
 
@@ -763,7 +701,7 @@ External/custom links could technically be implemented independently, but naviga
 
 ---
 
-## 6.2 Redirect Administration
+## 5.2 Redirect Administration
 
 **Status:** ⚪ Not started
 
@@ -787,7 +725,7 @@ No standalone redirect management API exists yet.
 
 ---
 
-## 6.3 Site Settings
+## 5.3 Site Settings
 
 **Status:** ⚪ Not started **Reference:** Design document 06 §12
 
@@ -811,7 +749,7 @@ The registry has not yet been implemented.
 
 ---
 
-## 6.4 Audit Log API
+## 5.4 Audit Log API
 
 **Status:** ⚪ Not started
 
@@ -838,7 +776,7 @@ or equivalent administrative read surfaces.
 
 ---
 
-## 6.5 Public Website Integration
+## 5.5 Public Website Integration
 
 **Status:** ⚪ Not started
 
@@ -866,7 +804,7 @@ This should be implemented only after enough public-facing backend domains are a
 
 ---
 
-## 6.6 WordPress Migration Tooling
+## 5.6 WordPress Migration Tooling
 
 **Status:** ⚪ Not started **Reference:** Design document 09
 
@@ -878,7 +816,7 @@ Implementation has not yet been scoped.
 
 ---
 
-# 7. Dependency Map
+# 6. Dependency Map
 
 Current high-level dependencies:
 
@@ -908,7 +846,7 @@ ttu-platform
 │   └── Audit API                    ⏳
 │
 ├── apps/admin
-│   └── OIDC login                   ⏳
+│   └── OIDC login                   ✅
 │
 ├── apps/web
 │   └── Public API integration       ⏳
@@ -919,26 +857,25 @@ ttu-platform
 
 ---
 
-# 8. Recommended Implementation Order
+# 7. Recommended Implementation Order
 
 Unless requirements change, backend work should proceed in this order:
 
 ```text
-1. Admin authentication UI
-2. Component Registry
-3. CMS Page Builder
-4. Navigation
-5. Site Settings
-6. Audit Log API
-7. apps/web integration
-8. WordPress migration tooling
+1. Component Registry
+2. CMS Page Builder
+3. Navigation
+4. Site Settings
+5. Audit Log API
+6. apps/web integration
+7. WordPress migration tooling
 ```
 
 This order is based on implementation dependencies rather than feature visibility.
 
 ---
 
-# 9. Rules for Future Implementation
+# 8. Rules for Future Implementation
 
 Before starting a new backend domain:
 
@@ -956,7 +893,7 @@ Before starting a new backend domain:
 
 ---
 
-# 10. Updating This File
+# 9. Updating This File
 
 When a PR is merged:
 
@@ -989,10 +926,10 @@ This document describes the **current state of the repository**, not a changelog
 
 ```text
 Latest completed backend domain:
-Media Domain / MinIO (#6)
+Admin Authentication UI (#7)
 
 Current priority:
-Admin Authentication UI (#7)
+None — every queued backend domain is complete; see §2
 
 Next:
 Component Registry (packages/cms-registry) → CMS Page Builder (#8)

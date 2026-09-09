@@ -43,9 +43,29 @@ bun run db:seed                                            # permission catalog 
 bun run db:create-super-admin -- --sub <keycloak-sub> --email you@ttu.edu.vn --name "You"
 ```
 
-`--sub` is the target account's Keycloak `sub` claim (Keycloak Admin Console → Users → the account → ID) — the account must already exist in `ttu-identity`; this script only creates the local `ttu_main` mapping and grants `super_admin`. `db:seed` grants `super_admin` every permission in the catalog; the other 4 roles (`cms_admin`, `editor`, `reviewer`, `publisher`) are seeded with zero grants — assign them explicitly once there is an admin surface for it (see `apps/api/src/db/seed.ts`'s comment for why).
+`--sub` is the target account's Keycloak `sub` claim (Keycloak Admin Console → Users → the account → ID) — the account must already exist in `ttu-identity`; this script only creates the local `ttu_main` mapping and grants `super_admin`. `db:seed` grants every role an explicit permission set (`super_admin` gets everything; `cms_admin`/`editor`/`reviewer`/`publisher` get the scoped grants in `apps/api/src/db/role-permissions.catalog.ts`, justified against design doc 07 §10 — see `docs/identity/authorization.md` §3 for the resulting matrix).
 
 Every other account gets a `users` row automatically (JIT-provisioned, no role) the first time it calls an authenticated route — `GET /api/v1/admin/me` is the one to try first; it returns the caller's identity and effective permission list.
+
+## Admin OIDC Sign-In
+
+`apps/admin` implements the browser-side login as a server-side (BFF) Authorization Code + PKCE flow against the same `ttu-identity` realm/client — `apps/admin/src/lib/auth/`, `apps/admin/src/app/api/auth/`, `apps/admin/src/proxy.ts`. See `docs/identity/authentication.md` §2 for the flow itself.
+
+`.env.local` needs (already in `.env.example`):
+
+```plain text
+KEYCLOAK_ISSUER_URL=http://localhost:8080/realms/ttu
+KEYCLOAK_CLIENT_ID=ttu-web
+APP_BASE_URL=http://localhost:3011       # must match a redirect URI ttu-identity's ttu-web client allowlists
+SESSION_SECRET=<openssl rand -base64 32> # high-entropy; encrypts the session cookie — never reuse the .env.example placeholder
+```
+
+```bash
+bun run dev:api      # apps/admin's callback calls GET /api/v1/admin/me
+bun run dev:admin
+```
+
+Visiting any page redirects to Keycloak; sign in with an account that exists in `ttu-identity`'s `ttu` realm. `apps/admin`'s home page renders the authenticated identity, active status, and effective permission list from `GET /api/v1/admin/me` — a freshly JIT-provisioned account with no role assignment will show an empty permission list, which is correct (see Identity & Authorization above).
 
 ## Content & Taxonomy API
 
@@ -131,9 +151,9 @@ Real env files are never committed — only `apps/*/.env.example` is checked in.
 
 1. ~~Design the ERD for ttu.edu.vn's content~~ — done; see [content-audit.md](content-audit.md) for what the current WordPress site actually contains, and the project's Notion workspace for the ERD and physical schema that came out of it.
 2. ~~Wire `apps/api` to `ttu-data-infra`'s `ttu_main` database~~ — done (Drizzle ORM, the same pattern `ttu-faculty-platform/apps/api` uses against `ttu_faculty`); see Database above.
-3. Add the `ttu-web` client to `ttu-identity`'s realm and wire `apps/admin`'s sign-in against it, the same OIDC Authorization Code + PKCE flow `ttu-faculty-platform/apps/admin` uses against `faculty-admin`.
+3. ~~Add the `ttu-web` client to `ttu-identity`'s realm and wire `apps/admin`'s sign-in against it~~ — done (server-side Authorization Code + PKCE flow, encrypted `HttpOnly` session cookie, automatic refresh); see Admin OIDC Sign-In above.
    - ~~`apps/api` verifies Keycloak-issued tokens and enforces CMS RBAC~~ — done; see Identity & Authorization above.
-   - `apps/admin`'s actual sign-in UI (the Authorization Code + PKCE redirect flow against the `ttu-web` client) is still open — nothing in `apps/admin` calls the API yet.
+   - ~~`apps/admin`'s actual sign-in UI~~ — done; see Admin OIDC Sign-In above.
 4. ~~Add content modules and DTOs to `apps/api`~~ — done for the Content domain (news, announcements, events, ...) and its taxonomy; see Content & Taxonomy API above.
 5. ~~Media/storage endpoints (doc 08)~~ — done (MinIO wiring, upload validation, delete-reference protection); see Media / MinIO API above.
 6. CMS Page Builder (`pages`/`page_sections`, doc 02-03) — blocked on a Component Registry (`packages/cms-registry`) and a real component set, neither of which exist yet. Do not add `pages`/`page_sections` endpoints or invent components to unblock this speculatively — see AGENTS.md.

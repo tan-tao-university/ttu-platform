@@ -40,7 +40,7 @@ This document tracks the overall architectural progress and cross-application mi
 | 3 | **Content & Taxonomy Domain** | Multi-type content (News, Events, Articles), categories/tags, revisions | ✅ Complete | Draft → publish → immutable revision → rollback transaction |
 | 4 | **Test Suite Reorganization** | Relocate spec tests into `apps/api/test/` with `@/` path alias | ✅ Complete | PR #13 merged; 33 unit tests passing |
 | 5 | **Media Storage Integration** | MinIO S3 client, upload endpoints, asset metadata & translations | ✅ Complete | `ttu-media` public bucket, scoped app credential, MIME/size/signature validation, delete-reference protection |
-| 6 | **Admin OIDC Authentication** | Browser-side Keycloak redirect (`ttu-web` client) in Admin dashboard | 🟡 Next | Enables admin user sign-in and session management |
+| 6 | **Admin OIDC Authentication** | Browser-side Keycloak redirect (`ttu-web` client) in Admin dashboard | ✅ Complete | Authorization Code + PKCE, encrypted `HttpOnly` session cookie, automatic refresh; verified against real Keycloak dev instance |
 | 7 | **CMS Component Registry** | Shared package defining ~15–20 page components and validation schemas | 🔴 Blocked | Required before CMS Page Builder (`pages`/`page_sections`) |
 | 8 | **CMS Page Builder** | Page drafts, section ordering, visual editing, published revisions | 🔴 Blocked | Depends on Milestone 7 (Component Registry) |
 | 9 | **Public Content Consumption** | Public website fetching news, events, taxonomies, and static routes | ⚪ Backlog | Consumes `/api/v1/public/*` endpoints |
@@ -53,13 +53,13 @@ This document tracks the overall architectural progress and cross-application mi
 ### 3.1 Backend API (`apps/api`)
 
 - **Current State**: Database schema (36 tables) is fully wired against `ttu_main`. Core authentication guard verifies Keycloak JWTs and checks permissions against local database roles; all 5 seeded roles carry an explicit, documented permission grant set. Content and Taxonomy modules are fully operational with immutable revision snapshots, category/tag assignments, and automated 301 redirect generation on path changes. The Media domain (`apps/api/src/media/`) uploads to and deletes from `ttu-data-infra`'s MinIO instance with server-side MIME/size/signature validation and delete-reference protection against published content.
-- **Next Priorities**: The Admin dashboard's browser-side OIDC sign-in flow.
+- **Next Priorities**: Content and Taxonomy management views in the Admin dashboard.
 - **Detailed Tracking**: See [`apps/api/IMPLEMENTATION_STATUS.md`](apps/api/IMPLEMENTATION_STATUS.md).
 
 ### 3.2 Admin Dashboard (`apps/admin`)
 
-- **Current State**: Project is scaffolded on Next.js 16 App Router with React 19 and Tailwind CSS 4. Basic layout, navigation header, and root page exist as placeholders. No API communication or authentication is wired up yet.
-- **Next Priorities**: Implement browser-side OIDC authentication flow against Keycloak (`ttu-web` client), hydrate authenticated user profile and permissions via `GET /api/v1/admin/me`, and build initial Content and Taxonomy management views.
+- **Current State**: Next.js 16 App Router with React 19 and Tailwind CSS 4. Browser-side sign-in against Keycloak (`ttu-web` client) is implemented as a server-side Authorization Code + PKCE flow: encrypted `HttpOnly` session cookie, automatic token refresh in `proxy.ts`, and `GET /api/v1/admin/me` hydration on every page load. No content/taxonomy management views yet.
+- **Next Priorities**: Application shell (sidebar, breadcrumbs, permission-gated navigation), then Content and Taxonomy management views.
 - **Detailed Tracking**: See [`apps/admin/IMPLEMENTATION_STATUS.md`](apps/admin/IMPLEMENTATION_STATUS.md).
 
 ### 3.3 Public Website (`apps/web`)
