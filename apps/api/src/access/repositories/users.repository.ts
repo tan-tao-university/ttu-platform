@@ -15,24 +15,25 @@ export interface IdentityProfile {
   displayName?: string;
 }
 
-/** `users` row plus the flattened, still-active permission codes granted through every
- *  non-expired role assignment (design doc 07 §7, §9, §12). */
+/**
+ * `users` row plus the flattened, still-active permission codes granted through every non-expired
+ * role assignment (design doc 07 §7, §9, §12).
+ */
 export type UserWithPermissions = User & { permissions: string[] };
 
 /**
- * Every query behind authentication: the local identity mapping and its RBAC role grants.
- * Keycloak owns credentials and sessions — this repository never touches either, and the
- * access token itself never carries permissions. `JwtAuthGuard` calls back here on every
- * request, so a role grant or revocation takes effect on the very next request instead of
- * waiting for the token to expire.
+ * Every query behind authentication: the local identity mapping and its RBAC role grants. Keycloak
+ * owns credentials and sessions — this repository never touches either, and the access token itself
+ * never carries permissions. `JwtAuthGuard` calls back here on every request, so a role grant or
+ * revocation takes effect on the very next request instead of waiting for the token to expire.
  */
 @Injectable()
 export class UsersRepository {
   /**
-   * JIT-provisions the local mapping on first sign-in (doc 07 §8): creates the row with no
-   * role assignments if `identitySubject` is unseen, otherwise refreshes the cached profile
-   * fields and `lastSeenAt`. Never grants a role — that is a separate, explicit admin
-   * action, so a brand-new mapping always comes back with an empty permission set.
+   * JIT-provisions the local mapping on first sign-in (doc 07 §8): creates the row with no role
+   * assignments if `identitySubject` is unseen, otherwise refreshes the cached profile fields and
+   * `lastSeenAt`. Never grants a role — that is a separate, explicit admin action, so a brand-new
+   * mapping always comes back with an empty permission set.
    */
   async findOrCreateByIdentitySubject(
     identitySubject: string,

@@ -24,8 +24,11 @@ import { UpdateTagDto } from '../dto/update-tag.dto';
 import { UpsertTagTranslationDto } from '../dto/upsert-tag-translation.dto';
 import { TagsRepository } from '../repositories/tags.repository';
 
-// See AdminCategoriesController's comment: no dedicated `taxonomy.*` permission exists yet,
-// so tag management reuses `content.read`/`content.edit`.
+/**
+ * Tags controller for CMS administration.
+ *
+ * Reuses `content.read` and `content.edit` permissions for tag management.
+ */
 @Controller('admin/tags')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class AdminTagsController {

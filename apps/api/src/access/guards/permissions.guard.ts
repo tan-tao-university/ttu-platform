@@ -4,11 +4,11 @@ import { REQUIRE_PERMISSION_KEY } from '../decorators/require-permission.decorat
 import type { AuthenticatedRequest } from '../access.types';
 
 /**
- * Enforces `@RequirePermission(...)`: the caller must hold the named permission in the
- * flattened set `JwtAuthGuard` attached to `request.user` on this same request — never from
- * the access token, so a grant or revocation takes effect immediately (doc 07 §13). CMS
- * roles are global, not scoped per faculty/department (doc 07 §9), so unlike a
- * multi-tenant RBAC guard this only ever checks set membership.
+ * Enforces `@RequirePermission(...)`: the caller must hold the named permission in the flattened
+ * set `JwtAuthGuard` attached to `request.user` on this same request — never from the access token,
+ * so a grant or revocation takes effect immediately (doc 07 §13). CMS roles are global, not scoped
+ * per faculty/department (doc 07 §9), so unlike a multi-tenant RBAC guard this only ever checks set
+ * membership.
  *
  * Must run after `JwtAuthGuard`.
  */

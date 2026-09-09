@@ -246,10 +246,12 @@ function notFound(id: string): ApiError {
   );
 }
 
-/** Unlike `category_translations`/`tag_translations`, `content_translations` has no unique
- *  constraint on `(locale, slug)` (design doc 05 §8.2) — draft slugs can collide freely.
- *  Uniqueness is enforced once, at publish time, against `public_routes(locale, path)` (doc
- *  05 §17) — see `ContentPublishingService`'s 409 there. */
+/**
+ * Unlike `category_translations`/`tag_translations`, `content_translations` has no unique
+ * constraint on `(locale, slug)` (design doc 05 §8.2) — draft slugs can collide freely. Uniqueness
+ * is enforced once, at publish time, against `public_routes(locale, path)` (doc 05 §17) — see
+ * `ContentPublishingService`'s 409 there.
+ */
 function mapTranslationWriteError(error: unknown, locale: string): ApiError | never {
   if (isForeignKeyViolation(error)) {
     return new ApiError(

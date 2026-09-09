@@ -10,9 +10,9 @@ import { IdentityService } from './services/identity.service';
  * permissions) — design doc 07. Global so every content module added in later phases can
  * `@UseGuards(JwtAuthGuard, PermissionsGuard)` without importing this module itself.
  *
- * Guards are applied per-controller/route, not registered as `APP_GUARD`: the API also
- * serves the unauthenticated Public API namespace (doc 06 §5.1), so authentication must
- * stay opt-in rather than a default every public route has to explicitly turn back off.
+ * Guards are applied per-controller/route, not registered as `APP_GUARD`: the API also serves the
+ * unauthenticated Public API namespace (doc 06 §5.1), so authentication must stay opt-in rather
+ * than a default every public route has to explicitly turn back off.
  */
 @Global()
 @Module({

@@ -3,8 +3,10 @@ import { db, client } from './index';
 import { PERMISSION_CATALOG } from './permissions.catalog';
 import { locales, permissions, rolePermissions, roles } from './schema';
 
-/** doc 01 §8: `vi` and `en` are the minimum supported locales. `vi` is the default —
- *  Tan Tao University's primary audience. */
+/**
+ * Doc 01 §8: `vi` and `en` are the minimum supported locales. `vi` is the default — Tan Tao
+ * University's primary audience.
+ */
 const LOCALES = [
   { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', isDefault: true, sortOrder: 0 },
   { code: 'en', name: 'English', nativeName: 'English', isDefault: false, sortOrder: 1 },
@@ -27,9 +29,9 @@ async function seedLocales() {
 }
 
 /**
- * The 5 roles design doc 07 §10 names. `code` is the stable, machine-readable identifier;
- * `name` is the admin-facing label. All 5 are `isSystem: true` — pre-defined by the
- * platform, not something an admin created through a future role-management UI.
+ * The 5 roles design doc 07 §10 names. `code` is the stable, machine-readable identifier; `name` is
+ * the admin-facing label. All 5 are `isSystem: true` — pre-defined by the platform, not something
+ * an admin created through a future role-management UI.
  */
 const ROLES = [
   {
@@ -78,13 +80,12 @@ async function seedRoles() {
 }
 
 /**
- * Grants `super_admin` every permission in the catalog — the only role/permission mapping
- * doc 07 specifies explicitly ("Quản trị toàn bộ TTU Platform" §10). The other 4 roles
- * (`cms_admin`, `editor`, `reviewer`, `publisher`) are seeded with zero grants: the doc
- * describes each role's area of responsibility in prose, not an exact permission-code
- * matrix, and guessing one here would silently encode unreviewed access-control policy.
- * Grant them their permissions explicitly once `role.manage` has an actual admin surface —
- * see docs/setup.md.
+ * Grants `super_admin` every permission in the catalog — the only role/permission mapping doc 07
+ * specifies explicitly ("Quản trị toàn bộ TTU Platform" §10). The other 4 roles (`cms_admin`,
+ * `editor`, `reviewer`, `publisher`) are seeded with zero grants: the doc describes each role's
+ * area of responsibility in prose, not an exact permission-code matrix, and guessing one here would
+ * silently encode unreviewed access-control policy. Grant them their permissions explicitly once
+ * `role.manage` has an actual admin surface — see docs/setup.md.
  */
 async function seedSuperAdminGrants(
   roleRows: { id: string; code: string }[],

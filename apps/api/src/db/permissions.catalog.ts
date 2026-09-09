@@ -1,8 +1,8 @@
 /**
  * Canonical CMS permission catalog (design doc 07 §11). Flat, machine-readable codes —
- * `role_permissions` grants are how a role's actual capabilities are assembled; this list
- * is only the fixed vocabulary of codes that can ever be granted. Changing a code here is a
- * breaking contract change (doc 07 §11: "đổi tên phải có migration rõ ràng").
+ * `role_permissions` grants are how a role's actual capabilities are assembled; this list is only
+ * the fixed vocabulary of codes that can ever be granted. Changing a code here is a breaking
+ * contract change (doc 07 §11: "đổi tên phải có migration rõ ràng").
  */
 export interface PermissionCatalogEntry {
   code: string;

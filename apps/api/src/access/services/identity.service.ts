@@ -4,8 +4,8 @@ import { UsersRepository } from '../repositories/users.repository';
 
 /**
  * Resolves a verified Keycloak token into the local CMS identity `JwtAuthGuard` attaches to
- * `request.user`. Authentication already happened by the time this runs — this only answers
- * "which `ttu_main` user is this, and what can they do" (doc 07 §2).
+ * `request.user`. Authentication already happened by the time this runs — this only answers "which
+ * `ttu_main` user is this, and what can they do" (doc 07 §2).
  */
 @Injectable()
 export class IdentityService {

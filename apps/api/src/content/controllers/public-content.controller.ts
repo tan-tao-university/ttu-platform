@@ -8,9 +8,9 @@ import {
 } from '../repositories/content-items.repository';
 
 /**
- * Public API (doc 06 §5.1): no auth, published-and-active only, never a draft field. Every
- * query resolves locale first, then reads the *published revision* of that locale — never
- * the shared draft (doc 06 §9), including for the `slug` a request is looked up by: see
+ * Public API (doc 06 §5.1): no auth, published-and-active only, never a draft field. Every query
+ * resolves locale first, then reads the _published revision_ of that locale — never the shared
+ * draft (doc 06 §9), including for the `slug` a request is looked up by: see
  * `ContentItemsRepository.listPublished`/`findPublishedBySlug`.
  */
 @Controller('public/content')

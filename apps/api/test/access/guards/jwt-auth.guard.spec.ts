@@ -1,11 +1,12 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
-import type { AuthenticatedRequest, AuthenticatedUser } from '../access.types';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import type { AuthenticatedRequest, AuthenticatedUser } from '@/access/access.types';
+import { JwtAuthGuard } from '@/access/guards/jwt-auth.guard';
 
-// The guard verifies against Keycloak's JWKS via a real `jwks-rsa` client — mocking
-// `jsonwebtoken.verify` itself controls what it resolves to without needing a live Keycloak
-// or a real RSA keypair.
+/**
+ * The guard verifies against Keycloak's JWKS via a real `jwks-rsa` client — mocking
+ * `jsonwebtoken.verify` controls what it resolves to without needing a live Keycloak.
+ */
 jest.mock('jsonwebtoken', () => ({
   __esModule: true,
   default: { verify: jest.fn() },

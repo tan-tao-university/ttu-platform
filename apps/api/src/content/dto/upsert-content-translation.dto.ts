@@ -10,8 +10,7 @@ import {
 } from 'class-validator';
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-// doc 05 §17: starts with "/", no query string or hash — the full draft path an editor is
-// working on, distinct from `public_routes.path` (only set once published).
+/** Draft path pattern: starts with "/", no query string or hash (doc 05 §17). */
 const PATH_PATTERN = /^\/[a-z0-9\-/]*$/;
 
 export class UpsertContentTranslationDto {

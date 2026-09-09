@@ -18,10 +18,9 @@ import type { ContentSnapshot } from '../content.types';
 import type { PublishContentDto } from '../dto/publish-content.dto';
 
 /**
- * The publish/restore transaction logic design doc 06 §10-11 describes, adapted from Pages
- * to Content: validate → snapshot → immutable revision → move the published pointer → keep
- * the public route registry in sync — all in one transaction, audited, never partially
- * applied (doc 06 §19).
+ * The publish/restore transaction logic design doc 06 §10-11 describes, adapted from Pages to
+ * Content: validate → snapshot → immutable revision → move the published pointer → keep the public
+ * route registry in sync — all in one transaction, audited, never partially applied (doc 06 §19).
  */
 @Injectable()
 export class ContentPublishingService {
@@ -139,10 +138,12 @@ export class ContentPublishingService {
     });
   }
 
-  /** Rollback never mutates the historical revision (doc 06 §11) — it copies the snapshot's
-   *  editable fields back onto the *draft* row and leaves `published_revision_id`/`status`/
-   *  `published_at` untouched, so the public site keeps serving whatever is currently
-   *  published until an editor reviews and explicitly publishes again. */
+  /**
+   * Rollback never mutates the historical revision (doc 06 §11) — it copies the snapshot's editable
+   * fields back onto the _draft_ row and leaves `published_revision_id`/`status`/ `published_at`
+   * untouched, so the public site keeps serving whatever is currently published until an editor
+   * reviews and explicitly publishes again.
+   */
   async restore(
     contentId: string,
     locale: string,
@@ -204,10 +205,12 @@ export class ContentPublishingService {
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-/** Keeps `public_routes` pointed at this content item's current path (doc 05 §11, §17):
- *  updates the existing route in place when the path changed (recording a 301 redirect from
- *  the old path so shared links keep working), or inserts a new one — rejecting with 409 if
- *  the target path is already owned by a different page/content. */
+/**
+ * Keeps `public_routes` pointed at this content item's current path (doc 05 §11, §17): updates the
+ * existing route in place when the path changed (recording a 301 redirect from the old path so
+ * shared links keep working), or inserts a new one — rejecting with 409 if the target path is
+ * already owned by a different page/content.
+ */
 async function syncPublicRoute(
   tx: Tx,
   input: { locale: string; path: string; contentId: string; actorUserId: string },

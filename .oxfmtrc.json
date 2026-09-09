@@ -7,6 +7,8 @@
   "printWidth": 100,
   "arrowParens": "always",
   "sortPackageJson": false,
+  "proseWrap": "never",
+  "jsdoc": true,
   "ignorePatterns": [
     "node_modules",
     ".next",

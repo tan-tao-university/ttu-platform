@@ -63,13 +63,16 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": "test",
     "setupFiles": [
-      "<rootDir>/../test/setup-env.ts"
+      "<rootDir>/setup-env.ts"
     ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/../src/$1"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

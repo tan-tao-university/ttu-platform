@@ -1,5 +1,5 @@
-import type { UserWithPermissions } from '../repositories/users.repository';
-import { IdentityService } from './identity.service';
+import type { UserWithPermissions } from '@/access/repositories/users.repository';
+import { IdentityService } from '@/access/services/identity.service';
 
 describe('IdentityService', () => {
   function serviceReturning(user: UserWithPermissions) {
