@@ -1,7 +1,7 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
-import type { AuthenticatedRequest, AuthenticatedUser } from '../../../src/access/access.types';
-import { JwtAuthGuard } from '../../../src/access/guards/jwt-auth.guard';
+import type { AuthenticatedRequest, AuthenticatedUser } from '@/access/access.types';
+import { JwtAuthGuard } from '@/access/guards/jwt-auth.guard';
 
 /**
  * The guard verifies against Keycloak's JWKS via a real `jwks-rsa` client — mocking
