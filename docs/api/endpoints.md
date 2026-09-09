@@ -54,3 +54,27 @@
 | `PUT` | `/api/v1/admin/media/:id/translations/:locale` | `media.update` | Upsert alt text / caption for a locale. |
 | `DELETE` | `/api/v1/admin/media/:id` | `media.delete` | Soft-delete; `409` if still referenced by published content or an active person/partner profile. |
 | `POST` | `/api/v1/admin/media/:id/restore` | `media.delete` | Undo a soft-delete. |
+
+## 5. Navigation Domain (`apps/api/src/navigation`)
+
+### 5.1 Admin Navigation API
+
+All gated by `navigation.manage`.
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| `GET` | `/api/v1/admin/menus` | Paginated list, optional `isActive` filter. |
+| `POST` | `/api/v1/admin/menus` | Create a menu (`key`, `isActive`). |
+| `GET` | `/api/v1/admin/menus/:id` | Menu plus every item, flat with `parentId` (client builds the tree). |
+| `PATCH` | `/api/v1/admin/menus/:id` | Update `isActive`. |
+| `DELETE` | `/api/v1/admin/menus/:id` | Delete a menu — cascades to its items and translations. |
+| `POST` | `/api/v1/admin/menus/:id/items` | Create a menu item (`linkType` + matching target field). |
+| `PATCH` | `/api/v1/admin/menus/:id/items/:itemId` | Reparent, reorder, or hide/show — `linkType`/target are immutable. |
+| `DELETE` | `/api/v1/admin/menus/:id/items/:itemId` | Delete an item — `409` if it still has children. |
+| `PUT` | `/api/v1/admin/menus/:id/items/:itemId/translations/:locale` | Upsert `label`/`customPath` for a locale. |
+
+### 5.2 Public Navigation API
+
+| Method | Path | Auth | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/public/menus/:key` | None | Active menu's visible items as a nested tree, each item's `href` already resolved. |

@@ -32,7 +32,7 @@ Cross-application trackers:
 |   6 | Media / MinIO               | ✅ Complete | PR #16            |
 |   7 | Admin authentication UI     | ✅ Complete | `apps/admin` PR   |
 |   8 | CMS Page Builder            | 🔴 Blocked  | Design docs 02–03 |
-|   9 | Navigation                  | ⚪ Backlog  | —                 |
+|   9 | Navigation                  | ✅ Complete | —                 |
 |  10 | Redirect administration     | ⚪ Backlog  | —                 |
 |  11 | Site settings               | ⚪ Backlog  | Design doc 06 §12 |
 |  12 | Audit log API               | ⚪ Backlog  | —                 |
@@ -53,7 +53,7 @@ Cross-application trackers:
 
 # 2. Current Priority
 
-Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) is now complete.
+Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) plus Navigation is now complete.
 
 No backend domain is currently prioritized ahead of the others. The next concrete step is either:
 
@@ -571,6 +571,22 @@ S3_PUBLIC_URL_BASE   (optional, defaults to S3_ENDPOINT)
 
 Verified with a live browser against the real `ttu-identity` Keycloak dev instance and the real `apps/api` dev server: full login redirect through Keycloak's actual login form, callback, session cookie confirmed genuinely `HttpOnly` (`document.cookie` returns empty), `/admin/me` permission list rendered, and logout confirmed to clear the local session cookie.
 
+---
+
+## 3.8 Navigation
+
+**Status:** ✅ Complete
+
+`apps/api/src/navigation/` implements menus/menu items (doc 01 §12) — `MenusRepository`, `AdminNavigationController` (`navigation.manage`), `PublicNavigationController` (no auth). Full model, link-type rules, and the flat-admin/resolved-public-tree split are documented in [`../../docs/architecture/navigation.md`](../../docs/architecture/navigation.md).
+
+`linkType = PAGE` items are structurally supported (schema + validation) but resolve to `href: null` today, same as `public_routes.pageId` always being empty — the CMS Page Builder domain is blocked, so nothing ever publishes a page. `CONTENT`, `EXTERNAL`, `CUSTOM_PATH`, and `GROUP` are fully usable now.
+
+Verified directly against the real dev Postgres (`MenusRepository`, bypassing HTTP): a menu with all 5 link types including a `GROUP`/`CUSTOM_PATH` parent-child pair and a genuinely published `CONTENT` item — hidden-item exclusion, href resolution per type, tree nesting, and inactive-menu → `undefined` all confirmed. Also verified over real HTTP: unauthenticated admin routes 401, a real menu resolves correctly through `GET /api/v1/public/menus/:key`.
+
+### Tests
+
+`apps/api/test/navigation/menu-item-link.util.spec.ts` — `assertValidLinkTarget`'s discriminated-union enforcement (every valid shape, every missing-required-field case, every wrong-field-set case) and `resolveMenuItemHref`'s per-link-type resolution.
+
 # 4. Blocked
 
 ## 4.1 CMS Page Builder
@@ -674,34 +690,7 @@ The following domains are known but are not currently part of the implementation
 
 ---
 
-## 5.1 Navigation
-
-**Status:** ⚪ Not started
-
-Existing schema:
-
-```text
-menus
-menu_items
-```
-
-No endpoints exist.
-
-Full internal navigation depends partially on the Page Builder because menu items may reference internal pages.
-
-Possible link types include:
-
-```text
-internal page
-external URL
-custom path
-```
-
-External/custom links could technically be implemented independently, but navigation should not be started unless explicitly prioritized.
-
----
-
-## 5.2 Redirect Administration
+## 5.1 Redirect Administration
 
 **Status:** ⚪ Not started
 
@@ -725,7 +714,7 @@ No standalone redirect management API exists yet.
 
 ---
 
-## 5.3 Site Settings
+## 5.2 Site Settings
 
 **Status:** ⚪ Not started **Reference:** Design document 06 §12
 
@@ -749,7 +738,7 @@ The registry has not yet been implemented.
 
 ---
 
-## 5.4 Audit Log API
+## 5.3 Audit Log API
 
 **Status:** ⚪ Not started
 
@@ -776,7 +765,7 @@ or equivalent administrative read surfaces.
 
 ---
 
-## 5.5 Public Website Integration
+## 5.4 Public Website Integration
 
 **Status:** ⚪ Not started
 
@@ -804,7 +793,7 @@ This should be implemented only after enough public-facing backend domains are a
 
 ---
 
-## 5.6 WordPress Migration Tooling
+## 5.5 WordPress Migration Tooling
 
 **Status:** ⚪ Not started **Reference:** Design document 09
 
@@ -841,7 +830,7 @@ ttu-platform
 │   ├── Taxonomy                     ✅
 │   ├── Media                        ✅
 │   ├── Pages                        🚫 blocked
-│   ├── Navigation                   ⏳
+│   ├── Navigation                   ✅
 │   ├── Settings                     ⏳
 │   └── Audit API                    ⏳
 │
@@ -864,11 +853,10 @@ Unless requirements change, backend work should proceed in this order:
 ```text
 1. Component Registry
 2. CMS Page Builder
-3. Navigation
-4. Site Settings
-5. Audit Log API
-6. apps/web integration
-7. WordPress migration tooling
+3. Site Settings
+4. Audit Log API
+5. apps/web integration
+6. WordPress migration tooling
 ```
 
 This order is based on implementation dependencies rather than feature visibility.
@@ -926,7 +914,7 @@ This document describes the **current state of the repository**, not a changelog
 
 ```text
 Latest completed backend domain:
-Admin Authentication UI (#7)
+Navigation (#9)
 
 Current priority:
 None — every queued backend domain is complete; see §2

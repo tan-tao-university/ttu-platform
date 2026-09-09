@@ -120,6 +120,26 @@ POST   /api/v1/admin/media/:id/restore                        undo a soft delete
 
 Gated by `media.read`/`media.upload`/`media.update`/`media.delete`. Allowlist: `image/jpeg`, `image/png`, `image/webp` (≤10 MB), `application/pdf` (≤50 MB) — validated by size, declared MIME type, and magic-byte signature, not by filename extension. `ttu-media` is a public, anonymous-download bucket (`ttu-data-infra`'s `minio/init/create-buckets.sh`), so delivery URLs are plain and unsigned, not presigned.
 
+## Navigation API
+
+`apps/api/src/navigation/` implements menus/menu items (design doc 01 §12; `docs/architecture/navigation.md` has the full model). No extra env vars needed.
+
+```plain text
+GET    /api/v1/admin/menus                                    list, optional isActive filter
+POST   /api/v1/admin/menus                                     create (key, isActive)
+GET    /api/v1/admin/menus/:id                                 menu + every item, flat with parentId
+PATCH  /api/v1/admin/menus/:id                                  update isActive
+DELETE /api/v1/admin/menus/:id                                  delete — cascades to items/translations
+POST   /api/v1/admin/menus/:id/items                            create item (linkType + matching target field)
+PATCH  /api/v1/admin/menus/:id/items/:itemId                    reparent/reorder/hide-show — linkType/target immutable
+DELETE /api/v1/admin/menus/:id/items/:itemId                    delete — 409 if it still has children
+PUT    /api/v1/admin/menus/:id/items/:itemId/translations/:locale  upsert label/customPath
+
+GET    /api/v1/public/menus/:key?locale=vi                     active menu's visible items as a resolved tree
+```
+
+Gated by `navigation.manage` (applied once at the controller level — unlike Content, navigation has no separate read/write/publish permission split in the design docs).
+
 ## Checks
 
 ```bash
@@ -157,3 +177,4 @@ Real env files are never committed — only `apps/*/.env.example` is checked in.
 4. ~~Add content modules and DTOs to `apps/api`~~ — done for the Content domain (news, announcements, events, ...) and its taxonomy; see Content & Taxonomy API above.
 5. ~~Media/storage endpoints (doc 08)~~ — done (MinIO wiring, upload validation, delete-reference protection); see Media / MinIO API above.
 6. CMS Page Builder (`pages`/`page_sections`, doc 02-03) — blocked on a Component Registry (`packages/cms-registry`) and a real component set, neither of which exist yet. Do not add `pages`/`page_sections` endpoints or invent components to unblock this speculatively — see AGENTS.md.
+7. ~~Navigation/menu endpoints~~ — done; see Navigation API above.

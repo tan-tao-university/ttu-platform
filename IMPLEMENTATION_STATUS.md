@@ -41,10 +41,11 @@ This document tracks the overall architectural progress and cross-application mi
 | 4 | **Test Suite Reorganization** | Relocate spec tests into `apps/api/test/` with `@/` path alias | ✅ Complete | PR #13 merged; 33 unit tests passing |
 | 5 | **Media Storage Integration** | MinIO S3 client, upload endpoints, asset metadata & translations | ✅ Complete | `ttu-media` public bucket, scoped app credential, MIME/size/signature validation, delete-reference protection |
 | 6 | **Admin OIDC Authentication** | Browser-side Keycloak redirect (`ttu-web` client) in Admin dashboard | ✅ Complete | Authorization Code + PKCE, encrypted `HttpOnly` session cookie, automatic refresh; verified against real Keycloak dev instance |
-| 7 | **CMS Component Registry** | Shared package defining ~15–20 page components and validation schemas | 🔴 Blocked | Required before CMS Page Builder (`pages`/`page_sections`) |
-| 8 | **CMS Page Builder** | Page drafts, section ordering, visual editing, published revisions | 🔴 Blocked | Depends on Milestone 7 (Component Registry) |
-| 9 | **Public Content Consumption** | Public website fetching news, events, taxonomies, and static routes | ⚪ Backlog | Consumes `/api/v1/public/*` endpoints |
-| 10 | **Production Deployment** | Multi-stage Dockerfiles, Docker Compose joining `ttu-backend` network | ⚪ Backlog | Server deployment with host Nginx reverse proxy |
+| 7 | **Navigation / Menus** | Hierarchical menus, 5 link types, admin CRUD, resolved public tree | ✅ Complete | Verified against real Postgres + HTTP; `docs/architecture/navigation.md` |
+| 8 | **CMS Component Registry** | Shared package defining ~15–20 page components and validation schemas | 🔴 Blocked | Required before CMS Page Builder (`pages`/`page_sections`) |
+| 9 | **CMS Page Builder** | Page drafts, section ordering, visual editing, published revisions | 🔴 Blocked | Depends on Milestone 8 (Component Registry) |
+| 10 | **Public Content Consumption** | Public website fetching news, events, taxonomies, and static routes | ⚪ Backlog | Consumes `/api/v1/public/*` endpoints |
+| 11 | **Production Deployment** | Multi-stage Dockerfiles, Docker Compose joining `ttu-backend` network | ⚪ Backlog | Server deployment with host Nginx reverse proxy |
 
 ---
 
@@ -52,8 +53,8 @@ This document tracks the overall architectural progress and cross-application mi
 
 ### 3.1 Backend API (`apps/api`)
 
-- **Current State**: Database schema (36 tables) is fully wired against `ttu_main`. Core authentication guard verifies Keycloak JWTs and checks permissions against local database roles; all 5 seeded roles carry an explicit, documented permission grant set. Content and Taxonomy modules are fully operational with immutable revision snapshots, category/tag assignments, and automated 301 redirect generation on path changes. The Media domain (`apps/api/src/media/`) uploads to and deletes from `ttu-data-infra`'s MinIO instance with server-side MIME/size/signature validation and delete-reference protection against published content.
-- **Next Priorities**: Content and Taxonomy management views in the Admin dashboard.
+- **Current State**: Database schema (36 tables) is fully wired against `ttu_main`. Core authentication guard verifies Keycloak JWTs and checks permissions against local database roles; all 5 seeded roles carry an explicit, documented permission grant set. Content and Taxonomy modules are fully operational with immutable revision snapshots, category/tag assignments, and automated 301 redirect generation on path changes. The Media domain (`apps/api/src/media/`) uploads to and deletes from `ttu-data-infra`'s MinIO instance with server-side MIME/size/signature validation and delete-reference protection against published content. The Navigation domain (`apps/api/src/navigation/`) manages hierarchical menus with a flat admin API and a resolved-tree public API.
+- **Next Priorities**: Content and Taxonomy management views in the Admin dashboard, or a Backlog item (redirect administration, site settings, audit log API) if explicitly prioritized.
 - **Detailed Tracking**: See [`apps/api/IMPLEMENTATION_STATUS.md`](apps/api/IMPLEMENTATION_STATUS.md).
 
 ### 3.2 Admin Dashboard (`apps/admin`)

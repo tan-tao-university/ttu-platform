@@ -4,6 +4,17 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-09 — Navigation domain: menus and menu items ([#18](https://github.com/tan-tao-university/ttu-platform/pull/18))
+
+### Added
+
+- `apps/api/src/navigation/` — hierarchical menus (`main-header`, `footer`, `quick-links`) with a flat admin CRUD API (`AdminNavigationController`, `navigation.manage`) and a no-auth public API (`PublicNavigationController`) returning a nested tree with every item's `href` already resolved.
+- `menu-item-link.util.ts` — `assertValidLinkTarget` (mirrors the DB's `menu_items_link_type_check` discriminated union as a field-level 422 instead of a raw constraint violation) and `resolveMenuItemHref` (per-link-type href resolution, including a `public_routes` join for `CONTENT`/`PAGE`).
+- `docs/architecture/navigation.md` — the model, the 5 link types, and the flat-admin-vs-resolved-public-tree split.
+- `apps/api/test/navigation/menu-item-link.util.spec.ts` — the discriminated-union and href-resolution invariants.
+
+Verified directly against the real dev Postgres (bypassing HTTP): a menu with all 5 link types, including a `GROUP`/`CUSTOM_PATH` parent-child pair and a `CONTENT` item pointing at a genuinely published article — hidden-item exclusion, per-type href resolution, tree nesting, and inactive-menu handling all confirmed. Also verified over real HTTP: unauthenticated admin routes 401, and a real menu resolves correctly through `GET /api/v1/public/menus/:key`.
+
 ## 2026-09-09 — Admin dashboard: browser-side OIDC sign-in ([#17](https://github.com/tan-tao-university/ttu-platform/pull/17))
 
 ### Added
