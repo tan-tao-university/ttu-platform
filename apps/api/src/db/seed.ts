@@ -1,6 +1,7 @@
-import { sql } from 'drizzle-orm';
+import { and, eq, notInArray, sql } from 'drizzle-orm';
 import { db, client } from './index';
 import { PERMISSION_CATALOG } from './permissions.catalog';
+import { ROLE_PERMISSION_GRANTS } from './role-permissions.catalog';
 import { locales, permissions, rolePermissions, roles } from './schema';
 
 /**
@@ -80,12 +81,9 @@ async function seedRoles() {
 }
 
 /**
- * Grants `super_admin` every permission in the catalog — the only role/permission mapping doc 07
- * specifies explicitly ("Quản trị toàn bộ TTU Platform" §10). The other 4 roles (`cms_admin`,
- * `editor`, `reviewer`, `publisher`) are seeded with zero grants: the doc describes each role's
- * area of responsibility in prose, not an exact permission-code matrix, and guessing one here would
- * silently encode unreviewed access-control policy. Grant them their permissions explicitly once
- * `role.manage` has an actual admin surface — see docs/setup.md.
+ * Grants `super_admin` every permission in the catalog directly — doc 07 §10 gives it blanket scope
+ * ("Quản trị toàn bộ TTU Platform"), unlike the other 4 roles, whose grants are the curated
+ * `ROLE_PERMISSION_GRANTS` map applied by `seedRoleGrants` below.
  */
 async function seedSuperAdminGrants(
   roleRows: { id: string; code: string }[],
@@ -102,17 +100,64 @@ async function seedSuperAdminGrants(
     .onConflictDoNothing();
 }
 
+/**
+ * Syncs the 4 non-`super_admin` roles' grants to exactly `ROLE_PERMISSION_GRANTS` — inserts missing
+ * grants and revokes anything no longer listed, so re-running the seed after the catalog changes
+ * converges these `isSystem: true` roles to the documented matrix instead of only ever adding to
+ * it.
+ */
+async function seedRoleGrants(
+  roleRows: { id: string; code: string }[],
+  permissionRows: { id: string; code: string }[],
+) {
+  const permissionIdByCode = new Map(
+    permissionRows.map((permission) => [permission.code, permission.id]),
+  );
+
+  for (const [roleCode, grantedCodes] of Object.entries(ROLE_PERMISSION_GRANTS)) {
+    const role = roleRows.find((r) => r.code === roleCode);
+    if (!role) throw new Error(`${roleCode} role was not seeded`);
+
+    const grantedIds = grantedCodes.map((code) => {
+      const id = permissionIdByCode.get(code);
+      if (!id) throw new Error(`Unknown permission code "${code}" granted to role "${roleCode}"`);
+      return id;
+    });
+
+    if (grantedIds.length > 0) {
+      await db
+        .insert(rolePermissions)
+        .values(grantedIds.map((permissionId) => ({ roleId: role.id, permissionId })))
+        .onConflictDoNothing();
+    }
+
+    await db
+      .delete(rolePermissions)
+      .where(
+        grantedIds.length > 0
+          ? and(
+              eq(rolePermissions.roleId, role.id),
+              notInArray(rolePermissions.permissionId, grantedIds),
+            )
+          : eq(rolePermissions.roleId, role.id),
+      );
+  }
+}
+
 async function seed() {
   const localeRows = await seedLocales();
   const permissionRows = await seedPermissions();
   const roleRows = await seedRoles();
   await seedSuperAdminGrants(roleRows, permissionRows);
+  await seedRoleGrants(roleRows, permissionRows);
 
   console.log(`Seeded ${localeRows.length} locales: ${localeRows.map((l) => l.code).join(', ')}.`);
   console.log(`Seeded ${permissionRows.length} permissions.`);
   console.log(`Seeded ${roleRows.length} roles: ${roleRows.map((r) => r.code).join(', ')}.`);
   console.log(`Granted "super_admin" all ${permissionRows.length} permissions.`);
-  console.log('Other roles have no permission grants yet — assign them explicitly.');
+  console.log(
+    `Synced grants for ${Object.keys(ROLE_PERMISSION_GRANTS).length} other roles per design doc 07 §10.`,
+  );
 }
 
 if (require.main === module) {

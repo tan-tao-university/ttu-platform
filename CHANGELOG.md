@@ -4,6 +4,15 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-09 — Role → permission grants for cms_admin, editor, reviewer, publisher ([#15](https://github.com/tan-tao-university/ttu-platform/pull/15))
+
+### Added
+
+- `apps/api/src/db/role-permissions.catalog.ts` — explicit, individually-justified permission grant list for the 4 non-`super_admin` roles (design doc 07 §10, doc 01 §4), replacing the zero-grant placeholder left by PR #10.
+- `apps/api/src/db/seed.ts`'s `seedRoleGrants()` — syncs each role's `role_permissions` rows to exactly its catalog list on every seed run (inserts missing grants, revokes stale ones), keeping the seed idempotent.
+- `apps/api/test/db/role-permissions.catalog.spec.ts` — asserts the grant matrix invariants: every code exists in the permission catalog, no duplicate grants, no non-`super_admin` role holds a sensitive system-administration permission, and each role's grants match its documented scope.
+- `docs/identity/authorization.md` §3 — the resulting role → permission grant matrix, plus a corrected, complete permission catalog table.
+
 ## 2026-09-09 — Database schema alignment with updated Notion spec ([#12](https://github.com/tan-tao-university/ttu-platform/pull/12))
 
 ### Changed
