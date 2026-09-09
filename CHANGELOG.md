@@ -8,14 +8,24 @@ current state of the backend build-out.
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
-## 2026-09-09
+## 2026-09-09 — Database schema alignment with updated Notion spec ([#12](https://github.com/tan-tao-university/ttu-platform/pull/12))
+
+### Changed
+
+- Renamed database tables in `apps/api/src/db/schema.ts` to match the canonical 36-table specification from Notion doc 05: `content_items` → `contents`, `academic_programs` → `programs`, `academic_program_translations` → `program_translations`, and `people_translations` → `person_translations`.
+- Removed `scheduled_at` and `published_at` columns from `pages` table; scheduling and publishing lifecycle is strictly managed per-locale in `page_translations`.
+- Removed unsupported `target` column from `menu_items` table and `notes` column from `redirects`.
+- Added partial unique indexes on `redirects`: `uq_redirects_active_locale_source` for active locale-specific redirects and `uq_redirects_active_global_source` for active global redirects.
+- Added `request_id` column to `audit_logs`, made `metadata` nullable, and aligned index names to `idx_audit_actor_time` and `idx_audit_entity_time`.
+- Added missing indexes: `idx_programs_status_sort` on `programs`, `idx_page_revisions_entity_locale_version` on `page_revisions`, `idx_page_translations_status` and `idx_page_translation_scheduler` on `page_translations`, `idx_page_sections_page_order` on `page_sections`, and `idx_content_revisions_entity_locale_version` on `content_revisions`.
+- Set `media_assets.checksum_sha256` data type to fixed `char(64)`, widened `page_sections.component_key` to `varchar(150)`, and added `default(0)` to `sort_order`.
+- Updated `apps/api/src/content/` repositories and services to use the canonical `contents` table and `Content` types.
+- Generated Drizzle migration `0002_database_schema_alignment.sql` to apply all schema diffs cleanly.
 
 ### Added
 
-- `apps/api/IMPLEMENTATION_STATUS.md` — living backend implementation tracker (moved from the
-  repo root into `apps/api/`, since it tracks `apps/api` specifically).
-- This changelog and the process rule (see `AGENTS.md`/`CLAUDE.md`) requiring both files to be
-  updated alongside any major change.
+- `apps/api/IMPLEMENTATION_STATUS.md` — living backend implementation tracker (moved from the repo root into `apps/api/`, since it tracks `apps/api` specifically).
+- This changelog and the process rule (see `AGENTS.md`/`CLAUDE.md`) requiring both files to be updated alongside any major change.
 
 ## 2026-09-08 — Content domain and taxonomy ([#11](https://github.com/tan-tao-university/ttu-platform/pull/11))
 

@@ -99,12 +99,14 @@ The schema currently contains **36 tables** covering:
 - site settings;
 - audit/system data.
 
-The schema matches the approved database design documents:
+The schema matches the approved database design documents (including the 2026-09-09 revision of Notion doc 05):
 
 ```text
-Design document 04
-Design document 05
+Design document 04 (ERD)
+Design document 05 (Database Schema)
 ```
+
+All 36 tables strictly follow the official canonical names (`contents`, `content_translations`, `content_revisions`, `events`, `programs`, `program_translations`, `pages`, `page_translations`, `page_sections`, `page_section_translations`, `page_revisions`, `people`, `person_translations`, `partners`, `partner_translations`, `categories`, `category_translations`, `tags`, `tag_translations`, `content_category_assignments`, `content_tag_assignments`, `media_assets`, `media_translations`, `menus`, `menu_items`, `menu_item_translations`, `public_routes`, `users`, `roles`, `permissions`, `role_permissions`, `user_role_assignments`, `locales`, `redirects`, `site_settings`, `audit_logs`), with accurate indexing strategy, partial unique indexes for redirects, and strict types.
 
 ### Important note
 
