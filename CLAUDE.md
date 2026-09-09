@@ -9,17 +9,24 @@ content, kept for tools that read `CLAUDE.md` specifically.
 
 - **Package Manager & Task Runner**: Bun 1.4.0 + Moon 2.5.3 (via `.prototools`/proto).
 - **Frontend Applications**: Next.js 16 (App Router) + React 19 + Tailwind CSS 4.
-- **Backend API**: NestJS 11 (Node 24 LTS) — bare bootstrap only, no database yet.
+- **Backend API**: NestJS 11 (Node 24 LTS) + Drizzle ORM against `ttu_main` (PostgreSQL).
 - **Linters & Formatters**: Oxfmt, Oxlint + ESLint, Knip, JSCPD, Lefthook, Commitlint.
 - **Testing**: Jest for `apps/api`.
 
-## Do not build ahead of the ERD
+## Current state — read before touching `apps/api`
 
-`apps/api` has no database, schema, auth, or storage wiring on purpose — the content model for
-ttu.edu.vn has not been designed yet (see [docs/content-audit.md](docs/content-audit.md) for
-what the current WordPress site holds). Do not add Drizzle, tables, DTOs, a Keycloak guard, or
-an S3 client speculatively; see [docs/setup.md](docs/setup.md)'s "Next steps" for the actual
-order of work once that design exists.
+`apps/api` has a database connection (`src/db/`), a Keycloak auth guard (`src/access/`), and
+its first business domain, Content + taxonomy (`src/content/`, `src/taxonomy/`). See
+[apps/api/IMPLEMENTATION_STATUS.md](apps/api/IMPLEMENTATION_STATUS.md) for the authoritative,
+up-to-date list of what's done, what's next, and what's blocked — read it first.
+
+- Do not add an S3/MinIO client speculatively — wire it when a real upload endpoint needs it.
+- Do not add `pages`/`page_sections` endpoints, and do not invent components/schemas to
+  unblock them: the CMS Page Builder domain depends on a Component Registry
+  (`packages/cms-registry`) and a real ~15-20-component set that don't exist in this repo yet
+  — that is real product/design work, not something to fabricate to fill the gap.
+- `apps/admin`'s actual sign-in UI (the browser-side OIDC redirect against `ttu-web`) is still
+  open — nothing in `apps/admin` calls the API yet.
 
 ## Core Commands
 
@@ -50,5 +57,10 @@ moon run :build                             # build all three apps
 2. **Documentation**: update `docs/` alongside any code change; never hard-wrap markdown
    prose; committed files are English-only except Vietnamese-first product copy in
    `apps/web`/`apps/admin`.
-3. **No speculative infrastructure**: no database, auth, or storage code in `apps/api` until
-   the ERD and auth flow are explicitly decided — see Status in [README.md](README.md).
+3. **No speculative infrastructure**: no CMS Page Builder or storage code in `apps/api` until
+   the Component Registry and a real upload use case exist — see
+   [apps/api/IMPLEMENTATION_STATUS.md](apps/api/IMPLEMENTATION_STATUS.md).
+4. **Major change → update the tracker + changelog, same PR.** A new domain/module, a schema
+   change, a new app surface, or a breaking API change updates
+   [apps/api/IMPLEMENTATION_STATUS.md](apps/api/IMPLEMENTATION_STATUS.md) and adds an entry to
+   [CHANGELOG.md](CHANGELOG.md). Routine fixes/refactors/doc typos don't need either.

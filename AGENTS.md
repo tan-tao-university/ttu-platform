@@ -50,6 +50,13 @@ covers running and checks; [docs/content-audit.md](docs/content-audit.md) is a s
 WordPress site being replaced, not a spec — update it if the live site's structure changes
 before the ERD work starts, but do not turn it into the ERD itself.
 
+**Major change → update the tracker + changelog, same PR.** A new domain/module, a schema
+change, a new app surface, or a breaking API change updates
+[apps/api/IMPLEMENTATION_STATUS.md](apps/api/IMPLEMENTATION_STATUS.md) (move the item to
+Completed, update its status table, note what's next) and adds an entry to
+[CHANGELOG.md](CHANGELOG.md) (newest first, link the PR). Routine fixes/refactors/doc typos
+don't need either.
+
 ## Writing
 
 Committed files are English-only, except user-facing product copy in `apps/web`/`apps/admin`,
