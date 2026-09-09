@@ -41,9 +41,9 @@ const TYPE_BY_STATUS: Record<number, ApiErrorType> = {
 };
 
 /**
- * Renders every thrown value into the shared ProblemDetails-style error envelope (design
- * doc 06 §15): `{ type, title, status, detail, instance, errors?, requestId }`. Never emits
- * a raw DB error, stack trace, or internal SQL — those are logged server-side only.
+ * Renders every thrown value into the shared ProblemDetails-style error envelope (design doc 06
+ * §15): `{ type, title, status, detail, instance, errors?, requestId }`. Never emits a raw DB
+ * error, stack trace, or internal SQL — those are logged server-side only.
  */
 @Catch()
 @Injectable()

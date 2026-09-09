@@ -5,8 +5,8 @@ export interface ApiErrorDetail {
 }
 
 /**
- * Known error `type` slugs plus an open string, so callers get autocomplete for the common
- * cases without the type refusing a domain-specific one.
+ * Known error `type` slugs plus an open string, so callers get autocomplete for the common cases
+ * without the type refusing a domain-specific one.
  */
 export type ApiErrorType =
   | 'bad_request'
@@ -20,9 +20,9 @@ export type ApiErrorType =
   | (string & {});
 
 /**
- * Thrown by application code to produce the shared error envelope (design doc 06 §15) with
- * a specific `type`/`status`/`detail` and, for validation failures, field-level `errors`.
- * Caught and rendered by `AllExceptionsFilter`.
+ * Thrown by application code to produce the shared error envelope (design doc 06 §15) with a
+ * specific `type`/`status`/`detail` and, for validation failures, field-level `errors`. Caught and
+ * rendered by `AllExceptionsFilter`.
  */
 export class ApiError extends Error {
   constructor(

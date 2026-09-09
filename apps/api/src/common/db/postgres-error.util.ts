@@ -7,11 +7,11 @@ interface PostgresDriverError {
 }
 
 /**
- * drizzle-orm's postgres-js session wraps the driver's actual error as `Error: Failed
- * query: ...` with the real `postgres` error (the one carrying `.code`) attached as
- * `.cause`, not on the wrapper itself — checked directly against a real unique-violation
- * failure during development (see `xd://report_issue` history / PR verification notes).
- * Checks both so this keeps working if a caller ever passes the unwrapped driver error.
+ * Drizzle-orm's postgres-js session wraps the driver's actual error as `Error: Failed query: ...`
+ * with the real `postgres` error (the one carrying `.code`) attached as `.cause`, not on the
+ * wrapper itself — checked directly against a real unique-violation failure during development (see
+ * `xd://report_issue` history / PR verification notes). Checks both so this keeps working if a
+ * caller ever passes the unwrapped driver error.
  */
 function postgresCode(error: unknown): string | undefined {
   if (isPostgresDriverError(error)) return error.code;

@@ -1,9 +1,11 @@
 import type { ValidationError } from 'class-validator';
 import type { ApiErrorDetail } from './api-error';
 
-/** Flattens class-validator's `ValidationError` tree (nested via `.children` for arrays and
- *  nested DTOs) into the `errors[]` shape design doc 06 §15 specifies — one entry per failed
- *  constraint, with a dotted/indexed `field` path like `sections[2].content.title`. */
+/**
+ * Flattens class-validator's `ValidationError` tree (nested via `.children` for arrays and nested
+ * DTOs) into the `errors[]` shape design doc 06 §15 specifies — one entry per failed constraint,
+ * with a dotted/indexed `field` path like `sections[2].content.title`.
+ */
 export function flattenValidationErrors(
   errors: ValidationError[],
   parentPath = '',

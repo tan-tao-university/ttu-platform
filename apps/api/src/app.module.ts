@@ -5,8 +5,7 @@ import { AppService } from './app.service';
 import { ContentModule } from './content/content.module';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
 
-// Further domain modules (media, navigation, ...) land here once each is designed and
-// implemented — see docs/setup.md.
+/** Root application module for TTU Platform API. */
 @Module({
   imports: [AccessModule, TaxonomyModule, ContentModule],
   controllers: [AppController],

@@ -5,8 +5,7 @@ import { keycloakAuth } from '../../config/auth';
 import type { AuthenticatedRequest, KeycloakAccessTokenPayload } from '../access.types';
 import { IdentityService } from '../services/identity.service';
 
-// One client for the process: jwks-rsa caches resolved keys itself (10 min TTL) and
-// rate-limits requests to the JWKS endpoint, so this never fetches on every request.
+/** Shared JWKS client with internal caching (10 min TTL) and rate limiting. */
 const jwks = new JwksClient({
   jwksUri: keycloakAuth.jwksUri,
   cache: true,
@@ -29,11 +28,11 @@ function resolveSigningKey(header: JwtHeader, callback: SigningKeyCallback) {
 }
 
 /**
- * Verifies a Keycloak-issued access token against the realm's JWKS (signature, issuer,
- * expiry, and the client it was minted for), then resolves — JIT-provisioning if this is
- * the caller's first request — the local CMS identity and attaches it to `request.user`.
- * `PermissionsGuard` reads that; a route with no `@RequirePermission(...)` only needs this
- * guard to know who the caller is (doc 07 §6, §8).
+ * Verifies a Keycloak-issued access token against the realm's JWKS (signature, issuer, expiry, and
+ * the client it was minted for), then resolves — JIT-provisioning if this is the caller's first
+ * request — the local CMS identity and attaches it to `request.user`. `PermissionsGuard` reads
+ * that; a route with no `@RequirePermission(...)` only needs this guard to know who the caller is
+ * (doc 07 §6, §8).
  */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {

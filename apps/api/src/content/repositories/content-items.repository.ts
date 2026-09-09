@@ -20,8 +20,10 @@ import type { ContentSnapshot } from '../content.types';
 
 export type ContentItemWithTranslation = Content & { translation: ContentTranslation | null };
 
-/** The public read shape: a content item plus the currently-published revision's
- *  snapshot — never the live draft translation columns (see `listPublished` below). */
+/**
+ * The public read shape: a content item plus the currently-published revision's snapshot — never
+ * the live draft translation columns (see `listPublished` below).
+ */
 export type ContentItemWithRevision = Content & {
   publishedAt: Date | null;
   snapshot: ContentSnapshot;
@@ -68,14 +70,14 @@ export class ContentItemsRepository {
     return { items: rows.map((r) => ({ ...r.item, translation: r.translation })), total: count };
   }
 
-  /** Reads from `content_revisions.snapshot`, never live `content_translations` columns —
-   *  editing a draft after publish must not change what the public sees (doc 06 §9, doc 02
-   *  §9: "Draft không ảnh hưởng public website"). `publishedAt` still comes from
-   *  `content_translations` since it is set exactly at publish time and untouched by draft
-   *  edits. Visibility is gated by the `INNER JOIN` on `publishedRevisionId` below, never by
-   *  `status` — `status` is an editorial-workflow indicator only (e.g. `restore` resets it
-   *  to `DRAFT` to prompt review, but must not un-publish the still-live revision; doc 06
-   *  §11).
+  /**
+   * Reads from `content_revisions.snapshot`, never live `content_translations` columns — editing a
+   * draft after publish must not change what the public sees (doc 06 §9, doc 02 §9: "Draft không
+   * ảnh hưởng public website"). `publishedAt` still comes from `content_translations` since it is
+   * set exactly at publish time and untouched by draft edits. Visibility is gated by the `INNER
+   * JOIN` on `publishedRevisionId` below, never by `status` — `status` is an editorial-workflow
+   * indicator only (e.g. `restore` resets it to `DRAFT` to prompt review, but must not un-publish
+   * the still-live revision; doc 06 §11).
    */
   async listPublished(
     query: PublicContentListQueryDto,
@@ -151,10 +153,11 @@ export class ContentItemsRepository {
       .where(eq(contentTranslations.contentId, contentId));
   }
 
-  /** Matches the *published* slug (inside the revision snapshot), not the live draft slug —
-   *  same reasoning as `listPublished` above. A draft mid-edit with a different slug must
-   *  not 404 the still-published old slug, and must not resolve at its not-yet-published
-   *  new one either. */
+  /**
+   * Matches the _published_ slug (inside the revision snapshot), not the live draft slug — same
+   * reasoning as `listPublished` above. A draft mid-edit with a different slug must not 404 the
+   * still-published old slug, and must not resolve at its not-yet-published new one either.
+   */
   async findPublishedBySlug(
     locale: string,
     slug: string,

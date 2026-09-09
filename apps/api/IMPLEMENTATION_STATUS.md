@@ -10,9 +10,7 @@
 > - what is intentionally blocked;
 > - what has not yet been scoped.
 >
-> Setup and verification instructions are documented in [`../../docs/setup.md`](../../docs/setup.md).
-> Repository wiring and implementation-order rules are documented in [`../../AGENTS.md`](../../AGENTS.md).
-> Major project-wide changes are also recorded in [`../../CHANGELOG.md`](../../CHANGELOG.md).
+> Setup and verification instructions are documented in [`../../docs/setup.md`](../../docs/setup.md). Repository wiring and implementation-order rules are documented in [`../../AGENTS.md`](../../AGENTS.md). Major project-wide changes are also recorded in [`../../CHANGELOG.md`](../../CHANGELOG.md).
 
 ---
 
@@ -131,8 +129,7 @@ The presence of a table does **not** mean its API/domain is complete.
 
 ## 3.2 Database Infrastructure
 
-**Status:** ✅ Complete
-**PR:** #9
+**Status:** ✅ Complete **PR:** #9
 
 ### Implemented
 
@@ -190,8 +187,7 @@ ttu-data-infra
 
 ## 3.3 Identity & Authorization
 
-**Status:** ✅ Complete
-**PR:** #10
+**Status:** ✅ Complete **PR:** #10
 
 ### Architecture
 
@@ -354,8 +350,7 @@ This provides the initial administrative account required to bootstrap the syste
 
 ## 3.4 Content & Taxonomy
 
-**Status:** ✅ Complete
-**PR:** #11
+**Status:** ✅ Complete **PR:** #11
 
 ### Relevant paths
 
@@ -613,8 +608,7 @@ This item is complete when:
 
 ## 5.1 Media Domain / MinIO
 
-**Status:** ⚪ Not started
-**Reference:** Design document 08
+**Status:** ⚪ Not started **Reference:** Design document 08
 
 ### Existing database schema
 
@@ -915,8 +909,7 @@ No standalone redirect management API exists yet.
 
 ## 7.3 Site Settings
 
-**Status:** ⚪ Not started
-**Reference:** Design document 06 §12
+**Status:** ⚪ Not started **Reference:** Design document 06 §12
 
 Existing schema:
 
@@ -995,8 +988,7 @@ This should be implemented only after enough public-facing backend domains are a
 
 ## 7.6 WordPress Migration Tooling
 
-**Status:** ⚪ Not started
-**Reference:** Design document 09
+**Status:** ⚪ Not started **Reference:** Design document 09
 
 No migration tooling currently exists.
 
@@ -1082,8 +1074,7 @@ Before starting a new backend domain:
 8. Add tests for the implemented behavior.
 9. Update [`../../docs/setup.md`](../../docs/setup.md) if new setup or verification steps are introduced.
 10. Update this file when implementation status changes.
-11. Record the change in [`../../CHANGELOG.md`](../../CHANGELOG.md) if it is a major change (new
-    domain, schema change, new app surface, breaking API change).
+11. Record the change in [`../../CHANGELOG.md`](../../CHANGELOG.md) if it is a major change (new domain, schema change, new app surface, breaking API change).
 
 ---
 
@@ -1110,8 +1101,7 @@ Completed
 
 Do not keep detailed implementation history here after a feature is complete.
 
-Git remains the source of truth for historical changes; [`../../CHANGELOG.md`](../../CHANGELOG.md) is the
-human-readable summary of historical changes.
+Git remains the source of truth for historical changes; [`../../CHANGELOG.md`](../../CHANGELOG.md) is the human-readable summary of historical changes.
 
 This document describes the **current state of the repository**, not a changelog.
 

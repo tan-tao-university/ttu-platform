@@ -9,37 +9,22 @@
   <img src="https://img.shields.io/badge/status-content--api-blue?style=flat-square" alt="apps/api serves the Content domain and admin auth; CMS Page Builder and media not wired up yet">
 </p>
 
-Replacement for the WordPress site at [ttu.edu.vn](https://ttu.edu.vn) — Tan Tao University's
-main public website, its content admin dashboard, and the API behind both.
+Replacement for the WordPress site at [ttu.edu.vn](https://ttu.edu.vn) — Tan Tao University's main public website, its content admin dashboard, and the API behind both.
 
 ## Status
 
-`apps/api` has a database connection, a Keycloak-verified Admin API, and its first business
-domain: Content (news, announcements, press releases, research articles, events — draft,
-publish, revision, rollback, per locale) and its taxonomy (categories/tags), gated by
-`ttu_main`'s own RBAC — see [docs/setup.md](docs/setup.md#content--taxonomy-api). The CMS
-**Page Builder** domain (`pages`/`page_sections`) is not implemented: it depends on a
-Component Registry (`packages/cms-registry`) and a real component set that don't exist yet —
-see AGENTS.md. `apps/admin`'s actual sign-in UI and media/storage endpoints are also not
-wired up yet. The current ttu.edu.vn runs WordPress with a large number of post types across
-many categories (Giới thiệu, Tuyển sinh, Đào tạo, Nghiên cứu, Các khoa, Tin tức & Sự kiện,
-Vinh danh, Đóng góp, Lịch công tác — see [docs/content-audit.md](docs/content-audit.md)),
-which the new schema replaces.
+`apps/api` has a database connection, a Keycloak-verified Admin API, and its first business domain: Content (news, announcements, press releases, research articles, events — draft, publish, revision, rollback, per locale) and its taxonomy (categories/tags), gated by `ttu_main`'s own RBAC — see [docs/setup.md](docs/setup.md#content--taxonomy-api). The CMS **Page Builder** domain (`pages`/`page_sections`) is not implemented: it depends on a Component Registry (`packages/cms-registry`) and a real component set that don't exist yet — see AGENTS.md. `apps/admin`'s actual sign-in UI and media/storage endpoints are also not wired up yet. The current ttu.edu.vn runs WordPress with a large number of post types across many categories (Giới thiệu, Tuyển sinh, Đào tạo, Nghiên cứu, Các khoa, Tin tức & Sự kiện, Vinh danh, Đóng góp, Lịch công tác — see [docs/content-audit.md](docs/content-audit.md)), which the new schema replaces.
 
 ## Part of the TTU platform
 
-| Repo                                                                               | Role                                        |
-| ---------------------------------------------------------------------------------- | ------------------------------------------- |
-| [TTU Data Infrastructure](https://github.com/tan-tao-university/ttu-data-infra)    | Shared PostgreSQL + MinIO                   |
-| [TTU Identity](https://github.com/tan-tao-university/ttu-identity)                 | Keycloak — authentication & SSO             |
+| Repo | Role |
+| --- | --- |
+| [TTU Data Infrastructure](https://github.com/tan-tao-university/ttu-data-infra) | Shared PostgreSQL + MinIO |
+| [TTU Identity](https://github.com/tan-tao-university/ttu-identity) | Keycloak — authentication & SSO |
 | [TTU Faculty Platform](https://github.com/tan-tao-university/ttu-faculty-platform) | The 7 faculty sites, their admin, their API |
-| **TTU Platform** (this repo)                                                       | ttu.edu.vn, its admin dashboard, its API    |
+| **TTU Platform** (this repo) | ttu.edu.vn, its admin dashboard, its API |
 
-All four are meant to be checked out as sibling directories on the same host. `ttu-data-infra`
-already reserved a `ttu_main` database and `ttu_user` role for this repo — see that repo's
-[README](https://github.com/tan-tao-university/ttu-data-infra#databases) — and
-`ttu-identity`'s realm now has the `ttu-web` client `apps/api` verifies tokens against —
-`apps/admin`'s own sign-in UI is still open, see docs/setup.md Next steps.
+All four are meant to be checked out as sibling directories on the same host. `ttu-data-infra` already reserved a `ttu_main` database and `ttu_user` role for this repo — see that repo's [README](https://github.com/tan-tao-university/ttu-data-infra#databases) — and `ttu-identity`'s realm now has the `ttu-web` client `apps/api` verifies tokens against — `apps/admin`'s own sign-in UI is still open, see docs/setup.md Next steps.
 
 ## Applications
 
@@ -49,23 +34,15 @@ already reserved a `ttu_main` database and `ttu_user` role for this repo — see
 | Content admin dashboard     | `@ttu/admin` | `apps/admin` |     3011 |
 | Backend API                 | `@ttu/api`   | `apps/api`   |     4001 |
 
-Ports are chosen to not collide with `ttu-faculty-platform`'s `api.ttu.edu.vn` (4000) and
-`admin.ttu.edu.vn` (3010) on the same host. In production every Next.js container listens on
-port 3000; Docker host mapping is what separates them (see `compose.production.yml`).
+Ports are chosen to not collide with `ttu-faculty-platform`'s `api.ttu.edu.vn` (4000) and `admin.ttu.edu.vn` (3010) on the same host. In production every Next.js container listens on port 3000; Docker host mapping is what separates them (see `compose.production.yml`).
 
 ## Requirements
 
-Node 24 LTS (`nvm use`), Bun (install via `curl -fsSL https://bun.sh/install | bash`), Moon
-(install via `curl -fsSL https://moonrepo.dev/install/proto.sh | bash && proto install moon`),
-Docker (optional, for production-parity builds).
+Node 24 LTS (`nvm use`), Bun (install via `curl -fsSL https://bun.sh/install | bash`), Moon (install via `curl -fsSL https://moonrepo.dev/install/proto.sh | bash && proto install moon`), Docker (optional, for production-parity builds).
 
 ## Stack
 
-Next.js 16 + React 19 + Tailwind 4 (`web`, `admin`), NestJS 11 (`api`), Bun workspaces + Moon.
-PostgreSQL and Keycloak are shared infrastructure from the sibling repos above — this repo
-does not run its own copies. `apps/api` connects to `ttu-data-infra`'s PostgreSQL (`ttu_main`)
-and verifies tokens against `ttu-identity`'s Keycloak realm, but does not yet connect to MinIO
-(see Status).
+Next.js 16 + React 19 + Tailwind 4 (`web`, `admin`), NestJS 11 (`api`), Bun workspaces + Moon. PostgreSQL and Keycloak are shared infrastructure from the sibling repos above — this repo does not run its own copies. `apps/api` connects to `ttu-data-infra`'s PostgreSQL (`ttu_main`) and verifies tokens against `ttu-identity`'s Keycloak realm, but does not yet connect to MinIO (see Status).
 
 ## Running
 
@@ -102,9 +79,6 @@ docs/            Setup guide, database wiring, and the WordPress content audit
 
 ## Deployment notes
 
-- Nginx runs directly on the Ubuntu server and is **not part of this repo**. The repo only
-  exposes container ports.
-- Real env files live on the server (`env/production/{api,site}.env`); Git only holds
-  `apps/*/.env.example`.
-- `compose.production.yml` joins the shared `ttu-backend` Docker network that `ttu-data-infra`
-  owns — nothing in this repo owns or starts Postgres/MinIO/Keycloak itself.
+- Nginx runs directly on the Ubuntu server and is **not part of this repo**. The repo only exposes container ports.
+- Real env files live on the server (`env/production/{api,site}.env`); Git only holds `apps/*/.env.example`.
+- `compose.production.yml` joins the shared `ttu-backend` Docker network that `ttu-data-infra` owns — nothing in this repo owns or starts Postgres/MinIO/Keycloak itself.

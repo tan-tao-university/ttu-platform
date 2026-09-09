@@ -20,33 +20,27 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-// ---------------------------------------------------------------------------
-// TTU Main — physical schema for `ttu_main`, the CMS/business database behind
-// the public website. Mirrors design docs 04 (ERD) and 05 (Database Schema) in
-// the project's Notion workspace. Domain boundaries (cms/content/taxonomy/
-// university/media/navigation/access/system) are enforced by module ownership
-// in application code, not by separate Postgres schemas — everything lives in
-// `public` for this first version (05 §1).
-//
-// Conventions (05 §1–2):
-// - UUID primary keys via `gen_random_uuid()` (needs `pgcrypto`, migration 01).
-// - `timestamptz` for every business timestamp, never bare `timestamp`.
-// - Status/enum columns are `varchar` + `$type<...>()` plus a `CHECK`, not a
-//   Postgres `ENUM`, so adding a status later is a plain migration.
-// - Translatable entities are `entity` + `entity_translations` with a
-//   composite primary key `(entity_id, locale)` — never parallel
-//   `title_vi`/`title_en` columns on the root table.
-// ---------------------------------------------------------------------------
+/**
+ * TTU Main — physical schema for `ttu_main`, the CMS/business database behind the public website.
+ * Mirrors design docs 04 (ERD) and 05 (Database Schema) in the project's Notion workspace. Domain
+ * boundaries are enforced by module ownership in application code, living in `public` schema for v1
+ * (05 §1).
+ *
+ * Conventions (05 §1–2):
+ *
+ * - UUID primary keys via `gen_random_uuid()`.
+ * - `timestamptz` for business timestamps.
+ * - Status/enum columns use varchar + `$type<...>()` with a CHECK constraint.
+ * - Translatable entities use `entity` + `entity_translations` with composite PK `(entity_id,
+ *   locale)`.
+ */
 
 const timestamps = {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 };
 
-// ---------------------------------------------------------------------------
-// 1. Locales — source of truth every `*_translations` table's `locale` FK
-//    points at (05 §3).
-// ---------------------------------------------------------------------------
+/** 1. Locales — source of truth for all translation tables (05 §3). */
 
 export const locales = pgTable(
   'locales',
@@ -69,12 +63,10 @@ export const locales = pgTable(
 export type Locale = typeof locales.$inferSelect;
 export type NewLocale = typeof locales.$inferInsert;
 
-// ---------------------------------------------------------------------------
-// 2. Access — CMS authorization. Authentication itself lives in TTU
-//    Identity/Keycloak; `users` only maps a Keycloak subject to CMS roles
-//    (05 §4). Permission assignment is system-wide, never scoped per
-//    faculty/organization unit.
-// ---------------------------------------------------------------------------
+/**
+ * 2. Access — CMS authorization. Authentication lives in TTU Identity/Keycloak; `users` maps Keycloak
+ *    subjects to CMS roles (05 §4).
+ */
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -149,10 +141,7 @@ export const userRoleAssignments = pgTable(
 export type UserRoleAssignment = typeof userRoleAssignments.$inferSelect;
 export type NewUserRoleAssignment = typeof userRoleAssignments.$inferInsert;
 
-// ---------------------------------------------------------------------------
-// 3. Media — Postgres holds only MinIO object metadata/reference, never
-//    binary data (05 §5).
-// ---------------------------------------------------------------------------
+/** 3. Media — Postgres holds MinIO object metadata and references, never binary data (05 §5). */
 
 export const mediaAssets = pgTable(
   'media_assets',
@@ -199,11 +188,10 @@ export const mediaTranslations = pgTable(
 export type MediaTranslation = typeof mediaTranslations.$inferSelect;
 export type NewMediaTranslation = typeof mediaTranslations.$inferInsert;
 
-// ---------------------------------------------------------------------------
-// 4. Programs — school-wide academic programs and degrees (05 §2).
-//    Faculty-specific data lives in TTU Faculty Platform's own database,
-//    never here.
-// ---------------------------------------------------------------------------
+/**
+ * 4. Programs — university-wide academic programs and degrees (05 §2). Faculty-specific data lives in
+ *    TTU Faculty Platform's own database.
+ */
 
 export const PROGRAM_STATUSES = ['DRAFT', 'ACTIVE', 'INACTIVE', 'ARCHIVED'] as const;
 export type ProgramStatus = (typeof PROGRAM_STATUSES)[number];
@@ -315,11 +303,10 @@ export const partnerTranslations = pgTable(
 export type PartnerTranslation = typeof partnerTranslations.$inferSelect;
 export type NewPartnerTranslation = typeof partnerTranslations.$inferInsert;
 
-// ---------------------------------------------------------------------------
-// 5. CMS Page Builder — draft/editor state. The public site never reads these
-//    tables directly to decide published content; it reads `public_routes`
-//    and the locale's published revision (05 §7, §11; 06 §9–11).
-// ---------------------------------------------------------------------------
+/**
+ * 5. CMS Page Builder — draft/editor state. The public site reads `public_routes` and the published
+ *    revision snapshot (05 §7, §11; 06 §9–11).
+ */
 
 export const PAGE_TYPES = ['HOMEPAGE', 'STANDARD', 'LANDING', 'SYSTEM'] as const;
 export type PageType = (typeof PAGE_TYPES)[number];
@@ -496,10 +483,7 @@ export const pageSectionTranslations = pgTable(
 export type PageSectionTranslation = typeof pageSectionTranslations.$inferSelect;
 export type NewPageSectionTranslation = typeof pageSectionTranslations.$inferInsert;
 
-// ---------------------------------------------------------------------------
-// 6. Content — articles/news/events. Independent lifecycle from Page Builder
-//    (05 §8).
-// ---------------------------------------------------------------------------
+/** 6. Content — articles, news, and events with independent lifecycle from Page Builder (05 §8). */
 
 export const CONTENT_TYPES = [
   'NEWS',
@@ -656,9 +640,7 @@ export const events = pgTable(
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 
-// ---------------------------------------------------------------------------
-// 7. Taxonomy (05 §9).
-// ---------------------------------------------------------------------------
+/** 7. Taxonomy — categories and tags hierarchy (05 §9). */
 
 export const categories = pgTable(
   'categories',
@@ -780,9 +762,7 @@ export const contentTagAssignments = pgTable(
 export type ContentTagAssignment = typeof contentTagAssignments.$inferSelect;
 export type NewContentTagAssignment = typeof contentTagAssignments.$inferInsert;
 
-// ---------------------------------------------------------------------------
-// 8. Navigation (05 §10).
-// ---------------------------------------------------------------------------
+/** 8. Navigation — menus and hierarchical menu items (05 §10). */
 
 export const menus = pgTable('menus', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -857,12 +837,7 @@ export const menuItemTranslations = pgTable(
 export type MenuItemTranslation = typeof menuItemTranslations.$inferSelect;
 export type NewMenuItemTranslation = typeof menuItemTranslations.$inferInsert;
 
-// ---------------------------------------------------------------------------
-// 9. Public routes — the published route registry. A physical support table
-//    beyond the logical ERD: it is the single place a draft path collision is
-//    checked, and it is what the public site actually reads to resolve a URL,
-//    never `page_translations.path` directly (05 §11).
-// ---------------------------------------------------------------------------
+/** 9. Public routes — the published route registry resolving public URLs (05 §11). */
 
 export const PUBLIC_ROUTE_TARGET_TYPES = ['PAGE', 'CONTENT'] as const;
 export type PublicRouteTargetType = (typeof PUBLIC_ROUTE_TARGET_TYPES)[number];
@@ -900,9 +875,7 @@ export const publicRoutes = pgTable(
 export type PublicRoute = typeof publicRoutes.$inferSelect;
 export type NewPublicRoute = typeof publicRoutes.$inferInsert;
 
-// ---------------------------------------------------------------------------
-// 10. System (05 §12).
-// ---------------------------------------------------------------------------
+/** 10. System — operational redirects, site settings, and audit logs (05 §12). */
 
 export const redirects = pgTable(
   'redirects',
@@ -969,10 +942,7 @@ export const auditLogs = pgTable(
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type NewAuditLog = typeof auditLogs.$inferInsert;
 
-// ---------------------------------------------------------------------------
-// Relations — used by Drizzle's relational query API (`db.query.*`); every
-// FK above already enforces the actual constraint at the database level.
-// ---------------------------------------------------------------------------
+/** Relations — used by Drizzle's relational query API (`db.query.*`). */
 
 export const usersRelations = relations(users, ({ many }) => ({
   roleAssignments: many(userRoleAssignments),

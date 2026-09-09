@@ -4,16 +4,16 @@ import { client, db } from './index';
 import { roles, userRoleAssignments, users } from './schema';
 
 /**
- * Bootstraps the first `super_admin` (design doc 07 §15) — the only way a `super_admin`
- * assignment gets created. Nothing in the Admin API can self-escalate to it.
+ * Bootstraps the first `super_admin` (design doc 07 §15) — the only way a `super_admin` assignment
+ * gets created. Nothing in the Admin API can self-escalate to it.
  *
- * The account must already exist in TTU Identity/Keycloak; this script only creates or
- * updates the local `ttu_main` mapping and grants the role. `--sub` is that account's
- * Keycloak `sub` claim, found via the Keycloak Admin Console (Users → the account → ID) —
- * never the email, which is cache/display only and can change without changing identity.
+ * The account must already exist in TTU Identity/Keycloak; this script only creates or updates the
+ * local `ttu_main` mapping and grants the role. `--sub` is that account's Keycloak `sub` claim,
+ * found via the Keycloak Admin Console (Users → the account → ID) — never the email, which is
+ * cache/display only and can change without changing identity.
  *
- * Usage:
- *   moon run api:db-create-super-admin -- --sub <keycloak-sub> --email admin@ttu.edu.vn --name "Admin"
+ * Usage: moon run api:db-create-super-admin -- --sub <keycloak-sub> --email admin@ttu.edu.vn --name
+ * "Admin"
  */
 async function main() {
   // `moon run <script> -- --sub x` forwards the separator itself, and parseArgs treats

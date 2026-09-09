@@ -1,18 +1,16 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-// Node's built-in .env loader (v20.12+) — no dotenv dependency. In production the values
-// come from the container environment and no .env file exists, so this is a no-op there.
+/** Load local `.env` using Node built-in environment loader if present. */
 const envFile = resolve(process.cwd(), '.env');
 if (existsSync(envFile)) process.loadEnvFile(envFile);
 
-// Separated from a future `config/env.ts` so that a script needing only the database — a
-// seed or migration helper — does not have to be handed Keycloak/MinIO settings just to
-// insert a row. `db/index.ts` imports this file and nothing else from config.
-//
-// The API process still fails fast on a missing variable: importing this module throws
-// immediately if `DATABASE_URL` is unset, so the app fails at boot rather than on its first
-// query.
+/**
+ * Database configuration module.
+ *
+ * Separated from general config so database scripts (seed, migration) do not require full app
+ * environment variables. Fails fast on import if `DATABASE_URL` is unset.
+ */
 export const databaseUrl = requireEnv('DATABASE_URL');
 export const databasePool = {
   max: positiveIntegerEnv('DB_POOL_MAX', '10'),
@@ -21,8 +19,10 @@ export const databasePool = {
   maxLifetimeSeconds: positiveIntegerEnv('DB_MAX_LIFETIME_SECONDS', '1800'),
 } as const;
 
-/** Shared by every `config/*` module (`config/auth.ts` reuses this for Keycloak settings) so
- *  a missing required variable always fails the same way — one error shape, at import time. */
+/**
+ * Shared by every `config/*` module (`config/auth.ts` reuses this for Keycloak settings) so a
+ * missing required variable always fails the same way — one error shape, at import time.
+ */
 export function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`Missing required environment variable: ${name}`);

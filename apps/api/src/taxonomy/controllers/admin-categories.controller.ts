@@ -24,10 +24,11 @@ import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { UpsertCategoryTranslationDto } from '../dto/upsert-category-translation.dto';
 import { CategoriesRepository } from '../repositories/categories.repository';
 
-// No dedicated `taxonomy.*` permission code exists in the catalog (design doc 07 §11) —
-// categories/tags support content categorization (doc 01 §6 groups "Quản lý category/tag"
-// under the CMS Admin persona without a separate permission), so this reuses `content.read`
-// and `content.edit` rather than inventing an ungrounded code.
+/**
+ * Categories controller for CMS administration.
+ *
+ * Reuses `content.read` and `content.edit` permissions for category management (doc 07 §11).
+ */
 @Controller('admin/categories')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class AdminCategoriesController {
