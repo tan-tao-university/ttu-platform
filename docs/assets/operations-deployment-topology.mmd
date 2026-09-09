@@ -1,0 +1,23 @@
+flowchart TD
+    classDef edge fill:#f0f9ff,stroke:#0284c7,stroke-width:2px,color:#0369a1;
+    classDef app fill:#eef2ff,stroke:#6366f1,stroke-width:2px,color:#312e81;
+    classDef api fill:#ecfdf5,stroke:#10b981,stroke-width:2px,color:#064e3b;
+    classDef db fill:#fffbeb,stroke:#f59e0b,stroke-width:2px,color:#78350f;
+    classDef auth fill:#fff1f2,stroke:#f43f5e,stroke-width:2px,color:#881337;
+
+    EXT["Internet Traffic"]:::edge --> NGINX["Nginx Host Edge<br/>(TLS Termination & Proxy)"]:::edge
+
+    subgraph DockerBridge [" Docker Host Bridge Network: ttu-backend "]
+        NGINX -->|port 3000| W["@ttu/web<br/>(Next.js 16 Container)"]:::app
+        NGINX -->|port 3011| A["@ttu/admin<br/>(Next.js 16 Container)"]:::app
+        NGINX -->|port 4001| API["@ttu/api<br/>(NestJS 11 Container)"]:::api
+
+        W -->|HTTP REST Calls| API
+        A -->|HTTP REST Calls| API
+
+        API -->|Port 5432| PG[("PostgreSQL 16<br/>ttu-data-infra")]:::db
+        API -->|Port 9000| MINIO[("MinIO S3 Storage<br/>ttu-data-infra")]:::db
+    end
+
+    A -.->|OIDC Redirect| IDP["Keycloak 26<br/>ttu-identity"]:::auth
+    API -.->|JWKS Key Verify| IDP

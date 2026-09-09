@@ -1,0 +1,38 @@
+flowchart TD
+    classDef user fill:#f0f9ff,stroke:#0284c7,stroke-width:2px,color:#0369a1;
+    classDef app fill:#eef2ff,stroke:#6366f1,stroke-width:2px,color:#312e81;
+    classDef api fill:#ecfdf5,stroke:#10b981,stroke-width:2px,color:#064e3b;
+    classDef db fill:#fffbeb,stroke:#f59e0b,stroke-width:2px,color:#78350f;
+    classDef auth fill:#fff1f2,stroke:#f43f5e,stroke-width:2px,color:#881337;
+    classDef ext fill:#faf5ff,stroke:#a855f7,stroke-width:2px,color:#581c87;
+
+    subgraph Users [" User Personas "]
+        V["Public Visitor"]:::user
+        E["Editor / Reviewer"]:::user
+        A["CMS Administrator"]:::user
+    end
+
+    subgraph Applications [" TTU Platform Applications "]
+        W["ttu.edu.vn<br/>Next.js 16 Web"]:::app
+        ADM["admin.ttu.edu.vn<br/>Next.js 16 Admin"]:::app
+        API["api.ttu.edu.vn<br/>NestJS 11 API"]:::api
+    end
+
+    subgraph SiblingPlatforms [" Shared Infrastructure & Sibling Platforms "]
+        ID["auth.ttu.edu.vn<br/>TTU Identity / Keycloak 26"]:::auth
+        DB[("PostgreSQL 16<br/>ttu_main")]:::db
+        MINIO[("MinIO S3 Storage<br/>ttu-public-media")]:::db
+        FAC["TTU Faculty Platform<br/>7 Faculty Portals & APIs"]:::ext
+    end
+
+    V --> W
+    E --> ADM
+    A --> ADM
+
+    W -->|Read Published State| API
+    ADM -->|OIDC Login / PKCE| ID
+    ADM -->|Manage Content / Drafts| API
+    API -->|Validate Token / JWKS| ID
+    API -->|Persistence & Queries| DB
+    API -->|Asset Metadata & Uploads| MINIO
+    API -.->|Integration REST API| FAC

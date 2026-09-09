@@ -1,0 +1,17 @@
+flowchart LR
+    classDef source fill:#fffbeb,stroke:#f59e0b,stroke-width:2px,color:#78350f;
+    classDef extract fill:#f0f9ff,stroke:#0284c7,stroke-width:2px,color:#0369a1;
+    classDef norm fill:#e0f2fe,stroke:#0369a1,stroke-width:2px,color:#0c4a6e;
+    classDef transform fill:#eef2ff,stroke:#6366f1,stroke-width:2px,color:#312e81;
+    classDef validate fill:#f5f3ff,stroke:#8b5cf6,stroke-width:2px,color:#4c1d95;
+    classDef load fill:#ecfdf5,stroke:#10b981,stroke-width:2px,color:#064e3b;
+    classDef audit fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#14532d;
+    classDef redirect fill:#ecfdf5,stroke:#059669,stroke-width:2.5px,color:#064e3b;
+
+    WP["Legacy WordPress<br/>(MySQL + Uploads)"]:::source --> EX["1. Extract Stage<br/>(Raw Snapshots)"]:::extract
+    EX --> NORM["2. Normalize Stage<br/>(Sanitize Markup)"]:::norm
+    NORM --> TR["3. Transform Stage<br/>(Domain Mapping)"]:::transform
+    TR --> VAL["4. Validate Stage<br/>(Schema & FK Checks)"]:::validate
+    VAL --> LOAD["5. Load Stage<br/>(ttu_main & MinIO)"]:::load
+    LOAD --> REC["6. Reconcile Stage<br/>(Audit Report)"]:::audit
+    REC --> REDIR["7. Generate 301 Redirects<br/>(redirects table)"]:::redirect

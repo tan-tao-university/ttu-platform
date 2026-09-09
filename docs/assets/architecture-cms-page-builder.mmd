@@ -1,0 +1,30 @@
+flowchart TD
+    classDef admin fill:#eef2ff,stroke:#6366f1,stroke-width:2px,color:#312e81;
+    classDef editor fill:#f0f9ff,stroke:#0284c7,stroke-width:2px,color:#0369a1;
+    classDef api fill:#ecfdf5,stroke:#10b981,stroke-width:2px,color:#064e3b;
+    classDef db fill:#fffbeb,stroke:#f59e0b,stroke-width:2px,color:#78350f;
+    classDef state fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+    classDef publish fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+    classDef web fill:#eef2ff,stroke:#4f46e5,stroke-width:2px,color:#1e1b4b;
+    classDef live fill:#ecfdf5,stroke:#059669,stroke-width:2.5px,color:#064e3b;
+
+    A["TTU Admin UI"]:::admin --> B["Page Builder Shell"]:::admin
+    B --> C["Content Editor<br/>(Localized Strings)"]:::editor
+    B --> D["Data / Config Editor<br/>(Media IDs, Source Queries)"]:::editor
+    B --> E["Safe Style Editor<br/>(Design Tokens)"]:::editor
+
+    C --> F["NestJS API<br/>(Validation & Persistence)"]:::api
+    D --> F
+    E --> F
+
+    F --> G[("PostgreSQL<br/>ttu_main")]:::db
+    F --> H[("MinIO<br/>Media Storage")]:::db
+
+    G --> I["Draft State<br/>(Working Copy)"]:::state
+    I --> J["Preview Mode<br/>(Component Registry)"]:::state
+    I --> K["Publish Locale Action"]:::publish
+
+    K --> L["Immutable Revision Snapshot<br/>(page_revisions)"]:::publish
+    L --> M["Next.js Web Runtime<br/>(Server Component)"]:::web
+    M --> N["Component Renderer<br/>(@ttu/cms-registry)"]:::web
+    N --> O["Public University Website"]:::live

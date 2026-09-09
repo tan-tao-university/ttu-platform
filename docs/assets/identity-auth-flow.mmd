@@ -1,0 +1,25 @@
+sequenceDiagram
+    autonumber
+    actor Admin as Admin User
+    participant Web as Next.js Admin (Client)
+    participant IDP as TTU Identity (Keycloak)
+    participant API as NestJS API
+    participant DB as PostgreSQL (ttu_main)
+
+    Admin->>Web: 1. Access /admin
+    Web->>IDP: 2. Redirect to /openid-connect/auth (PKCE)
+    Note over Web,IDP: Authorization Code Flow + S256 Code Challenge
+    Admin->>IDP: 3. Authenticate with credentials
+    IDP-->>Web: 4. Redirect callback with Authorization Code
+    Web->>IDP: 5. Exchange Code + Code Verifier
+    IDP-->>Web: 6. Return Access Token & ID Token
+    Web->>API: 7. Request GET /api/v1/admin/me (Bearer Token)
+    API->>IDP: 8. Verify Token signature via JWKS (Cached)
+    API->>DB: 9. Query users table where identity_subject = sub
+    alt User record does not exist
+        API->>DB: 10. JIT Provision User (Zero default roles)
+    end
+    API->>DB: 11. Load active roles & permissions
+    DB-->>API: 12. Return user profile & granted permissions[]
+    API-->>Web: 13. 200 OK (User profile, roles, permissions)
+    Web-->>Admin: 14. Render authorized Admin Dashboard Shell

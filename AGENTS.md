@@ -22,11 +22,17 @@ Stay on and commit to the branch the user is currently working on. Never switch 
 - **Non-trivial changes** (new app surface, dependency between apps, anything touching more than one file's worth of behavior): branch as `<type>/<kebab-case-slug>` from the current base branch, `type` one of `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `perf`, `style`, `ci`, `build`, `revert` — matching `commitlint.config.mjs`'s `type-enum`. Push once there is a commit worth seeing.
 - Delete a merged temporary branch immediately, locally and on remote. Never delete `main`.
 
-## Documentation
+## Documentation & Continuous Documentation Rule
 
-A code change updates the matching doc on the same branch. [docs/setup.md](docs/setup.md) covers running and checks; [docs/content-audit.md](docs/content-audit.md) is a snapshot of the WordPress site being replaced, not a spec — update it if the live site's structure changes before the ERD work starts, but do not turn it into the ERD itself.
+A code change updates the matching doc on the same branch. [docs/setup.md](docs/setup.md) covers running and checks; [docs/README.md](docs/README.md) is the master documentation index.
 
-**Major change → update the tracker + changelog, same PR.** A new domain/module, a schema change, a new app surface, or a breaking API change updates the master [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) and the corresponding app status tracker ([apps/api/IMPLEMENTATION_STATUS.md](apps/api/IMPLEMENTATION_STATUS.md), [apps/admin/IMPLEMENTATION_STATUS.md](apps/admin/IMPLEMENTATION_STATUS.md), or [apps/web/IMPLEMENTATION_STATUS.md](apps/web/IMPLEMENTATION_STATUS.md)), and adds an entry to [CHANGELOG.md](CHANGELOG.md) (newest first, link the PR). Routine fixes/refactors/doc typos don't need either.
+**Continuous Documentation Rule for AI Agents**:
+
+- Whenever updating or adding code (features, endpoints, models, architecture, components), you MUST simultaneously update the relevant documentation files under `docs/`.
+- If a feature, API route, or architectural capability exists in the codebase but lacks documentation in `docs/`, you MUST create a new documentation file in the appropriate `docs/` subfolder (`overview/`, `architecture/`, `database/`, `identity/`, `media/`, `api/`, `frontend/`, `operations/`) and link it in `docs/README.md`.
+- Whenever diagrams are added or modified, adhere to the `.agents/skills/diagram-design` skill: update or create the `.mmd` source file in `docs/assets/`, apply semantic color classes, and render the `.png` using `bun run docs:render-diagrams` (`./docs/assets/render.sh`).
+- In markdown files embedding diagram images (`![Title](../assets/<name>.png)`), NEVER duplicate raw `mermaid ` code blocks inside the markdown file; keep the markdown file clean and reference the rendered PNG only.
+- **Major change → update the tracker + changelog, same PR.** A new domain/module, a schema change, a new app surface, or a breaking API change updates the master [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) and the corresponding app status tracker ([apps/api/IMPLEMENTATION_STATUS.md](apps/api/IMPLEMENTATION_STATUS.md), [apps/admin/IMPLEMENTATION_STATUS.md](apps/admin/IMPLEMENTATION_STATUS.md), or [apps/web/IMPLEMENTATION_STATUS.md](apps/web/IMPLEMENTATION_STATUS.md)), and adds an entry to [CHANGELOG.md](CHANGELOG.md) (newest first, link the PR). Routine fixes/refactors/doc typos don't need either.
 
 ## Writing & Markdown Prose
 

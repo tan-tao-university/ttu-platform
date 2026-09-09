@@ -1,0 +1,33 @@
+erDiagram
+    PAGES ||--o{ PAGE_TRANSLATIONS : has
+    PAGES ||--o{ PAGE_SECTIONS : contains
+    PAGE_SECTIONS ||--o{ PAGE_SECTION_TRANSLATIONS : localizes
+    PAGES ||--o{ PAGE_REVISIONS : versions
+
+    CONTENTS ||--o{ CONTENT_TRANSLATIONS : localizes
+    CONTENTS ||--o{ CONTENT_REVISIONS : versions
+    CONTENTS ||--o| EVENTS : event_data
+    CONTENTS ||--o{ CONTENT_CATEGORY_ASSIGNMENTS : categorized
+    CATEGORIES ||--o{ CONTENT_CATEGORY_ASSIGNMENTS : contains
+    CONTENTS ||--o{ CONTENT_TAG_ASSIGNMENTS : tagged
+    TAGS ||--o{ CONTENT_TAG_ASSIGNMENTS : contains
+    CATEGORIES ||--o{ CATEGORIES : parent_of
+
+    PROGRAMS ||--o{ PROGRAM_TRANSLATIONS : localizes
+    PEOPLE ||--o{ PERSON_TRANSLATIONS : localizes
+    PARTNERS ||--o{ PARTNER_TRANSLATIONS : localizes
+
+    MEDIA_ASSETS ||--o{ MEDIA_TRANSLATIONS : localizes
+    CONTENTS }o--o| MEDIA_ASSETS : featured_media
+    PROGRAMS }o--o| MEDIA_ASSETS : hero_media
+    PEOPLE }o--o| MEDIA_ASSETS : portrait_media
+    PARTNERS }o--o| MEDIA_ASSETS : logo_media
+
+    MENUS ||--o{ MENU_ITEMS : contains
+    MENU_ITEMS ||--o{ MENU_ITEMS : parent_of
+    MENU_ITEMS ||--o{ MENU_ITEM_TRANSLATIONS : localizes
+
+    USERS ||--o{ USER_ROLE_ASSIGNMENTS : receives
+    ROLES ||--o{ USER_ROLE_ASSIGNMENTS : assigned
+    ROLES ||--o{ ROLE_PERMISSIONS : grants
+    PERMISSIONS ||--o{ ROLE_PERMISSIONS : contains

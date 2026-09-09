@@ -1,0 +1,28 @@
+flowchart TD
+    classDef registry fill:#ecfdf5,stroke:#10b981,stroke-width:2px,color:#064e3b;
+    classDef tokens fill:#faf5ff,stroke:#a855f7,stroke-width:2px,color:#581c87;
+    classDef admin fill:#eef2ff,stroke:#6366f1,stroke-width:2px,color:#312e81;
+    classDef api fill:#ecfdf5,stroke:#059669,stroke-width:2px,color:#064e3b;
+    classDef web fill:#f0f9ff,stroke:#0284c7,stroke-width:2px,color:#0369a1;
+
+    subgraph RegistryPackage [" Shared Package: @ttu/cms-registry "]
+        REG["Component Registry<br/>(Definitions, Metadata)"]:::registry
+        COMP["Component Catalog<br/>(Hero, NewsGrid, FacultyGrid...)"]:::registry
+        VAL["Runtime Validation<br/>(Content, Config, Style Schemas)"]:::registry
+    end
+
+    subgraph DesignSystem [" Shared Package: @ttu/design-system "]
+        TOKENS["Design Tokens<br/>(Spacing, Typography, Palette)"]:::tokens
+    end
+
+    subgraph Apps [" Monorepo Applications "]
+        ADM["apps/admin<br/>(Dynamic Form Inspectors)"]:::admin
+        API["apps/api<br/>(Publish Validation Boundary)"]:::api
+        WEB["apps/web<br/>(React 19 Renderers & ISR)"]:::web
+    end
+
+    REG --> ADM
+    REG --> API
+    REG --> WEB
+    TOKENS --> ADM
+    TOKENS --> WEB

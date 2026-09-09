@@ -1,0 +1,19 @@
+flowchart LR
+    classDef edit fill:#f0f9ff,stroke:#0284c7,stroke-width:2px,color:#0369a1;
+    classDef review fill:#fffbeb,stroke:#f59e0b,stroke-width:2px,color:#78350f;
+    classDef publish fill:#ecfdf5,stroke:#10b981,stroke-width:2px,color:#064e3b;
+    classDef rev fill:#f5f3ff,stroke:#8b5cf6,stroke-width:2px,color:#4c1d95;
+    classDef live fill:#ecfdf5,stroke:#059669,stroke-width:2.5px,color:#064e3b;
+    classDef rollback fill:#fff1f2,stroke:#f43f5e,stroke-width:2px,color:#881337;
+
+    A["Create / Edit Content"]:::edit --> B["Draft State<br/>(per locale)"]:::edit
+    B --> C["Preview<br/>(Real Components)"]:::edit
+    C --> D["Review Workflow"]:::review
+    D -->|Approved| E["Publish Transaction"]:::publish
+    D -->|Changes Requested| B
+    E --> F["Create Immutable Revision<br/>(content_revisions)"]:::rev
+    F --> G["Update Published Pointer<br/>(published_revision_id)"]:::publish
+    G --> H["Sync public_routes<br/>(301 Redirect if path changed)"]:::publish
+    H --> I["Revalidate ISR Cache"]:::live
+    I --> J["Public Visitors"]:::live
+    F --> K["Rollback Source<br/>(Restore Historical Snapshot)"]:::rollback

@@ -28,6 +28,7 @@
     "audit": "bun audit",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
+    "docs:render-diagrams": "./docs/assets/render.sh",
     "clean": "moon run :clean && rm -rf node_modules .moon/cache",
     "prepare": "lefthook install"
   },
