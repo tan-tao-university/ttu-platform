@@ -28,7 +28,7 @@ Cross-application trackers:
 |   2 | Database infrastructure     | ✅ Complete    | PR #9             |
 |   3 | Identity & authorization    | ✅ Complete    | PR #10            |
 |   4 | Content & taxonomy          | ✅ Complete    | PR #11            |
-|   5 | Role → permission grants    | 🟡 Next        | —                 |
+|   5 | Role → permission grants    | ✅ Complete    | —                 |
 |   6 | Media / MinIO               | ⚪ Not started | Design doc 08     |
 |   7 | Admin authentication UI     | ⚪ Not started | —                 |
 |   8 | CMS Page Builder            | 🔴 Blocked     | Design docs 02–03 |
@@ -56,8 +56,6 @@ Cross-application trackers:
 The current backend implementation order is:
 
 ```text
-Role permission grants
-        ↓
 Media domain / MinIO
         ↓
 Admin OIDC sign-in
@@ -68,7 +66,7 @@ The CMS Page Builder must **not** be implemented yet because its Component Regis
 Current implementation target:
 
 ```text
-#5 Role → permission grants
+#6 Media / MinIO
 ```
 
 ---
@@ -501,118 +499,33 @@ Design document 06 §15
 
 ---
 
-# 4. Next Implementation
+## 3.5 Role → Permission Grants
 
-## 4.1 Role → Permission Grants
+**Status:** ✅ Complete
 
-**Status:** 🟡 Next
+### What changed
 
-### Problem
-
-The following roles currently exist but have no permission grants:
+`cms_admin`, `editor`, `reviewer`, and `publisher` previously had zero permission grants; only `super_admin` did. Each of the 4 roles now has an explicit grant list in:
 
 ```text
-cms_admin
-editor
-reviewer
-publisher
+apps/api/src/db/role-permissions.catalog.ts
 ```
 
-Only:
-
-```text
-super_admin
-```
-
-currently has permissions.
-
-This was intentional because PR #10 did not have an explicit permission matrix to implement safely.
-
----
+applied by `seedRoleGrants()` in `apps/api/src/db/seed.ts`, which syncs each role's `role_permissions` rows to exactly the documented list (inserts missing grants, revokes anything no longer listed) every time the idempotent seed runs.
 
 ### Source of truth
 
-Role permissions must now be derived from:
+Each grant list is justified inline against design document 07 §10 (role responsibilities) and design document 01 §4 (user personas) — see `docs/identity/authorization.md` §3 for the resulting matrix. `super_admin` is unchanged: it still receives every catalog permission directly.
 
-```text
-Design document 07 §10
-```
+### Tests
 
-Role descriptions
-
-and:
-
-```text
-Design document 01 §4
-```
-
-User personas.
+`apps/api/test/db/role-permissions.catalog.spec.ts` asserts the matrix invariants: every granted code exists in the permission catalog, no duplicate grants, no non-`super_admin` role holds a sensitive system-administration permission (`user.read`, `user.manage`, `role.manage`, `audit.read`), and each role's grants match its documented scope (e.g. `reviewer` is read-only, `publisher` has no authoring rights).
 
 ---
 
-### Implementation requirements
+# 4. Next Implementation
 
-Update the authorization seed so that each role receives an explicit set of permissions.
-
-Expected structure:
-
-```text
-super_admin
-├── all permissions
-
-cms_admin
-├── CMS administration permissions
-├── content management permissions
-└── ...
-
-editor
-├── create content
-├── edit drafts
-└── ...
-
-reviewer
-├── review content
-└── ...
-
-publisher
-├── approve/publish content
-└── ...
-```
-
-The exact mapping must be justified against the design documents.
-
-Do **not** infer additional capabilities that are not supported by the specification.
-
----
-
-### Required documentation
-
-The seed script should document why each role receives each permission.
-
-Example:
-
-```ts
-// publisher:
-// Responsible for final publication according to design doc 07 §10.
-```
-
----
-
-### Completion criteria
-
-This item is complete when:
-
-- every seeded non-super-admin role has an explicit permission set;
-- grants are documented;
-- seed remains idempotent;
-- permission tests pass;
-- `super_admin` behavior remains unchanged.
-
----
-
-# 5. Planned
-
-## 5.1 Media Domain / MinIO
+## 4.1 Media Domain / MinIO
 
 **Status:** ⚪ Not started **Reference:** Design document 08
 
@@ -691,7 +604,7 @@ ttu-platform API
 
 ---
 
-## 5.2 Admin Authentication UI
+## 4.2 Admin Authentication UI
 
 **Status:** ⚪ Not started
 
@@ -759,9 +672,9 @@ should be used to obtain the current local admin identity and permission state.
 
 ---
 
-# 6. Blocked
+# 5. Blocked
 
-## 6.1 CMS Page Builder
+## 5.1 CMS Page Builder
 
 **Status:** 🔴 Blocked
 
@@ -856,13 +769,13 @@ Database tables may remain unused until the dependency is implemented.
 
 ---
 
-# 7. Backlog
+# 6. Backlog
 
 The following domains are known but are not currently part of the implementation queue.
 
 ---
 
-## 7.1 Navigation
+## 6.1 Navigation
 
 **Status:** ⚪ Not started
 
@@ -889,7 +802,7 @@ External/custom links could technically be implemented independently, but naviga
 
 ---
 
-## 7.2 Redirect Administration
+## 6.2 Redirect Administration
 
 **Status:** ⚪ Not started
 
@@ -913,7 +826,7 @@ No standalone redirect management API exists yet.
 
 ---
 
-## 7.3 Site Settings
+## 6.3 Site Settings
 
 **Status:** ⚪ Not started **Reference:** Design document 06 §12
 
@@ -937,7 +850,7 @@ The registry has not yet been implemented.
 
 ---
 
-## 7.4 Audit Log API
+## 6.4 Audit Log API
 
 **Status:** ⚪ Not started
 
@@ -964,7 +877,7 @@ or equivalent administrative read surfaces.
 
 ---
 
-## 7.5 Public Website Integration
+## 6.5 Public Website Integration
 
 **Status:** ⚪ Not started
 
@@ -992,7 +905,7 @@ This should be implemented only after enough public-facing backend domains are a
 
 ---
 
-## 7.6 WordPress Migration Tooling
+## 6.6 WordPress Migration Tooling
 
 **Status:** ⚪ Not started **Reference:** Design document 09
 
@@ -1004,7 +917,7 @@ Implementation has not yet been scoped.
 
 ---
 
-# 8. Dependency Map
+# 7. Dependency Map
 
 Current high-level dependencies:
 
@@ -1045,28 +958,27 @@ ttu-platform
 
 ---
 
-# 9. Recommended Implementation Order
+# 8. Recommended Implementation Order
 
 Unless requirements change, backend work should proceed in this order:
 
 ```text
-1. Role → permission grants
-2. Media domain
-3. Admin authentication UI
-4. Component Registry
-5. CMS Page Builder
-6. Navigation
-7. Site Settings
-8. Audit Log API
-9. apps/web integration
-10. WordPress migration tooling
+1. Media domain
+2. Admin authentication UI
+3. Component Registry
+4. CMS Page Builder
+5. Navigation
+6. Site Settings
+7. Audit Log API
+8. apps/web integration
+9. WordPress migration tooling
 ```
 
 This order is based on implementation dependencies rather than feature visibility.
 
 ---
 
-# 10. Rules for Future Implementation
+# 9. Rules for Future Implementation
 
 Before starting a new backend domain:
 
@@ -1084,7 +996,7 @@ Before starting a new backend domain:
 
 ---
 
-# 11. Updating This File
+# 10. Updating This File
 
 When a PR is merged:
 
@@ -1117,13 +1029,13 @@ This document describes the **current state of the repository**, not a changelog
 
 ```text
 Latest completed backend domain:
-Content + Taxonomy (#11)
-
-Current priority:
 Role → Permission Grants (#5)
 
-Next:
+Current priority:
 Media Domain (#6)
+
+Next:
+Admin Authentication UI (#7)
 
 Primary blocker:
 CMS Component Registry
