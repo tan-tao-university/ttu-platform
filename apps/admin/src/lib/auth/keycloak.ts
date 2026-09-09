@@ -1,9 +1,18 @@
 import 'server-only';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
-import { authConfig } from './config';
+import { createRemoteJWKSet, jwtVerify, type RemoteJWKSet } from 'jose';
+import { getAuthConfig } from './config';
 
-/** Cached across requests — `jose` handles its own JWKS refresh/rotation internally. */
-const jwks = createRemoteJWKSet(new URL(authConfig.jwksUri));
+/**
+ * Lazily created on first use, then cached — `jose` handles its own JWKS refresh/rotation
+ * internally. Deferred for the same reason `config.ts`'s values are: it must not run during `next
+ * build`'s module-graph import.
+ */
+let jwks: RemoteJWKSet | undefined;
+
+function getJwks(): RemoteJWKSet {
+  jwks ??= createRemoteJWKSet(new URL(getAuthConfig().jwksUri));
+  return jwks;
+}
 
 export interface TokenResponse {
   access_token: string;
@@ -19,10 +28,11 @@ export function buildAuthorizationUrl(params: {
   nonce: string;
   codeChallenge: string;
 }): string {
-  const url = new URL(authConfig.authorizationEndpoint);
-  url.searchParams.set('client_id', authConfig.clientId);
+  const config = getAuthConfig();
+  const url = new URL(config.authorizationEndpoint);
+  url.searchParams.set('client_id', config.clientId);
   url.searchParams.set('response_type', 'code');
-  url.searchParams.set('redirect_uri', authConfig.redirectUri);
+  url.searchParams.set('redirect_uri', config.redirectUri);
   url.searchParams.set('scope', 'openid profile email');
   url.searchParams.set('state', params.state);
   url.searchParams.set('nonce', params.nonce);
@@ -38,7 +48,7 @@ export async function exchangeCodeForTokens(
   return requestToken({
     grant_type: 'authorization_code',
     code,
-    redirect_uri: authConfig.redirectUri,
+    redirect_uri: getAuthConfig().redirectUri,
     code_verifier: codeVerifier,
   });
 }
@@ -48,8 +58,9 @@ export async function refreshTokens(refreshToken: string): Promise<TokenResponse
 }
 
 async function requestToken(fields: Record<string, string>): Promise<TokenResponse> {
-  const body = new URLSearchParams({ client_id: authConfig.clientId, ...fields });
-  const response = await fetch(authConfig.tokenEndpoint, {
+  const config = getAuthConfig();
+  const body = new URLSearchParams({ client_id: config.clientId, ...fields });
+  const response = await fetch(config.tokenEndpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
@@ -77,8 +88,9 @@ export interface IdTokenClaims {
  * signature check alone does not provide).
  */
 export async function verifyIdToken(idToken: string): Promise<IdTokenClaims> {
-  const { payload } = await jwtVerify(idToken, jwks, { issuer: authConfig.issuerUrl });
-  if (payload.azp !== authConfig.clientId) {
+  const config = getAuthConfig();
+  const { payload } = await jwtVerify(idToken, getJwks(), { issuer: config.issuerUrl });
+  if (payload.azp !== config.clientId) {
     throw new Error('id_token was not issued for this client');
   }
   if (typeof payload.sub !== 'string') {

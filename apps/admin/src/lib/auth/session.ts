@@ -1,6 +1,6 @@
 import 'server-only';
 import { EncryptJWT, type JWTPayload, jwtDecrypt } from 'jose';
-import { authConfig } from './config';
+import { getAuthConfig } from './config';
 
 /**
  * Encrypted, `HttpOnly` cookie session (design doc 07 §5: "Không lưu access token lâu dài trong
@@ -40,7 +40,7 @@ let cachedKey: Promise<Uint8Array> | undefined;
  */
 function getEncryptionKey(): Promise<Uint8Array> {
   cachedKey ??= crypto.subtle
-    .digest('SHA-256', new TextEncoder().encode(authConfig.sessionSecret))
+    .digest('SHA-256', new TextEncoder().encode(getAuthConfig().sessionSecret))
     .then((digest) => new Uint8Array(digest));
   return cachedKey;
 }

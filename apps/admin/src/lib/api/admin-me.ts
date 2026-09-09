@@ -1,5 +1,5 @@
 import 'server-only';
-import { authConfig } from '../auth/config';
+import { getAuthConfig } from '../auth/config';
 
 /** Mirrors `apps/api/src/access/controllers/me.controller.ts`'s response shape. */
 export interface AdminMe {
@@ -10,7 +10,7 @@ export interface AdminMe {
 }
 
 export async function fetchAdminMe(accessToken: string): Promise<AdminMe> {
-  const response = await fetch(`${authConfig.apiUrl}/admin/me`, {
+  const response = await fetch(`${getAuthConfig().apiUrl}/admin/me`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     cache: 'no-store',
   });
