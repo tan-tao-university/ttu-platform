@@ -1,0 +1,85 @@
+﻿{
+  "common": {
+    "appName": "Tan Tao University",
+    "loading": "Loading...",
+    "viewAll": "View all",
+    "search": "Search"
+  },
+  "nav": {
+    "about": "About",
+    "admissions": "Admissions",
+    "academics": "Academics",
+    "research": "Research",
+    "news": "News & Events",
+    "studentLife": "Student Life",
+    "cooperation": "Cooperation",
+    "contact": "Contact",
+    "items": {
+      "admissions": {
+        "methods": "Admission Methods",
+        "scholarships": "Admissions Scholarships",
+        "info": "Admissions Information",
+        "counseling": "Online Counseling"
+      },
+      "academics": {
+        "undergraduate": "Undergraduate",
+        "postgraduate": "Postgraduate",
+        "secondDegree": "Second Degree",
+        "bridging": "Bridging Programs",
+        "programs": "Academic Programs"
+      },
+      "studentLife": {
+        "clubs": "Clubs",
+        "activities": "Student Activities",
+        "dorm": "Dormitory",
+        "sports": "Sports"
+      },
+      "cooperation": {
+        "international": "International Partners",
+        "industry": "Industry Partners",
+        "exchange": "Student Exchange"
+      }
+    }
+  },
+  "footer": {
+    "description": "High-quality education, industry partnership, international integration.",
+    "copyright": "┬⌐ 2026 Tan Tao University. All rights reserved.",
+    "columns": {
+      "about": {
+        "title": "About TTU",
+        "links": {
+          "overview": "Overview",
+          "leadership": "Leadership",
+          "history": "History",
+          "vision": "Vision & Mission"
+        }
+      },
+      "academics": {
+        "title": "Academics",
+        "links": {
+          "faculties": "Faculties",
+          "programs": "Programs",
+          "admissions": "Admissions",
+          "scholarships": "Scholarships"
+        }
+      },
+      "research": {
+        "title": "Research",
+        "links": {
+          "centers": "Centers",
+          "publications": "Publications",
+          "partners": "Partners"
+        }
+      },
+      "contact": {
+        "title": "Contact",
+        "links": {
+          "address": "Address",
+          "phone": "Phone",
+          "email": "Email",
+          "social": "Social"
+        }
+      }
+    }
+  }
+}

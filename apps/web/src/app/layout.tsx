@@ -1,21 +1,17 @@
-import type { Metadata } from 'next';
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
-import './globals.css';
-
-export const metadata: Metadata = {
-  title: 'Trường Đại học Tân Tạo',
-  description: 'Website chính thức của Trường Đại học Tân Tạo (TTU).',
-};
-
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <html lang="vi">
-      <body className="flex min-h-screen flex-col">
-        <Header />
-        <div className="flex-1">{children}</div>
-        <Footer />
-      </body>
-    </html>
-  );
+/**
+ * Root layout — minimal HTML shell.
+ *
+ * All locale-specific content (Navbar, Footer, i18n providers) lives in
+ * app/src/app/[locale]/layout.tsx which renders inside {children}.
+ *
+ * This root layout must include <html> and <body> tags per Next.js App Router
+ * requirements; it intentionally provides no locale-specific markup so that
+ * [locale]/layout.tsx can inject that independently.
+ */
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
 }

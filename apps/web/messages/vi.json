@@ -1,0 +1,85 @@
+﻿{
+  "common": {
+    "appName": "Tr╞░ß╗¥ng ─Éß║íi hß╗ìc T├ón Tß║ío",
+    "loading": "─Éang tß║úi...",
+    "viewAll": "Xem tß║Ñt cß║ú",
+    "search": "T├¼m kiß║┐m"
+  },
+  "nav": {
+    "about": "Giß╗¢i thiß╗çu",
+    "admissions": "Tuyß╗ân sinh",
+    "academics": "─É├áo tß║ío",
+    "research": "Nghi├¬n cß╗⌐u",
+    "news": "Tin tß╗⌐c & Sß╗▒ kiß╗çn",
+    "studentLife": "─Éß╗¥i sß╗æng sinh vi├¬n",
+    "cooperation": "Hß╗úp t├íc",
+    "contact": "Li├¬n hß╗ç",
+    "items": {
+      "admissions": {
+        "methods": "Ph╞░╞íng thß╗⌐c x├⌐t tuyß╗ân",
+        "scholarships": "Hß╗ìc bß╗òng tuyß╗ân sinh",
+        "info": "Th├┤ng tin tuyß╗ân sinh",
+        "counseling": "T╞░ vß║Ñn trß╗▒c tuyß║┐n"
+      },
+      "academics": {
+        "undergraduate": "─Éß║íi hß╗ìc ch├¡nh quy",
+        "postgraduate": "Sau ─æß║íi hß╗ìc",
+        "secondDegree": "V─ân bß║▒ng 2",
+        "bridging": "Li├¬n th├┤ng",
+        "programs": "Ch╞░╞íng tr├¼nh ─æ├áo tß║ío"
+      },
+      "studentLife": {
+        "clubs": "C├óu lß║íc bß╗Ö",
+        "activities": "Hoß║ít ─æß╗Öng sinh vi├¬n",
+        "dorm": "K├╜ t├║c x├í",
+        "sports": "Thß╗â thao"
+      },
+      "cooperation": {
+        "international": "─Éß╗æi t├íc quß╗æc tß║┐",
+        "industry": "─Éß╗æi t├íc doanh nghiß╗çp",
+        "exchange": "Trao ─æß╗òi sinh vi├¬n"
+      }
+    }
+  },
+  "footer": {
+    "description": "─É├áo tß║ío chß║Ñt l╞░ß╗úng cao, gß║»n kß║┐t doanh nghiß╗çp, hß╗Öi nhß║¡p quß╗æc tß║┐.",
+    "copyright": "┬⌐ 2026 Tr╞░ß╗¥ng ─Éß║íi hß╗ìc T├ón Tß║ío. Mß╗ìi quyß╗ün ─æ╞░ß╗úc bß║úo l╞░u.",
+    "columns": {
+      "about": {
+        "title": "Vß╗ü TTU",
+        "links": {
+          "overview": "Tß╗òng quan",
+          "leadership": "Ban Gi├ím hiß╗çu",
+          "history": "Lß╗ïch sß╗¡",
+          "vision": "Tß║ºm nh├¼n - Sß╗⌐ mß╗çnh"
+        }
+      },
+      "academics": {
+        "title": "─É├áo tß║ío",
+        "links": {
+          "faculties": "7 Khoa",
+          "programs": "Ch╞░╞íng tr├¼nh",
+          "admissions": "Tuyß╗ân sinh",
+          "scholarships": "Hß╗ìc bß╗òng"
+        }
+      },
+      "research": {
+        "title": "Nghi├¬n cß╗⌐u",
+        "links": {
+          "centers": "Trung t├óm",
+          "publications": "C├┤ng bß╗æ",
+          "partners": "─Éß╗æi t├íc"
+        }
+      },
+      "contact": {
+        "title": "Li├¬n hß╗ç",
+        "links": {
+          "address": "─Éß╗ïa chß╗ë",
+          "phone": "─Éiß╗çn thoß║íi",
+          "email": "Email",
+          "social": "Mß║íng x├ú hß╗Öi"
+        }
+      }
+    }
+  }
+}
