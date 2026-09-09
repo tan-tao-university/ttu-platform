@@ -4,6 +4,24 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-09 — Admin dashboard: browser-side OIDC sign-in ([#17](https://github.com/tan-tao-university/ttu-platform/pull/17))
+
+### Added
+
+- `apps/admin/src/lib/auth/` — server-side (BFF) Authorization Code + PKCE flow against `ttu-identity`'s `ttu` realm, client `ttu-web`: PKCE/state/nonce generation (`pkce.ts`), Keycloak protocol calls and ID-token verification via `jose` (`keycloak.ts`), and AES-256-GCM-encrypted `HttpOnly` session/transaction cookies (`session.ts`).
+- `apps/admin/src/app/api/auth/{login,callback,logout}/route.ts` — starts the flow, completes it (validates `state`/`nonce`, exchanges the code, verifies the ID token, sets the session cookie), and clears the local session on logout.
+- `apps/admin/src/proxy.ts` (Next.js 16's `middleware.ts` successor) — gates every admin page; transparently refreshes an about-to-expire access token and rewrites the cookie; redirects an unrecoverable session to login.
+- `apps/admin/src/lib/api/admin-me.ts` — server-side `GET /api/v1/admin/me` call; `app/page.tsx` and `components/AdminHeader.tsx` render the authenticated identity and permission list.
+- `apps/admin/.env.example` — `KEYCLOAK_ISSUER_URL`, `KEYCLOAK_CLIENT_ID`, `APP_BASE_URL`, `SESSION_SECRET`.
+- `docs/identity/authentication.md`, `docs/setup.md` — the implemented flow and local setup steps documented.
+
+Verified end to end with a live browser against the real `ttu-identity` Keycloak dev instance and the real `apps/api` dev server: full login redirect, real Keycloak login form submission, callback, session cookie confirmed genuinely `HttpOnly` (`document.cookie` returns empty in the browser), `/admin/me` permission list rendered, and logout confirmed to clear the local session.
+
+### Fixed
+
+- `apps/api/IMPLEMENTATION_STATUS.md`'s top-level status table still listed Media/MinIO (`#16`) as "Not started" after that PR merged — the detailed §3.6 write-up was correct but the summary table row was missed. Corrected alongside this change.
+- `docs/setup.md`'s Identity & Authorization section said the 4 non-`super_admin` roles were "seeded with zero grants" — stale since `#15`. Updated to point at the actual grant matrix.
+
 ## 2026-09-09 — Media domain: MinIO storage integration ([#16](https://github.com/tan-tao-university/ttu-platform/pull/16))
 
 ### Added

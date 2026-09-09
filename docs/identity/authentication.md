@@ -9,11 +9,17 @@ TTU Platform strictly separates **identity authentication** from **application a
 
 A user who successfully logs into Keycloak is not automatically granted CMS editing or publishing permissions.
 
-## 2. OIDC Login Flow (PKCE)
+## 2. OIDC Login Flow (PKCE) — implemented in `apps/admin`
 
-The admin frontend authenticates against Keycloak using OpenID Connect (OIDC) **Authorization Code Flow with PKCE**:
+The admin frontend authenticates against Keycloak using OpenID Connect (OIDC) **Authorization Code Flow with PKCE**, implemented as a server-side (BFF) flow — `apps/admin/src/lib/auth/`, `apps/admin/src/app/api/auth/`, `apps/admin/src/proxy.ts`:
 
 ![Identity Auth Flow](../assets/identity-auth-flow.png)
+
+1. `GET /api/auth/login` generates `state`, `nonce`, and a PKCE `code_verifier`/`code_challenge` (S256), stores them in a short-lived encrypted transaction cookie, and redirects to Keycloak's `/protocol/openid-connect/auth`.
+2. `GET /api/auth/callback` validates `state` against the transaction cookie, exchanges the authorization code (with `code_verifier`) at the token endpoint, and verifies the returned ID token's signature/issuer/`azp`/`nonce` via `jose`.
+3. The resulting session — `sub`, cached `email`/`displayName`, access token, refresh token, and their expiries — is encrypted (AES-256-GCM, `jose` `EncryptJWT`) into an `HttpOnly`, `SameSite=Lax` cookie. The browser is never given a token in any form its own JS can read.
+4. `proxy.ts` (Next.js 16's `middleware.ts` successor) gates every page: no session → redirect to login; access token expiring within 30s → transparently refreshed via the token endpoint and the cookie rewritten; refresh token also expired → redirect to login.
+5. `POST /api/auth/logout` clears the local session cookie only — design doc 07 §5 scopes Admin logout to ending TTU Platform's own session; SSO-wide logout is TTU Identity's policy, not this app's to enforce.
 
 ## 3. JWT Verification at the API
 
