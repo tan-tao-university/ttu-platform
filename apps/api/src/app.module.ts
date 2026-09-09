@@ -3,11 +3,12 @@ import { AccessModule } from './access/access.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ContentModule } from './content/content.module';
+import { MediaModule } from './media/media.module';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
 
 /** Root application module for TTU Platform API. */
 @Module({
-  imports: [AccessModule, TaxonomyModule, ContentModule],
+  imports: [AccessModule, TaxonomyModule, ContentModule, MediaModule],
   controllers: [AppController],
   providers: [AppService],
 })

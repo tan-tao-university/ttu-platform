@@ -72,6 +72,34 @@ GET    /api/v1/public/content/:slug?locale=vi                 same; slug is matc
 
 Gated by `content.read`/`content.create`/`content.edit`/`content.delete`/`content.publish`/ `content.restore` (categories/tags reuse `content.read`/`content.edit` — no dedicated `taxonomy.*` permission exists in the catalog). `bun run db:seed` must have run first (locales, permission catalog) — see Identity & Authorization above.
 
+## Media / MinIO API
+
+`apps/api/src/media/` implements the Media domain (design doc 08) against `ttu-data-infra`'s MinIO instance.
+
+```bash
+bun run infra:up   # also provisions the ttu-media bucket + scoped app-readwrite MinIO credential
+```
+
+`.env` needs 4 more variables on top of the ones above (already in `.env.example`):
+
+```plain text
+S3_ENDPOINT=http://127.0.0.1:9000
+S3_BUCKET=ttu-media
+S3_ACCESS_KEY=ttu-app       # ttu-data-infra's MINIO_APP_ACCESS_KEY, never MINIO_ROOT_USER
+S3_SECRET_KEY=ttu_app_dev_secret
+```
+
+```plain text
+GET    /api/v1/admin/media                                   list, optional mimeType/search filters
+GET    /api/v1/admin/media/:id                                metadata + resolved delivery URL + translations
+POST   /api/v1/admin/media                                    multipart file upload (field name: file)
+PUT    /api/v1/admin/media/:id/translations/:locale           upsert alt text / caption
+DELETE /api/v1/admin/media/:id                                soft delete — 409 if referenced by published content or an active person/partner
+POST   /api/v1/admin/media/:id/restore                        undo a soft delete
+```
+
+Gated by `media.read`/`media.upload`/`media.update`/`media.delete`. Allowlist: `image/jpeg`, `image/png`, `image/webp` (≤10 MB), `application/pdf` (≤50 MB) — validated by size, declared MIME type, and magic-byte signature, not by filename extension. `ttu-media` is a public, anonymous-download bucket (`ttu-data-infra`'s `minio/init/create-buckets.sh`), so delivery URLs are plain and unsigned, not presigned.
+
 ## Checks
 
 ```bash
@@ -107,5 +135,5 @@ Real env files are never committed — only `apps/*/.env.example` is checked in.
    - ~~`apps/api` verifies Keycloak-issued tokens and enforces CMS RBAC~~ — done; see Identity & Authorization above.
    - `apps/admin`'s actual sign-in UI (the Authorization Code + PKCE redirect flow against the `ttu-web` client) is still open — nothing in `apps/admin` calls the API yet.
 4. ~~Add content modules and DTOs to `apps/api`~~ — done for the Content domain (news, announcements, events, ...) and its taxonomy; see Content & Taxonomy API above.
-5. Media/storage endpoints (doc 08) — not started; needs MinIO wiring (`S3_*` env, upload validation).
+5. ~~Media/storage endpoints (doc 08)~~ — done (MinIO wiring, upload validation, delete-reference protection); see Media / MinIO API above.
 6. CMS Page Builder (`pages`/`page_sections`, doc 02-03) — blocked on a Component Registry (`packages/cms-registry`) and a real component set, neither of which exist yet. Do not add `pages`/`page_sections` endpoints or invent components to unblock this speculatively — see AGENTS.md.

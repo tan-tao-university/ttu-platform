@@ -43,3 +43,14 @@
 | `GET` | `/api/v1/admin/tags` | `content.read` | List tags with pagination. |
 | `POST` | `/api/v1/admin/tags` | `content.edit` | Create tag. |
 | `PUT` | `/api/v1/admin/tags/:id/translations/:locale` | `content.edit` | Upsert tag translation name and slug. |
+
+## 4. Media Domain (`apps/api/src/media`)
+
+| Method | Path | Required Permission | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/admin/media` | `media.read` | Paginated list, optional `mimeType`/`search` filters. |
+| `GET` | `/api/v1/admin/media/:id` | `media.read` | Asset metadata, resolved delivery URL, and translations. |
+| `POST` | `/api/v1/admin/media` | `media.upload` | Multipart file upload — validates, stores in MinIO, persists metadata. |
+| `PUT` | `/api/v1/admin/media/:id/translations/:locale` | `media.update` | Upsert alt text / caption for a locale. |
+| `DELETE` | `/api/v1/admin/media/:id` | `media.delete` | Soft-delete; `409` if still referenced by published content or an active person/partner profile. |
+| `POST` | `/api/v1/admin/media/:id/restore` | `media.delete` | Undo a soft-delete. |
