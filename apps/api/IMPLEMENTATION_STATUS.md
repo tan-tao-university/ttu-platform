@@ -9,8 +9,14 @@
 > - what should be implemented next;
 > - what is intentionally blocked;
 > - what has not yet been scoped.
->
-> Setup and verification instructions are documented in [`../../docs/setup.md`](../../docs/setup.md). Repository wiring and implementation-order rules are documented in [`../../AGENTS.md`](../../AGENTS.md). Major project-wide changes are also recorded in [`../../CHANGELOG.md`](../../CHANGELOG.md).
+
+Setup and verification instructions are documented in [`../../docs/setup.md`](../../docs/setup.md). Repository wiring and implementation-order rules are documented in [`../../AGENTS.md`](../../AGENTS.md). Major project-wide changes are also recorded in [`../../CHANGELOG.md`](../../CHANGELOG.md).
+
+Cross-application trackers:
+
+- [**Master Monorepo Status**](../../IMPLEMENTATION_STATUS.md)
+- [**Admin Dashboard Status**](../admin/IMPLEMENTATION_STATUS.md)
+- [**Public Website Status**](../web/IMPLEMENTATION_STATUS.md)
 
 ---
 

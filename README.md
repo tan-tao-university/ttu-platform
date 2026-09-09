@@ -1,5 +1,3 @@
-<a id="readme-top"></a>
-
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -29,7 +27,7 @@
     <br />
     <a href="docs/setup.md"><strong>Explore the setup guide »</strong></a>
     &middot;
-    <a href="apps/api/IMPLEMENTATION_STATUS.md">Backend Implementation Status</a>
+    <a href="IMPLEMENTATION_STATUS.md">Implementation Status</a>
     &middot;
     <a href="https://github.com/tan-tao-university/ttu-platform/issues/new?labels=bug">Report Bug</a>
     &middot;
@@ -89,8 +87,6 @@ This repository is one of four sibling repositories designed to be cloned alongs
 | [**ttu-faculty-platform**][ttu-faculty-platform-url] | Seven distinct faculty portals & admin APIs | Multi-tenant faculty portals (`*.ttu.edu.vn`) |
 | [**ttu-platform**][ttu-platform-url] _(this repo)_ | Main university portal, CMS dashboard & API | Next.js 16 (`web`, `admin`), NestJS 11 (`api`) |
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 ### Monorepo Applications
 
 | Application | Package Name | Directory | Default Port | Description |
@@ -100,8 +96,6 @@ This repository is one of four sibling repositories designed to be cloned alongs
 | **Core API** | `@ttu/api` | `apps/api` | `4001` | High-throughput NestJS API handling authentication, content management, taxonomy, and system services. |
 
 _Note: Dev ports (3000, 3011, 4001) are selected to avoid collisions with `ttu-faculty-platform` on the same host (3010, 4000). In production, each app runs in its own Docker container joining the shared `ttu-backend` network._
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
 
@@ -128,8 +122,6 @@ Ensure you have the following toolchain installed:
   ```
 - **Docker & Docker Compose**: For running shared infrastructure services (`ttu-data-infra` and `ttu-identity`).
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 ### Installation
 
 1. Clone the repository and navigate to the project root:
@@ -145,8 +137,6 @@ Ensure you have the following toolchain installed:
    ```sh
    bun run prepare
    ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Environment Configuration
 
@@ -170,8 +160,6 @@ Ensure you have the following toolchain installed:
    ```sh
    bun run --cwd apps/api db:create-super-admin <your-keycloak-user-uuid> <your-email> "Admin Name"
    ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
 
@@ -213,13 +201,11 @@ moon run api:test                            # NestJS unit tests in apps/api/tes
 moon run :build                              # Production build for Next.js apps and NestJS API
 ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- ROADMAP -->
 
 ## Roadmap
 
-Track our completed milestones and upcoming domains. For exhaustive technical progress, see [`apps/api/IMPLEMENTATION_STATUS.md`](apps/api/IMPLEMENTATION_STATUS.md).
+Track our completed milestones and upcoming domains. For exhaustive technical progress, see the master [Implementation Status](IMPLEMENTATION_STATUS.md) and its domain trackers: [Backend API](apps/api/IMPLEMENTATION_STATUS.md), [Admin Dashboard](apps/admin/IMPLEMENTATION_STATUS.md), and [Public Website](apps/web/IMPLEMENTATION_STATUS.md).
 
 - [x] **Phase 1: Foundation & Database**
   - [x] 36-table physical database schema for `ttu_main` (Drizzle ORM)
@@ -244,8 +230,6 @@ Track our completed milestones and upcoming domains. For exhaustive technical pr
   - [ ] Admin dashboard authentication flow (OIDC redirect)
   - [ ] Admin content and taxonomy management UI
   - [ ] Public website UI components and responsive layout
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
 
@@ -277,15 +261,11 @@ If you have suggestions or bug reports:
 - **Code Comments**: All documentation comments must use standard JSDoc (`/** ... */`). No divider lines, no conversational monologue, comments strictly explain _why_.
 - **Test Placement**: All test files for `apps/api` must be located inside `apps/api/test/`, never colocated in `src/`.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- LICENSE -->
 
 ## License
 
 Distributed under private university licensing. Copyright &copy; Tan Tao University. All rights reserved.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTACT -->
 
@@ -296,8 +276,6 @@ Distributed under private university licensing. Copyright &copy; Tan Tao Univers
 - **Website**: [https://ttu.edu.vn](https://ttu.edu.vn)
 - **Project Repository**: [https://github.com/tan-tao-university/ttu-platform](https://github.com/tan-tao-university/ttu-platform)
 - **Email**: [info@ttu.edu.vn](mailto:info@ttu.edu.vn)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ACKNOWLEDGMENTS -->
 
@@ -314,8 +292,6 @@ Special thanks to the open-source tools and resources powering TTU Platform:
 - [Bun Runtime](https://bun.sh/)
 - [Best-README-Template by othneildrew](https://github.com/othneildrew/Best-README-Template)
 - [Shields.io](https://shields.io)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 

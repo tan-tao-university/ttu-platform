@@ -26,7 +26,7 @@ Stay on and commit to the branch the user is currently working on. Never switch 
 
 A code change updates the matching doc on the same branch. [docs/setup.md](docs/setup.md) covers running and checks; [docs/content-audit.md](docs/content-audit.md) is a snapshot of the WordPress site being replaced, not a spec — update it if the live site's structure changes before the ERD work starts, but do not turn it into the ERD itself.
 
-**Major change → update the tracker + changelog, same PR.** A new domain/module, a schema change, a new app surface, or a breaking API change updates [apps/api/IMPLEMENTATION_STATUS.md](apps/api/IMPLEMENTATION_STATUS.md) (move the item to Completed, update its status table, note what's next) and adds an entry to [CHANGELOG.md](CHANGELOG.md) (newest first, link the PR). Routine fixes/refactors/doc typos don't need either.
+**Major change → update the tracker + changelog, same PR.** A new domain/module, a schema change, a new app surface, or a breaking API change updates the master [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) and the corresponding app status tracker ([apps/api/IMPLEMENTATION_STATUS.md](apps/api/IMPLEMENTATION_STATUS.md), [apps/admin/IMPLEMENTATION_STATUS.md](apps/admin/IMPLEMENTATION_STATUS.md), or [apps/web/IMPLEMENTATION_STATUS.md](apps/web/IMPLEMENTATION_STATUS.md)), and adds an entry to [CHANGELOG.md](CHANGELOG.md) (newest first, link the PR). Routine fixes/refactors/doc typos don't need either.
 
 ## Writing & Markdown Prose
 
