@@ -5,7 +5,7 @@ import {
   type ContentRevision,
   type ContentTranslation,
   auditLogs,
-  contentItems,
+  contents,
   contentRevisions,
   contentTranslations,
   events,
@@ -34,8 +34,8 @@ export class ContentPublishingService {
     return db.transaction(async (tx) => {
       const [item] = await tx
         .select()
-        .from(contentItems)
-        .where(and(eq(contentItems.id, contentId), sql`${contentItems.deletedAt} IS NULL`));
+        .from(contents)
+        .where(and(eq(contents.id, contentId), sql`${contents.deletedAt} IS NULL`));
       if (!item) throw contentNotFound(contentId);
 
       const [translation] = await tx
@@ -130,7 +130,7 @@ export class ContentPublishingService {
       await tx.insert(auditLogs).values({
         actorUserId,
         action: 'content.publish',
-        entityType: 'content_item',
+        entityType: 'content',
         entityId: contentId,
         metadata: { locale, versionNumber, revisionId: revision.id },
       });
@@ -184,7 +184,7 @@ export class ContentPublishingService {
       await tx.insert(auditLogs).values({
         actorUserId,
         action: 'content.restore',
-        entityType: 'content_item',
+        entityType: 'content',
         entityId: contentId,
         metadata: { locale, revisionId, versionNumber: revision.versionNumber },
       });
@@ -234,7 +234,6 @@ async function syncPublicRoute(
           destinationPath: input.path,
           statusCode: 301,
           createdBy: input.actorUserId,
-          notes: 'auto: content path changed on publish',
         });
       }
       await tx

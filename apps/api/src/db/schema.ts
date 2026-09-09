@@ -2,6 +2,7 @@ import { relations, sql } from 'drizzle-orm';
 import {
   bigint,
   boolean,
+  char,
   check,
   foreignKey,
   index,
@@ -164,7 +165,7 @@ export const mediaAssets = pgTable(
     fileSize: bigint('file_size', { mode: 'number' }).notNull(),
     width: integer('width'),
     height: integer('height'),
-    checksumSha256: varchar('checksum_sha256', { length: 64 }),
+    checksumSha256: char('checksum_sha256', { length: 64 }),
     uploadedBy: uuid('uploaded_by').references(() => users.id, { onDelete: 'set null' }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
@@ -199,44 +200,42 @@ export type MediaTranslation = typeof mediaTranslations.$inferSelect;
 export type NewMediaTranslation = typeof mediaTranslations.$inferInsert;
 
 // ---------------------------------------------------------------------------
-// 4. University — school-wide data only. Faculty-specific data lives in TTU
-//    Faculty Platform's own database, never here (05 §6).
+// 4. Programs — school-wide academic programs and degrees (05 §2).
+//    Faculty-specific data lives in TTU Faculty Platform's own database,
+//    never here.
 // ---------------------------------------------------------------------------
 
-export const ACADEMIC_PROGRAM_STATUSES = ['DRAFT', 'ACTIVE', 'INACTIVE', 'ARCHIVED'] as const;
-export type AcademicProgramStatus = (typeof ACADEMIC_PROGRAM_STATUSES)[number];
+export const PROGRAM_STATUSES = ['DRAFT', 'ACTIVE', 'INACTIVE', 'ARCHIVED'] as const;
+export type ProgramStatus = (typeof PROGRAM_STATUSES)[number];
 
-export const academicPrograms = pgTable(
-  'academic_programs',
+export const programs = pgTable(
+  'programs',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     code: varchar('code', { length: 64 }).unique(),
     degreeLevel: varchar('degree_level', { length: 30 }),
-    status: varchar('status', { length: 20 })
-      .notNull()
-      .default('ACTIVE')
-      .$type<AcademicProgramStatus>(),
+    status: varchar('status', { length: 20 }).notNull().default('ACTIVE').$type<ProgramStatus>(),
     sortOrder: integer('sort_order').notNull().default(0),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },
   (t) => [
-    check(
-      'academic_programs_status_check',
-      sql`${t.status} IN ('DRAFT','ACTIVE','INACTIVE','ARCHIVED')`,
-    ),
+    index('idx_programs_status_sort')
+      .on(t.status, t.sortOrder)
+      .where(sql`${t.deletedAt} IS NULL`),
+    check('programs_status_check', sql`${t.status} IN ('DRAFT','ACTIVE','INACTIVE','ARCHIVED')`),
   ],
 );
 
-export type AcademicProgram = typeof academicPrograms.$inferSelect;
-export type NewAcademicProgram = typeof academicPrograms.$inferInsert;
+export type Program = typeof programs.$inferSelect;
+export type NewProgram = typeof programs.$inferInsert;
 
-export const academicProgramTranslations = pgTable(
-  'academic_program_translations',
+export const programTranslations = pgTable(
+  'program_translations',
   {
     programId: uuid('program_id')
       .notNull()
-      .references(() => academicPrograms.id, { onDelete: 'cascade' }),
+      .references(() => programs.id, { onDelete: 'cascade' }),
     locale: varchar('locale', { length: 16 })
       .notNull()
       .references(() => locales.code, { onDelete: 'restrict' }),
@@ -248,8 +247,8 @@ export const academicProgramTranslations = pgTable(
   (t) => [primaryKey({ columns: [t.programId, t.locale] })],
 );
 
-export type AcademicProgramTranslation = typeof academicProgramTranslations.$inferSelect;
-export type NewAcademicProgramTranslation = typeof academicProgramTranslations.$inferInsert;
+export type ProgramTranslation = typeof programTranslations.$inferSelect;
+export type NewProgramTranslation = typeof programTranslations.$inferInsert;
 
 export const people = pgTable('people', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -266,8 +265,8 @@ export const people = pgTable('people', {
 export type Person = typeof people.$inferSelect;
 export type NewPerson = typeof people.$inferInsert;
 
-export const peopleTranslations = pgTable(
-  'people_translations',
+export const personTranslations = pgTable(
+  'person_translations',
   {
     personId: uuid('person_id')
       .notNull()
@@ -282,9 +281,8 @@ export const peopleTranslations = pgTable(
   },
   (t) => [primaryKey({ columns: [t.personId, t.locale] })],
 );
-
-export type PeopleTranslation = typeof peopleTranslations.$inferSelect;
-export type NewPeopleTranslation = typeof peopleTranslations.$inferInsert;
+export type PersonTranslation = typeof personTranslations.$inferSelect;
+export type NewPersonTranslation = typeof personTranslations.$inferInsert;
 
 export const partners = pgTable('partners', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -341,8 +339,6 @@ export const pages = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     pageType: varchar('page_type', { length: 30 }).notNull().$type<PageType>(),
-    scheduledAt: timestamp('scheduled_at', { withTimezone: true }),
-    publishedAt: timestamp('published_at', { withTimezone: true }),
     lockVersion: integer('lock_version').notNull().default(0),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
@@ -384,6 +380,11 @@ export const pageRevisions = pgTable(
     // a real UNIQUE CONSTRAINT, not a unique index: Postgres rejects a composite
     // `FOREIGN KEY` targeting an index alone.
     unique('uq_page_revisions_id_page_locale').on(t.id, t.pageId, t.locale),
+    index('idx_page_revisions_entity_locale_version').on(
+      t.pageId,
+      t.locale,
+      t.versionNumber.desc(),
+    ),
     check('page_revisions_version_number_check', sql`${t.versionNumber} > 0`),
     check('page_revisions_schema_version_check', sql`${t.schemaVersion} > 0`),
     check('page_revisions_snapshot_object_check', sql`jsonb_typeof(${t.snapshot}) = 'object'`),
@@ -428,6 +429,12 @@ export const pageTranslations = pgTable(
       columns: [t.publishedRevisionId, t.pageId, t.locale],
       foreignColumns: [pageRevisions.id, pageRevisions.pageId, pageRevisions.locale],
     }).onDelete('restrict'),
+    index('idx_page_translations_status')
+      .on(t.locale, t.status)
+      .where(sql`${t.status} <> 'ARCHIVED'`),
+    index('idx_page_translation_scheduler')
+      .on(t.scheduledAt)
+      .where(sql`${t.status} = 'SCHEDULED'`),
     check(
       'page_translations_status_check',
       sql`${t.status} IN ('DRAFT','IN_REVIEW','APPROVED','SCHEDULED','PUBLISHED','ARCHIVED')`,
@@ -445,20 +452,16 @@ export const pageSections = pgTable(
     pageId: uuid('page_id')
       .notNull()
       .references(() => pages.id, { onDelete: 'cascade' }),
-    componentKey: varchar('component_key', { length: 100 }).notNull(),
+    componentKey: varchar('component_key', { length: 150 }).notNull(),
     componentVersion: integer('component_version').notNull(),
-    sortOrder: integer('sort_order').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
     isVisible: boolean('is_visible').notNull().default(true),
     config: jsonb('config').notNull().default({}),
     style: jsonb('style').notNull().default({}),
     ...timestamps,
   },
   (t) => [
-    // Table CONSTRAINT (not an index) so a later migration can mark it DEFERRABLE INITIALLY
-    // DEFERRED, letting a drag-and-drop reorder renumber every sibling in one transaction
-    // without tripping the constraint mid-update (05 §7.3). Drizzle has no first-class
-    // deferrable option yet; see docs/setup.md for the follow-up ALTER statement.
-    unique('uq_page_sections_page_order').on(t.pageId, t.sortOrder),
+    index('idx_page_sections_page_order').on(t.pageId, t.sortOrder),
     check('page_sections_component_version_check', sql`${t.componentVersion} > 0`),
     check('page_sections_sort_order_check', sql`${t.sortOrder} >= 0`),
     check('page_sections_config_object_check', sql`jsonb_typeof(${t.config}) = 'object'`),
@@ -507,8 +510,8 @@ export const CONTENT_TYPES = [
 ] as const;
 export type ContentType = (typeof CONTENT_TYPES)[number];
 
-export const contentItems = pgTable(
-  'content_items',
+export const contents = pgTable(
+  'contents',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     type: varchar('type', { length: 30 }).notNull().$type<ContentType>(),
@@ -522,18 +525,18 @@ export const contentItems = pgTable(
     ...timestamps,
   },
   (t) => [
-    index('idx_content_items_type_active')
+    index('idx_contents_type_active')
       .on(t.type)
       .where(sql`${t.deletedAt} IS NULL`),
     check(
-      'content_items_type_check',
+      'contents_type_check',
       sql`${t.type} IN ('NEWS','ANNOUNCEMENT','PRESS_RELEASE','RESEARCH_ARTICLE','EVENT')`,
     ),
   ],
 );
 
-export type ContentItem = typeof contentItems.$inferSelect;
-export type NewContentItem = typeof contentItems.$inferInsert;
+export type Content = typeof contents.$inferSelect;
+export type NewContent = typeof contents.$inferInsert;
 
 export const contentRevisions = pgTable(
   'content_revisions',
@@ -541,7 +544,7 @@ export const contentRevisions = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     contentId: uuid('content_id')
       .notNull()
-      .references(() => contentItems.id, { onDelete: 'restrict' }),
+      .references(() => contents.id, { onDelete: 'restrict' }),
     locale: varchar('locale', { length: 16 })
       .notNull()
       .references(() => locales.code, { onDelete: 'restrict' }),
@@ -562,6 +565,11 @@ export const contentRevisions = pgTable(
     // real UNIQUE CONSTRAINT, not a unique index: Postgres rejects a composite `FOREIGN KEY`
     // targeting an index alone.
     unique('uq_content_revisions_id_content_locale').on(t.id, t.contentId, t.locale),
+    index('idx_content_revisions_entity_locale_version').on(
+      t.contentId,
+      t.locale,
+      t.versionNumber.desc(),
+    ),
     check('content_revisions_version_number_check', sql`${t.versionNumber} > 0`),
     check('content_revisions_schema_version_check', sql`${t.schemaVersion} > 0`),
     check('content_revisions_snapshot_object_check', sql`jsonb_typeof(${t.snapshot}) = 'object'`),
@@ -578,7 +586,7 @@ export const contentTranslations = pgTable(
   {
     contentId: uuid('content_id')
       .notNull()
-      .references(() => contentItems.id, { onDelete: 'cascade' }),
+      .references(() => contents.id, { onDelete: 'cascade' }),
     locale: varchar('locale', { length: 16 })
       .notNull()
       .references(() => locales.code, { onDelete: 'restrict' }),
@@ -610,9 +618,9 @@ export const contentTranslations = pgTable(
       foreignColumns: [contentRevisions.id, contentRevisions.contentId, contentRevisions.locale],
     }).onDelete('restrict'),
     index('idx_content_translation_public_feed')
-      .on(t.locale, t.publishedAt)
+      .on(t.locale, t.publishedAt.desc())
       .where(sql`${t.status} = 'PUBLISHED'`),
-    index('idx_content_scheduler')
+    index('idx_content_translation_scheduler')
       .on(t.scheduledAt)
       .where(sql`${t.status} = 'SCHEDULED'`),
     check(
@@ -630,7 +638,7 @@ export const events = pgTable(
   {
     contentId: uuid('content_id')
       .primaryKey()
-      .references(() => contentItems.id, { onDelete: 'cascade' }),
+      .references(() => contents.id, { onDelete: 'cascade' }),
     startAt: timestamp('start_at', { withTimezone: true }).notNull(),
     endAt: timestamp('end_at', { withTimezone: true }),
     timezone: varchar('timezone', { length: 64 }).notNull().default('Asia/Ho_Chi_Minh'),
@@ -733,7 +741,7 @@ export const contentCategoryAssignments = pgTable(
   {
     contentId: uuid('content_id')
       .notNull()
-      .references(() => contentItems.id, { onDelete: 'cascade' }),
+      .references(() => contents.id, { onDelete: 'cascade' }),
     categoryId: uuid('category_id')
       .notNull()
       .references(() => categories.id, { onDelete: 'restrict' }),
@@ -757,7 +765,7 @@ export const contentTagAssignments = pgTable(
   {
     contentId: uuid('content_id')
       .notNull()
-      .references(() => contentItems.id, { onDelete: 'cascade' }),
+      .references(() => contents.id, { onDelete: 'cascade' }),
     tagId: uuid('tag_id')
       .notNull()
       .references(() => tags.id, { onDelete: 'restrict' }),
@@ -805,9 +813,8 @@ export const menuItems = pgTable(
     parentId: uuid('parent_id'),
     linkType: varchar('link_type', { length: 20 }).notNull().$type<MenuItemLinkType>(),
     pageId: uuid('page_id').references(() => pages.id, { onDelete: 'restrict' }),
-    contentId: uuid('content_id').references(() => contentItems.id, { onDelete: 'restrict' }),
+    contentId: uuid('content_id').references(() => contents.id, { onDelete: 'restrict' }),
     externalUrl: text('external_url'),
-    target: varchar('target', { length: 10 }).notNull().default('_self'),
     sortOrder: integer('sort_order').notNull().default(0),
     isVisible: boolean('is_visible').notNull().default(true),
     ...timestamps,
@@ -819,7 +826,6 @@ export const menuItems = pgTable(
       'menu_items_parent_not_self_check',
       sql`${t.parentId} IS NULL OR ${t.parentId} <> ${t.id}`,
     ),
-    check('menu_items_target_check', sql`${t.target} IN ('_self','_blank')`),
     check(
       'menu_items_link_type_check',
       sql`(${t.linkType} = 'PAGE' AND ${t.pageId} IS NOT NULL AND ${t.contentId} IS NULL AND ${t.externalUrl} IS NULL)
@@ -871,7 +877,7 @@ export const publicRoutes = pgTable(
     path: text('path').notNull(),
     targetType: varchar('target_type', { length: 20 }).notNull().$type<PublicRouteTargetType>(),
     pageId: uuid('page_id').references(() => pages.id, { onDelete: 'cascade' }),
-    contentId: uuid('content_id').references(() => contentItems.id, { onDelete: 'cascade' }),
+    contentId: uuid('content_id').references(() => contents.id, { onDelete: 'cascade' }),
     ...timestamps,
   },
   (t) => [
@@ -909,11 +915,16 @@ export const redirects = pgTable(
     destinationPath: text('destination_path').notNull(),
     statusCode: smallint('status_code').notNull().default(301),
     isActive: boolean('is_active').notNull().default(true),
-    notes: text('notes'),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     ...timestamps,
   },
   (t) => [
+    uniqueIndex('uq_redirects_active_locale_source')
+      .on(t.locale, t.sourcePath)
+      .where(sql`${t.isActive} = true AND ${t.locale} IS NOT NULL`),
+    uniqueIndex('uq_redirects_active_global_source')
+      .on(t.sourcePath)
+      .where(sql`${t.isActive} = true AND ${t.locale} IS NULL`),
     check('redirects_status_code_check', sql`${t.statusCode} IN (301,302,307,308)`),
     check('redirects_source_not_destination_check', sql`${t.sourcePath} <> ${t.destinationPath}`),
   ],
@@ -943,15 +954,15 @@ export const auditLogs = pgTable(
     action: varchar('action', { length: 150 }).notNull(),
     entityType: varchar('entity_type', { length: 100 }),
     entityId: uuid('entity_id'),
-    metadata: jsonb('metadata').notNull().default({}),
+    requestId: varchar('request_id', { length: 100 }),
+    metadata: jsonb('metadata'),
     ipAddress: inet('ip_address'),
     userAgent: text('user_agent'),
     occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    index('idx_audit_occurred_at').on(t.occurredAt.desc()),
-    index('idx_audit_actor').on(t.actorUserId, t.occurredAt.desc()),
-    index('idx_audit_entity').on(t.entityType, t.entityId, t.occurredAt.desc()),
+    index('idx_audit_actor_time').on(t.actorUserId, t.occurredAt.desc()),
+    index('idx_audit_entity_time').on(t.entityType, t.entityId, t.occurredAt.desc()),
   ],
 );
 
@@ -998,32 +1009,29 @@ export const mediaTranslationsRelations = relations(mediaTranslations, ({ one })
   locale: one(locales, { fields: [mediaTranslations.locale], references: [locales.code] }),
 }));
 
-export const academicProgramsRelations = relations(academicPrograms, ({ many }) => ({
-  translations: many(academicProgramTranslations),
+export const programsRelations = relations(programs, ({ many }) => ({
+  translations: many(programTranslations),
 }));
 
-export const academicProgramTranslationsRelations = relations(
-  academicProgramTranslations,
-  ({ one }) => ({
-    program: one(academicPrograms, {
-      fields: [academicProgramTranslations.programId],
-      references: [academicPrograms.id],
-    }),
-    locale: one(locales, {
-      fields: [academicProgramTranslations.locale],
-      references: [locales.code],
-    }),
+export const programTranslationsRelations = relations(programTranslations, ({ one }) => ({
+  program: one(programs, {
+    fields: [programTranslations.programId],
+    references: [programs.id],
   }),
-);
+  locale: one(locales, {
+    fields: [programTranslations.locale],
+    references: [locales.code],
+  }),
+}));
 
 export const peopleRelations = relations(people, ({ one, many }) => ({
   portrait: one(mediaAssets, { fields: [people.portraitMediaId], references: [mediaAssets.id] }),
-  translations: many(peopleTranslations),
+  translations: many(personTranslations),
 }));
 
-export const peopleTranslationsRelations = relations(peopleTranslations, ({ one }) => ({
-  person: one(people, { fields: [peopleTranslations.personId], references: [people.id] }),
-  locale: one(locales, { fields: [peopleTranslations.locale], references: [locales.code] }),
+export const personTranslationsRelations = relations(personTranslations, ({ one }) => ({
+  person: one(people, { fields: [personTranslations.personId], references: [people.id] }),
+  locale: one(locales, { fields: [personTranslations.locale], references: [locales.code] }),
 }));
 
 export const partnersRelations = relations(partners, ({ one, many }) => ({
@@ -1065,34 +1073,34 @@ export const pageRevisionsRelations = relations(pageRevisions, ({ one }) => ({
   locale: one(locales, { fields: [pageRevisions.locale], references: [locales.code] }),
 }));
 
-export const contentItemsRelations = relations(contentItems, ({ one, many }) => ({
+export const contentsRelations = relations(contents, ({ one, many }) => ({
   featuredMedia: one(mediaAssets, {
-    fields: [contentItems.featuredMediaId],
+    fields: [contents.featuredMediaId],
     references: [mediaAssets.id],
   }),
   translations: many(contentTranslations),
   revisions: many(contentRevisions),
-  event: one(events, { fields: [contentItems.id], references: [events.contentId] }),
+  event: one(events, { fields: [contents.id], references: [events.contentId] }),
   categoryAssignments: many(contentCategoryAssignments),
   tagAssignments: many(contentTagAssignments),
 }));
 
 export const contentTranslationsRelations = relations(contentTranslations, ({ one }) => ({
-  content: one(contentItems, {
+  content: one(contents, {
     fields: [contentTranslations.contentId],
-    references: [contentItems.id],
+    references: [contents.id],
   }),
   locale: one(locales, { fields: [contentTranslations.locale], references: [locales.code] }),
 }));
 
 export const eventsRelations = relations(events, ({ one }) => ({
-  content: one(contentItems, { fields: [events.contentId], references: [contentItems.id] }),
+  content: one(contents, { fields: [events.contentId], references: [contents.id] }),
 }));
 
 export const contentRevisionsRelations = relations(contentRevisions, ({ one }) => ({
-  content: one(contentItems, {
+  content: one(contents, {
     fields: [contentRevisions.contentId],
-    references: [contentItems.id],
+    references: [contents.id],
   }),
   locale: one(locales, { fields: [contentRevisions.locale], references: [locales.code] }),
 }));
@@ -1124,9 +1132,9 @@ export const tagTranslationsRelations = relations(tagTranslations, ({ one }) => 
 export const contentCategoryAssignmentsRelations = relations(
   contentCategoryAssignments,
   ({ one }) => ({
-    content: one(contentItems, {
+    content: one(contents, {
       fields: [contentCategoryAssignments.contentId],
-      references: [contentItems.id],
+      references: [contents.id],
     }),
     category: one(categories, {
       fields: [contentCategoryAssignments.categoryId],
@@ -1136,9 +1144,9 @@ export const contentCategoryAssignmentsRelations = relations(
 );
 
 export const contentTagAssignmentsRelations = relations(contentTagAssignments, ({ one }) => ({
-  content: one(contentItems, {
+  content: one(contents, {
     fields: [contentTagAssignments.contentId],
-    references: [contentItems.id],
+    references: [contents.id],
   }),
   tag: one(tags, { fields: [contentTagAssignments.tagId], references: [tags.id] }),
 }));
@@ -1151,7 +1159,7 @@ export const menuItemsRelations = relations(menuItems, ({ one, many }) => ({
   menu: one(menus, { fields: [menuItems.menuId], references: [menus.id] }),
   parent: one(menuItems, { fields: [menuItems.parentId], references: [menuItems.id] }),
   page: one(pages, { fields: [menuItems.pageId], references: [pages.id] }),
-  content: one(contentItems, { fields: [menuItems.contentId], references: [contentItems.id] }),
+  content: one(contents, { fields: [menuItems.contentId], references: [contents.id] }),
   translations: many(menuItemTranslations),
 }));
 
@@ -1166,5 +1174,5 @@ export const menuItemTranslationsRelations = relations(menuItemTranslations, ({ 
 export const publicRoutesRelations = relations(publicRoutes, ({ one }) => ({
   locale: one(locales, { fields: [publicRoutes.locale], references: [locales.code] }),
   page: one(pages, { fields: [publicRoutes.pageId], references: [pages.id] }),
-  content: one(contentItems, { fields: [publicRoutes.contentId], references: [contentItems.id] }),
+  content: one(contents, { fields: [publicRoutes.contentId], references: [contents.id] }),
 }));

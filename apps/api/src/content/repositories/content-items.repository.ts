@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { and, eq, sql } from 'drizzle-orm';
 import { db } from '../../db';
 import {
-  type ContentItem,
+  type Content,
   type ContentTranslation,
   type Event,
-  contentItems,
+  contents,
   contentRevisions,
   contentTranslations,
   events,
@@ -18,11 +18,11 @@ import type { UpsertContentTranslationDto } from '../dto/upsert-content-translat
 import type { UpsertEventDto } from '../dto/upsert-event.dto';
 import type { ContentSnapshot } from '../content.types';
 
-export type ContentItemWithTranslation = ContentItem & { translation: ContentTranslation | null };
+export type ContentItemWithTranslation = Content & { translation: ContentTranslation | null };
 
 /** The public read shape: a content item plus the currently-published revision's
  *  snapshot — never the live draft translation columns (see `listPublished` below). */
-export type ContentItemWithRevision = ContentItem & {
+export type ContentItemWithRevision = Content & {
   publishedAt: Date | null;
   snapshot: ContentSnapshot;
 };
@@ -33,33 +33,33 @@ export class ContentItemsRepository {
     query: AdminContentListQueryDto,
   ): Promise<{ items: ContentItemWithTranslation[]; total: number }> {
     const conditions = [
-      sql`${contentItems.deletedAt} IS NULL`,
-      query.type ? eq(contentItems.type, query.type) : undefined,
+      sql`${contents.deletedAt} IS NULL`,
+      query.type ? eq(contents.type, query.type) : undefined,
       query.status ? eq(contentTranslations.status, query.status) : undefined,
     ].filter((c) => c !== undefined);
 
     const rows = await db
-      .select({ item: contentItems, translation: contentTranslations })
-      .from(contentItems)
+      .select({ item: contents, translation: contentTranslations })
+      .from(contents)
       .innerJoin(
         contentTranslations,
         and(
-          eq(contentTranslations.contentId, contentItems.id),
+          eq(contentTranslations.contentId, contents.id),
           eq(contentTranslations.locale, query.locale),
         ),
       )
       .where(and(...conditions))
-      .orderBy(sql`${contentItems.createdAt} DESC`)
+      .orderBy(sql`${contents.createdAt} DESC`)
       .limit(query.pageSize)
       .offset((query.page - 1) * query.pageSize);
 
     const [{ count }] = await db
       .select({ count: sql<number>`count(*)::int` })
-      .from(contentItems)
+      .from(contents)
       .innerJoin(
         contentTranslations,
         and(
-          eq(contentTranslations.contentId, contentItems.id),
+          eq(contentTranslations.contentId, contents.id),
           eq(contentTranslations.locale, query.locale),
         ),
       )
@@ -81,17 +81,17 @@ export class ContentItemsRepository {
     query: PublicContentListQueryDto,
   ): Promise<{ items: ContentItemWithRevision[]; total: number }> {
     const conditions = [
-      sql`${contentItems.deletedAt} IS NULL`,
-      query.type ? eq(contentItems.type, query.type) : undefined,
+      sql`${contents.deletedAt} IS NULL`,
+      query.type ? eq(contents.type, query.type) : undefined,
     ].filter((c) => c !== undefined);
 
     const rows = await db
-      .select({ item: contentItems, translation: contentTranslations, revision: contentRevisions })
-      .from(contentItems)
+      .select({ item: contents, translation: contentTranslations, revision: contentRevisions })
+      .from(contents)
       .innerJoin(
         contentTranslations,
         and(
-          eq(contentTranslations.contentId, contentItems.id),
+          eq(contentTranslations.contentId, contents.id),
           eq(contentTranslations.locale, query.locale),
         ),
       )
@@ -103,11 +103,11 @@ export class ContentItemsRepository {
 
     const [{ count }] = await db
       .select({ count: sql<number>`count(*)::int` })
-      .from(contentItems)
+      .from(contents)
       .innerJoin(
         contentTranslations,
         and(
-          eq(contentTranslations.contentId, contentItems.id),
+          eq(contentTranslations.contentId, contents.id),
           eq(contentTranslations.locale, query.locale),
         ),
       )
@@ -123,11 +123,11 @@ export class ContentItemsRepository {
     };
   }
 
-  async findById(id: string): Promise<ContentItem | undefined> {
+  async findById(id: string): Promise<Content | undefined> {
     const [row] = await db
       .select()
-      .from(contentItems)
-      .where(and(eq(contentItems.id, id), sql`${contentItems.deletedAt} IS NULL`));
+      .from(contents)
+      .where(and(eq(contents.id, id), sql`${contents.deletedAt} IS NULL`));
     return row;
   }
 
@@ -160,14 +160,14 @@ export class ContentItemsRepository {
     slug: string,
   ): Promise<ContentItemWithRevision | undefined> {
     const [row] = await db
-      .select({ item: contentItems, translation: contentTranslations, revision: contentRevisions })
+      .select({ item: contents, translation: contentTranslations, revision: contentRevisions })
       .from(contentTranslations)
-      .innerJoin(contentItems, eq(contentItems.id, contentTranslations.contentId))
+      .innerJoin(contents, eq(contents.id, contentTranslations.contentId))
       .innerJoin(contentRevisions, eq(contentRevisions.id, contentTranslations.publishedRevisionId))
       .where(
         and(
           eq(contentTranslations.locale, locale),
-          sql`${contentItems.deletedAt} IS NULL`,
+          sql`${contents.deletedAt} IS NULL`,
           sql`${contentRevisions.snapshot} -> 'translation' ->> 'slug' = ${slug}`,
         ),
       );
@@ -184,9 +184,9 @@ export class ContentItemsRepository {
     return row;
   }
 
-  async create(dto: CreateContentItemDto, createdBy: string): Promise<ContentItem> {
+  async create(dto: CreateContentItemDto, createdBy: string): Promise<Content> {
     const [row] = await db
-      .insert(contentItems)
+      .insert(contents)
       .values({
         type: dto.type,
         featuredMediaId: dto.featuredMediaId,
@@ -201,20 +201,20 @@ export class ContentItemsRepository {
     id: string,
     dto: UpdateContentItemDto,
     updatedBy: string,
-  ): Promise<ContentItem | undefined> {
+  ): Promise<Content | undefined> {
     const [row] = await db
-      .update(contentItems)
+      .update(contents)
       .set({ ...dto, updatedBy, updatedAt: new Date() })
-      .where(eq(contentItems.id, id))
+      .where(eq(contents.id, id))
       .returning();
     return row;
   }
 
-  async softDelete(id: string, updatedBy: string): Promise<ContentItem | undefined> {
+  async softDelete(id: string, updatedBy: string): Promise<Content | undefined> {
     const [row] = await db
-      .update(contentItems)
+      .update(contents)
       .set({ deletedAt: new Date(), updatedBy, updatedAt: new Date() })
-      .where(and(eq(contentItems.id, id), sql`${contentItems.deletedAt} IS NULL`))
+      .where(and(eq(contents.id, id), sql`${contents.deletedAt} IS NULL`))
       .returning();
     return row;
   }
