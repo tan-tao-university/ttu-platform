@@ -4,7 +4,7 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
-## 2026-09-09 — Role → permission grants for cms_admin, editor, reviewer, publisher
+## 2026-09-09 — Role → permission grants for cms_admin, editor, reviewer, publisher ([#15](https://github.com/tan-tao-university/ttu-platform/pull/15))
 
 ### Added
 

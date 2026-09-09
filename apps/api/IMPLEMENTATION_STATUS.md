@@ -28,7 +28,7 @@ Cross-application trackers:
 |   2 | Database infrastructure     | ✅ Complete    | PR #9             |
 |   3 | Identity & authorization    | ✅ Complete    | PR #10            |
 |   4 | Content & taxonomy          | ✅ Complete    | PR #11            |
-|   5 | Role → permission grants    | ✅ Complete    | —                 |
+|   5 | Role → permission grants    | ✅ Complete    | PR #15            |
 |   6 | Media / MinIO               | ⚪ Not started | Design doc 08     |
 |   7 | Admin authentication UI     | ⚪ Not started | —                 |
 |   8 | CMS Page Builder            | 🔴 Blocked     | Design docs 02–03 |
@@ -501,7 +501,7 @@ Design document 06 §15
 
 ## 3.5 Role → Permission Grants
 
-**Status:** ✅ Complete
+**Status:** ✅ Complete **PR:** #15
 
 ### What changed
 
