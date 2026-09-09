@@ -56,8 +56,6 @@ Cross-application trackers:
 The current backend implementation order is:
 
 ```text
-Media domain / MinIO
-        ↓
 Admin OIDC sign-in
 ```
 
@@ -66,7 +64,7 @@ The CMS Page Builder must **not** be implemented yet because its Component Regis
 Current implementation target:
 
 ```text
-#6 Media / MinIO
+#7 Admin authentication UI
 ```
 
 ---
@@ -523,88 +521,51 @@ Each grant list is justified inline against design document 07 §10 (role respon
 
 ---
 
-# 4. Next Implementation
+## 3.6 Media Domain / MinIO
 
-## 4.1 Media Domain / MinIO
+**Status:** ✅ Complete **PR:** #16
 
-**Status:** ⚪ Not started **Reference:** Design document 08
-
-### Existing database schema
-
-Already available:
-
-```text
-media_assets
-media_translations
-```
-
-The schema was created during the database implementation.
-
-No media application domain exists yet.
-
----
-
-### Required implementation
-
-Create:
+### What changed
 
 ```text
 apps/api/src/media/
 ```
 
-Expected responsibilities:
+implements the Media domain end to end against `ttu-data-infra`'s MinIO instance:
 
-- upload media;
-- validate uploaded files;
-- persist media metadata;
-- store objects in MinIO;
-- retrieve media metadata;
-- manage translations/alt text;
-- delete/archive assets according to specification.
+- `services/storage.service.ts` — thin S3-compatible client wrapper (put/delete/head object, public delivery URL). Path-style addressing, since MinIO requires it.
+- `services/media-upload.service.ts` — orchestrates a single upload: MIME allowlist + size-limit + magic-byte signature validation, server-generated `{category}/{yyyy}/{mm}/{uuid}.{ext}` storage key (never the client filename), image dimension extraction (`image-size`), SHA-256 checksum, then object write + metadata insert with best-effort object cleanup if the metadata insert fails.
+- `repositories/media-assets.repository.ts` — CRUD plus `isReferenced()`, which blocks delete only when the asset is reachable from _live_ data: a published content locale's `featured_media_id`/`og_image_id`, or an active `people`/`partners` profile.
+- `controllers/admin-media.controller.ts` — `GET/POST /api/v1/admin/media`, `GET /api/v1/admin/media/:id`, `PUT /api/v1/admin/media/:id/translations/:locale`, `DELETE /api/v1/admin/media/:id`, `POST /api/v1/admin/media/:id/restore`.
 
----
+### Allowlist and limits (design doc 08 §9-11)
 
-### Infrastructure
+`image/jpeg`, `image/png`, `image/webp` (10 MB), `application/pdf` (50 MB). SVG is excluded — no trusted sanitizer in v1 (doc 08 §10).
 
-Object storage comes from:
+### Delivery model
 
-```text
-ttu-data-infra
-```
+`ttu-data-infra` provisions a single public bucket (`ttu-media`, anonymous-download bucket policy — see its `minio/init/create-buckets.sh`) plus a scoped `app-readwrite` credential distinct from the MinIO root user. Delivery is therefore a plain, immutable URL (`{S3_PUBLIC_URL_BASE}/{bucket}/{key}`), not a signed one — verified directly against the running dev MinIO container (put, head, anonymous public GET, delete all confirmed working with the real `ttu-app` credential before this shipped).
 
-using MinIO.
-
-Expected application configuration:
+### Configuration
 
 ```text
 S3_ENDPOINT
-S3_REGION
+S3_REGION        (optional, default us-east-1)
 S3_BUCKET
 S3_ACCESS_KEY
 S3_SECRET_KEY
+S3_PUBLIC_URL_BASE   (optional, defaults to S3_ENDPOINT)
 ```
 
-Exact variable names should follow the repository configuration conventions.
+### Tests
+
+`apps/api/test/media/media-type-policy.spec.ts` (signature validation against real magic bytes, SVG exclusion, size caps) and `apps/api/test/media/services/media-upload.service.spec.ts` (allowlist/size/signature rejection, real dimension extraction from a valid PNG fixture, storage-key format, orphan cleanup when the metadata insert fails).
 
 ---
 
-### Important
+# 4. Next Implementation
 
-Do not store uploaded binary files in PostgreSQL.
-
-Architecture:
-
-```text
-Client
-  ↓
-ttu-platform API
-  ├── metadata → PostgreSQL
-  └── object   → MinIO
-```
-
----
-
-## 4.2 Admin Authentication UI
+## 4.1 Admin Authentication UI
 
 **Status:** ⚪ Not started
 
@@ -940,7 +901,7 @@ ttu-platform
 │   ├── Access / Authorization       ✅
 │   ├── Content                      ✅
 │   ├── Taxonomy                     ✅
-│   ├── Media                        ⏳
+│   ├── Media                        ✅
 │   ├── Pages                        🚫 blocked
 │   ├── Navigation                   ⏳
 │   ├── Settings                     ⏳
@@ -963,15 +924,14 @@ ttu-platform
 Unless requirements change, backend work should proceed in this order:
 
 ```text
-1. Media domain
-2. Admin authentication UI
-3. Component Registry
-4. CMS Page Builder
-5. Navigation
-6. Site Settings
-7. Audit Log API
-8. apps/web integration
-9. WordPress migration tooling
+1. Admin authentication UI
+2. Component Registry
+3. CMS Page Builder
+4. Navigation
+5. Site Settings
+6. Audit Log API
+7. apps/web integration
+8. WordPress migration tooling
 ```
 
 This order is based on implementation dependencies rather than feature visibility.
@@ -1029,13 +989,13 @@ This document describes the **current state of the repository**, not a changelog
 
 ```text
 Latest completed backend domain:
-Role → Permission Grants (#5)
+Media Domain / MinIO (#6)
 
 Current priority:
-Media Domain (#6)
+Admin Authentication UI (#7)
 
 Next:
-Admin Authentication UI (#7)
+Component Registry (packages/cms-registry) → CMS Page Builder (#8)
 
 Primary blocker:
 CMS Component Registry

@@ -4,6 +4,17 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-09 — Media domain: MinIO storage integration ([#16](https://github.com/tan-tao-university/ttu-platform/pull/16))
+
+### Added
+
+- `apps/api/src/media/` — upload (`POST /api/v1/admin/media`, multipart), list/get, alt-text/caption translations, soft-delete with delete-reference protection (published content's `featured_media_id`/`og_image_id`, active `people`/`partners` profiles), and restore.
+- `apps/api/src/media/services/storage.service.ts` — S3-compatible MinIO client wrapper (`@aws-sdk/client-s3`) against `ttu-data-infra`'s `ttu-media` bucket (anonymous-download policy, scoped `app-readwrite` credential); plain unsigned delivery URLs, not presigned — verified directly against the running dev MinIO container before merge.
+- `apps/api/src/media/services/media-upload.service.ts` — MIME allowlist, per-type size limits, magic-byte signature validation, server-generated storage keys, `image-size`-based dimension extraction, SHA-256 checksum, and best-effort orphan-object cleanup if the metadata insert fails after a successful object write.
+- `apps/api/src/config/storage.ts` — `S3_ENDPOINT`/`S3_REGION`/`S3_BUCKET`/`S3_ACCESS_KEY`/`S3_SECRET_KEY`/`S3_PUBLIC_URL_BASE` configuration.
+- `apps/api/test/media/` — signature/allowlist/size-limit unit tests against real magic bytes and a real PNG fixture, plus the orphan-cleanup-on-failed-insert path.
+- `docs/media/storage-and-pipeline.md`, `docs/api/endpoints.md`, `docs/setup.md` — Media domain API, permissions, and delivery model documented.
+
 ## 2026-09-09 — Role → permission grants for cms_admin, editor, reviewer, publisher ([#15](https://github.com/tan-tao-university/ttu-platform/pull/15))
 
 ### Added
