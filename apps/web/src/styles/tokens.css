@@ -1,0 +1,20 @@
+/*
+  TTU Design Tokens
+  Source: Figma file Fekw3aQtCfQbHq2aoho859 nodeId 184:6801 (Trang chu).
+  English canonical names; Figma Vietnamese variable in parentheses.
+  Exposed via Tailwind 4 @theme inline in globals.css.
+*/
+
+:root {
+  --color-brand-deep: #1f664c;
+  --color-brand: #229a68;
+  --color-brand-light: #3db97d;
+  --color-brand-ink: #103925;
+  --color-accent-orange: #ff794a;
+  --color-accent-red: #e53d38;
+  --color-surface-muted: #f2f2f2;
+  --color-border-strong: #d2d2d2;
+  --color-surface: #ffffff;
+
+  --shadow-elevated: 0 0 4px rgba(12, 12, 13, 0.05), 0 0 16px rgba(12, 12, 13, 0.1);
+}

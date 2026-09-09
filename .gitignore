@@ -38,3 +38,6 @@ uploads/
 *.pem
 *.key
 *.crt
+
+# Throwaway / local scratch
+temp/

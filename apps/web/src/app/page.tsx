@@ -1,12 +1,29 @@
+import Hero from '@/components/landing/Hero';
+import IntroSection from '@/components/landing/IntroSection';
+import StatsRow from '@/components/landing/StatsRow';
+import WhyTtuSection from '@/components/landing/WhyTtuSection';
+import ProgramsSection from '@/components/landing/ProgramsSection';
+import ScholarshipSection from '@/components/landing/ScholarshipSection';
+import AdmissionMethodsSection from '@/components/landing/AdmissionMethodsSection';
+import GlobalNetworkSection from '@/components/landing/GlobalNetworkSection';
+import AnnouncementsSection from '@/components/landing/AnnouncementsSection';
+import NewsEventsSection from '@/components/landing/NewsEventsSection';
+import AdmissionFormSection from '@/components/landing/AdmissionFormSection';
+
 export default function HomePage() {
   return (
-    <main className="mx-auto flex max-w-3xl flex-col justify-center gap-4 px-6 py-24">
-      <h1 className="text-3xl font-semibold">Trường Đại học Tân Tạo</h1>
-      <p className="text-neutral-600">
-        Website chính thức của TTU đang được xây dựng lại trên nền tảng mới, thay thế WordPress. Nội
-        dung thực tế (tin tức, thông báo, các khoa) sẽ được bổ sung sau khi thiết kế dữ liệu hoàn
-        tất.
-      </p>
-    </main>
+    <>
+      <Hero />
+      <IntroSection />
+      <StatsRow />
+      <WhyTtuSection />
+      <ProgramsSection />
+      <ScholarshipSection />
+      <AdmissionMethodsSection />
+      <GlobalNetworkSection />
+      <AnnouncementsSection />
+      <NewsEventsSection />
+      <AdmissionFormSection />
+    </>
   );
 }

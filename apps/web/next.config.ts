@@ -11,6 +11,16 @@ const nextConfig: NextConfig = {
 
   // The Ubuntu Nginx in front of this is the only thing that should advertise a stack.
   poweredByHeader: false,
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'www.figma.com',
+        pathname: '/api/mcp/asset/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
