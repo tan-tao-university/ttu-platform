@@ -1,0 +1,21 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+language: 'typescript'
+stack: 'backend'
+layer: 'library'
+tags: ['cms']
+
+tasks:
+  build:
+    command: 'tsc -p tsconfig.json'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'
+    outputs:
+      - 'dist'
+
+  test:
+    command: 'bun test'
+    inputs:
+      - 'src/**/*'

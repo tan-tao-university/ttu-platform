@@ -4,6 +4,21 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-10 — CMS Page Builder API + Component Registry ([#20](https://github.com/tan-tao-university/ttu-platform/pull/20))
+
+### Added
+
+- `packages/cms-registry` — new shared workspace package. `ComponentDefinition` type (Zod `contentSchema`/`configSchema`/`styleSchema`, defaults, `editorMetadata`, `variants`, `lifecycle`), the Level A safe style-token vocabulary (spacing/width/alignment/background/typography/radius/shadow — design doc 03 §9), and `registerComponent`/`getComponentDefinition`/`validateSectionStructure`/`validateSectionContent`/`validateSection`. Only `hero` v1 is registered — the one component design doc 03 §3 gives a complete field-by-field spec for; the other ~19 names in doc 03 §21 are category placeholders that each need their own full contract (doc 03 §22) before they can be registered.
+- `apps/api/src/cms/` — the Page/Section/Publish/Rollback domain, reusing the exact patterns already shipped for Content and Navigation: `PagesController` merges the admin and delivery views into one resource at one URL (`GET /pages`, `GET /pages/:id`, `GET /pages/by-slug/:locale/:slug` branch on `page.read`); `PageSectionsService` validates every `content`/`config`/`style` write against the registry before it reaches the database and `PagePublishingService.publish()` re-validates the full resolved state of every section again at publish time; section structure (create/update/delete/reorder) is protected by `pages.lock_version` optimistic concurrency (design doc 06 §14) — a stale `expectedLockVersion` is `409`.
+- `docs/architecture/cms-page-builder.md`, `docs/architecture/component-registry.md` — updated with the real implementation, the actual `ComponentDefinition` interface, and the doc 03 §21 catalog split into registered vs. planned.
+
+### Notes
+
+- `PagePublishingService.restore()` follows the exact precedent `ContentPublishingService.restore()` already set for its own shared, non-per-locale `events` sub-resource: rollback unconditionally replaces the current shared section structure with the snapshot's, since `page_sections`/`config`/`style` are locale-independent (doc 02 §8). This is a real, currently-unresolved cross-locale tradeoff the design docs never address — documented, not silently worked around.
+- The Admin Page Editor UI and the Next.js Web component renderer are not built; this PR is backend-only.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: created a page, added a `hero` section using the component's own defaults, translated it, published it, and confirmed the anonymous delivery view matches the admin editorial view's data with hidden sections filtered and internal fields stripped; an unregistered `componentKey`, a stale `expectedLockVersion`, and an invalid style token each produced the expected `422`/`409` with precise field-level errors; reorder and restore-to-an-earlier-revision both verified against real data; all test rows cleaned up after. `bun run format:check`, `bun run lint`, `bun run duplication` (1.91%), `bun run knip`, `moon run :typecheck`, `moon run api:test` (72/72), `moon run :build` (all 3 apps + `cms-registry`) — all clean.
+
 ## 2026-09-10 — Audit Log API ([#19](https://github.com/tan-tao-university/ttu-platform/pull/19))
 
 ### Added

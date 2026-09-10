@@ -85,3 +85,24 @@ Read-only, admin-only — `audit.read` is withheld from every seeded role but `s
 | Method | Path | Required Permission | Description |
 | :-- | :-- | :-- | :-- |
 | `GET` | `/api/v1/audit-logs` | `audit.read` | Paginated, newest-first audit trail. Optional filters: `actorUserId`, `action`, `entityType`, `entityId`, `occurredFrom`/`occurredTo` (ISO 8601, inclusive). Rows are written by other domains' sensitive operations (`content.publish`/`content.restore` today). |
+
+## 7. CMS Page Domain (`apps/api/src/cms`)
+
+One resource, one URL, mirroring the Content Domain exactly (§2). `page.read` decides depth on the three read routes; every write route always requires its permission. Section structure (create/update/delete/reorder) is protected by `pages.lock_version` optimistic concurrency (`docs/architecture/cms-page-builder.md` §6); `content`/`config`/`style` are validated against `@ttu/cms-registry` on every write and again at publish. Only `hero` v1 is registered today (`docs/architecture/component-registry.md`), so creating a section with any other `componentKey` returns `422`.
+
+| Method | Path | Auth | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/pages` | Optional (`page.read` branches) | Paginated list. Privileged: filterable by `pageType`/`status`, admin shape. Unprivileged: published-only feed for `?locale=` (default `vi`), delivery shape. |
+| `POST` | `/api/v1/pages` | `page.create` | Create a new page (`pageType`: `HOMEPAGE`/`STANDARD`/`LANDING`/`SYSTEM`, immutable after creation). |
+| `GET` | `/api/v1/pages/:id` | Optional (`page.read` branches) | Privileged: full page + all translations + every section with every locale's translation. Unprivileged: requires `?locale=`; returns the published snapshot for that locale (visible sections only), `404` if none. |
+| `GET` | `/api/v1/pages/by-slug/:locale/:slug` | None | Always resolves the currently published page for `:locale` matching `:slug` — draft slugs are not unique. |
+| `DELETE` | `/api/v1/pages/:id` | `page.delete` | Soft-delete a page. |
+| `POST` | `/api/v1/pages/:id/translations/:locale` | `page.edit` | Upsert translation draft (title, slug, path, SEO fields). |
+| `POST` | `/api/v1/pages/:id/locales/:locale/publish` | `page.publish` | Validate every section against the registry, snapshot, publish, sync `public_routes`. |
+| `GET` | `/api/v1/pages/:id/locales/:locale/revisions` | `page.read` | List historical revisions for a locale. |
+| `POST` | `/api/v1/pages/:id/locales/:locale/restore/:revisionId` | `page.restore` | Restore translation fields and the shared section structure from a historical revision. |
+| `POST` | `/api/v1/pages/:id/sections` | `page.edit` | Create a section (`componentKey`, `componentVersion`, `config`?, `style`?, `expectedLockVersion`). Omitted `config`/`style` default to the component's own defaults. |
+| `PATCH` | `/api/v1/pages/:id/sections/:sectionId` | `page.edit` | Update `sortOrder`/`isVisible`/`config`/`style` — `componentKey`/`componentVersion` are immutable. Requires `expectedLockVersion`. |
+| `DELETE` | `/api/v1/pages/:id/sections/:sectionId` | `page.edit` | Delete a section. Requires `?expectedLockVersion=`. |
+| `POST` | `/api/v1/pages/:id/sections/reorder` | `page.edit` | Reorder every section (`order`: full section ID list in new order, `expectedLockVersion`). |
+| `POST` | `/api/v1/pages/:id/sections/:sectionId/translations/:locale` | `page.edit` | Upsert a section's `content` for one locale, validated against its component's `contentSchema`. |

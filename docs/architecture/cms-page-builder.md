@@ -1,5 +1,7 @@
 # Architecture: CMS & Page Builder
 
+> **Status:** partially implemented — `apps/api/src/cms/` wires the full Page/Section/Publish/Rollback API against the existing `pages`/`page_sections`/`page_translations`/`page_revisions`/`page_section_translations` schema, validated against `@ttu/cms-registry` (see [`component-registry.md`](component-registry.md)). Only `hero` is registered so far (design doc 03 §3 is the only component with a complete field-level contract); the Admin Page Editor UI and the Next.js Web renderer are not built. See [`../../apps/api/IMPLEMENTATION_STATUS.md`](../../apps/api/IMPLEMENTATION_STATUS.md) §3.11.
+
 ## 1. Controlled Component CMS Philosophy
 
 The `ttu-platform` content management architecture implements a **Controlled Component CMS** model rather than an unconstrained page builder like Elementor or raw HTML fields.
@@ -106,3 +108,15 @@ Page P001
 2. **Preview**: Renders the exact draft state using the frontend component catalog under the requested locale.
 3. **Publish**: Atomically captures an immutable snapshot of shared render state (section order, config, styles) along with that locale's section translations into `page_revisions`, updates `published_revision_id` in `page_translations`, and syncs `public_routes`.
 4. **Rollback**: Clones a historical snapshot for the target locale to initialize a fresh draft, leaving historical revision records untouched.
+
+## 6. API Surface
+
+`PagesController` (`apps/api/src/cms/controllers/pages.controller.ts`) follows the exact same convention `ContentController` established (design doc 06 §5): one resource, one URL. `GET /api/v1/pages`, `GET /api/v1/pages/:id`, and `GET /api/v1/pages/by-slug/:locale/:slug` branch on `page.read` between the full editorial view and the published-only delivery view (which also drops any section with `isVisible: false`, mirroring Navigation's delivery-tree filtering). Every write route requires its permission outright — `page.create`/`page.edit`/`page.delete`/`page.publish`/`page.restore`, already seeded per role in `role-permissions.catalog.ts`.
+
+### Optimistic concurrency on section structure
+
+`pages.lock_version` (design doc 06 §14) guards every structural mutation — create/update/delete a section, or reorder the list. The caller submits `expectedLockVersion`; the repository atomically checks-and-increments it in the same transaction as the write, returning nothing if it no longer matches, which the controller surfaces as `409 Conflict`. Content translation upserts don't participate in this lock — they're scoped to one section and one locale, not the page's shared shape.
+
+### A known limitation of shared section structure and rollback
+
+`page_sections`/`config`/`style` are locale-independent (doc 02 §8); `content` is the one part that's per-locale. `PagePublishingService.restore()` follows the exact precedent `ContentPublishingService.restore()` already sets for its own shared, non-per-locale `events` sub-resource: it unconditionally replaces the current data with whatever the snapshot being restored holds. For pages this means restoring one locale's revision recreates the _entire_ shared section structure from that snapshot, discarding any section-level content that existed only on other locales' still-current sections, and any structural edits made since that revision was published. This is a real, currently-unresolved product question (the design docs never address it) — not a bug to silently work around.

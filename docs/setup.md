@@ -69,7 +69,7 @@ Visiting any page redirects to Keycloak; sign in with an account that exists in 
 
 ## Content & Taxonomy API
 
-`apps/api/src/content/` and `apps/api/src/taxonomy/` implement the Content domain (news, announcements, press releases, research articles, events) and its categories/tags — design docs 05 §8-9, 06 §5, §10. **Not** the CMS Page Builder domain (`pages`/`page_sections`): that depends on a Component Registry (`packages/cms-registry`) that does not exist yet — see AGENTS.md.
+`apps/api/src/content/` and `apps/api/src/taxonomy/` implement the Content domain (news, announcements, press releases, research articles, events) and its categories/tags — design docs 05 §8-9, 06 §5, §10. See "CMS Page Builder API" below for the separate `pages`/`page_sections` domain.
 
 Content and Navigation are each a single resource at a single URL — there is no `/admin/*` vs `/public/*` split. `content.read`/`navigation.manage` decide, per request, whether the handler returns the full editorial view or the published-only delivery view; see `docs/api/conventions.md` §1 and `docs/api/endpoints.md` §2 for the exact branch behavior per route.
 
@@ -147,6 +147,30 @@ GET /api/v1/audit-logs   newest first; optional actorUserId/action/entityType/en
 ```
 
 Gated by `audit.read`, which `db:seed` grants only to `super_admin` (doc 07 §10 reserves "sensitive system administration" to it) — there is no unprivileged or partial view.
+
+## CMS Page Builder API
+
+`apps/api/src/cms/` implements the Page/Section/Publish/Rollback domain against `packages/cms-registry` — design docs 02, 03, 06 §5. Only `hero` v1 is registered; see `docs/architecture/cms-page-builder.md` and `docs/architecture/component-registry.md` for the full model and what's still unbuilt (Admin Page Editor UI, Web renderer, every component beyond `hero`).
+
+```plain text
+POST   /api/v1/pages                                          create (pageType only; HOMEPAGE/STANDARD/LANDING/SYSTEM)
+GET    /api/v1/pages                                          privileged: admin list; unprivileged: published feed for ?locale= (default vi)
+GET    /api/v1/pages/:id                                      privileged: page + every locale's translation + every section; unprivileged: requires ?locale=, published snapshot (visible sections only)
+GET    /api/v1/pages/by-slug/:locale/:slug                    always published-only
+DELETE /api/v1/pages/:id                                      soft delete
+POST   /api/v1/pages/:id/translations/:locale                 upsert draft translation (title/slug/path/SEO)
+POST   /api/v1/pages/:id/locales/:locale/publish               validate every section against the registry, snapshot, publish, sync public_routes + redirects
+GET    /api/v1/pages/:id/locales/:locale/revisions             immutable publish history for this locale
+POST   /api/v1/pages/:id/locales/:locale/restore/:revisionId   restore translation fields + the shared section structure from a revision (doc 02 §9 — never republishes automatically)
+
+POST   /api/v1/pages/:id/sections                              create a section — componentKey/componentVersion/config?/style?/expectedLockVersion
+PATCH  /api/v1/pages/:id/sections/:sectionId                   update sortOrder/isVisible/config/style — componentKey/version immutable, requires expectedLockVersion
+DELETE /api/v1/pages/:id/sections/:sectionId?expectedLockVersion=N   delete a section
+POST   /api/v1/pages/:id/sections/reorder                      reorder — order (full section ID list) + expectedLockVersion
+POST   /api/v1/pages/:id/sections/:sectionId/translations/:locale   upsert a section's per-locale content
+```
+
+Gated by `page.read`/`page.create`/`page.edit`/`page.delete`/`page.publish`/`page.restore` — already seeded per role, same permission codes design doc 07 always defined for Pages. Section structure mutations additionally require `expectedLockVersion` (`pages.lock_version`, doc 06 §14's optimistic-concurrency pattern) — `409` if it's stale. Every `content`/`config`/`style` write is validated against `@ttu/cms-registry`; an unregistered `componentKey`/`componentVersion` or a schema mismatch is `422`.
 
 ## Checks
 

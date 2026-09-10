@@ -20,7 +20,7 @@ Read this file before modifying `apps/admin` to understand implemented surfaces,
 | 4 | **Content Management UI** | ⚪ Not started | `/api/v1/content/*` | Editorial list, draft editor, multi-locale translation tabs, publish/rollback modals |
 | 5 | **Taxonomy Management UI** | ⚪ Not started | `/api/v1/categories`, `/api/v1/tags` | Category hierarchy tree editor, tag management table |
 | 6 | **Media Asset Library** | ⚪ Not started | `/api/v1/media/*` | Media browser, drag-and-drop upload modal — backend MinIO wiring now available (PR #16) |
-| 7 | **CMS Page Builder UI** | 🔴 Blocked | `/api/v1/pages/*` | Visual page sections, component palette; blocked on `@ttu/cms-registry` |
+| 7 | **CMS Page Builder UI** | ⚪ Not started | `/api/v1/pages/*` | Visual page sections, component palette; API is ready (`apps/api/src/cms/`), but `@ttu/cms-registry` only has `hero` registered |
 | 8 | **User & Role Administration** | ⚪ Backlog | `/api/v1/users`, `/api/v1/roles` | User listing, role assignment dialog, permission matrix inspector |
 | 9 | **Navigation / Menu Editor** | ⚪ Backlog | `/api/v1/menus/*` | Hierarchical menu builder with link picker |
 | 10 | **Redirects Management** | ⚪ Backlog | `/api/v1/redirects/*` | URL redirect table with status toggling and collision checking |

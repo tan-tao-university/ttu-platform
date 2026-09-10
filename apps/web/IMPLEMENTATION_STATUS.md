@@ -23,7 +23,7 @@ Read this file before modifying `apps/web` to understand implemented surfaces, c
 | 7 | **Academic Programs Showcase** | ⚪ Not started | None | School-wide degree catalog (undergraduate, graduate, medical) — no backend domain exists yet |
 | 8 | **Faculty Portals Directory** | ⚪ Not started | None | Curated link directory out to `*.ttu.edu.vn` (sibling platform) |
 | 9 | **Admissions Landing Pages** | ⚪ Not started | None | Marketing pages for admissions cycles, tuition fees, inquiry form |
-| 10 | **CMS Page Builder Renderer** | 🔴 Blocked | `/api/v1/pages/*` | Dynamic section renderer; blocked on `@ttu/cms-registry` |
+| 10 | **CMS Page Builder Renderer** | ⚪ Not started | `/api/v1/pages/by-slug/:locale/:slug` | Dynamic section renderer; API is ready (`apps/api/src/cms/`), but `@ttu/cms-registry` only has `hero` registered |
 | 11 | **Dynamic Navigation Menus** | ⚪ Backlog | `/api/v1/menus/:key` | Header & footer navigation driven by the CMS menu endpoint |
 | 12 | **SEO & Structured Data** | ⚪ Backlog | None | JSON-LD schema (EducationalOrganization, Article, Event) |
 
