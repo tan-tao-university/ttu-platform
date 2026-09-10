@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AdminNavigationController } from './controllers/admin-navigation.controller';
-import { PublicNavigationController } from './controllers/public-navigation.controller';
+import { NavigationController } from './controllers/navigation.controller';
 import { MenusRepository } from './repositories/menus.repository';
 
 @Module({
-  controllers: [AdminNavigationController, PublicNavigationController],
+  controllers: [NavigationController],
   providers: [MenusRepository],
 })
 export class NavigationModule {}

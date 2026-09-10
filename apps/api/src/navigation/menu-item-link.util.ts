@@ -72,10 +72,10 @@ export interface MenuItemLabelFields {
 }
 
 /**
- * Doc 01 §12: the public tree carries a pre-resolved `href`, never a target ID the frontend would
+ * Doc 01 §12: the delivery tree carries a pre-resolved `href`, never a target ID the frontend would
  * have to look up itself. `PAGE`/`CONTENT` resolve through `public_routes` (see
- * `MenusRepository.resolvePublicTree`'s join) — `resolvedPath` is `null` when nothing has published
- * that target yet, which is always true for `PAGE` today (CMS Page Builder is blocked).
+ * `MenusRepository.resolveDeliveryTree`'s join) — `resolvedPath` is `null` when nothing has
+ * published that target yet, which is always true for `PAGE` today (CMS Page Builder is blocked).
  */
 export function resolveMenuItemHref(
   item: Pick<MenuItem, 'linkType' | 'externalUrl'>,

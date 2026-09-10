@@ -44,7 +44,7 @@ This document tracks the overall architectural progress and cross-application mi
 | 7 | **Navigation / Menus** | Hierarchical menus, 5 link types, admin CRUD, resolved public tree | ✅ Complete | Verified against real Postgres + HTTP; `docs/architecture/navigation.md` |
 | 8 | **CMS Component Registry** | Shared package defining ~15–20 page components and validation schemas | 🔴 Blocked | Required before CMS Page Builder (`pages`/`page_sections`) |
 | 9 | **CMS Page Builder** | Page drafts, section ordering, visual editing, published revisions | 🔴 Blocked | Depends on Milestone 8 (Component Registry) |
-| 10 | **Public Content Consumption** | Public website fetching news, events, taxonomies, and static routes | ⚪ Backlog | Consumes `/api/v1/public/*` endpoints |
+| 10 | **Public Content Consumption** | Public website fetching news, events, taxonomies, and static routes | ⚪ Backlog | Consumes the unprivileged branch of `/api/v1/content*` and `/api/v1/menus/:key` |
 | 11 | **Production Deployment** | Multi-stage Dockerfiles, Docker Compose joining `ttu-backend` network | ⚪ Backlog | Server deployment with host Nginx reverse proxy |
 
 ---
@@ -53,20 +53,20 @@ This document tracks the overall architectural progress and cross-application mi
 
 ### 3.1 Backend API (`apps/api`)
 
-- **Current State**: Database schema (36 tables) is fully wired against `ttu_main`. Core authentication guard verifies Keycloak JWTs and checks permissions against local database roles; all 5 seeded roles carry an explicit, documented permission grant set. Content and Taxonomy modules are fully operational with immutable revision snapshots, category/tag assignments, and automated 301 redirect generation on path changes. The Media domain (`apps/api/src/media/`) uploads to and deletes from `ttu-data-infra`'s MinIO instance with server-side MIME/size/signature validation and delete-reference protection against published content. The Navigation domain (`apps/api/src/navigation/`) manages hierarchical menus with a flat admin API and a resolved-tree public API.
+- **Current State**: Database schema (36 tables) is fully wired against `ttu_main`. Core authentication guard verifies Keycloak JWTs and checks permissions against local database roles; all 5 seeded roles carry an explicit, documented permission grant set. Content and Taxonomy modules are fully operational with immutable revision snapshots, category/tag assignments, and automated 301 redirect generation on path changes. The Media domain (`apps/api/src/media/`) uploads to and deletes from `ttu-data-infra`'s MinIO instance with server-side MIME/size/signature validation and delete-reference protection against published content. Content and Navigation are each a single resource at a single URL, RBAC-branched (`content.read`/`navigation.manage`) between the full editorial view and the published-only delivery view — see `docs/api/conventions.md` §1.
 - **Next Priorities**: Content and Taxonomy management views in the Admin dashboard, or a Backlog item (redirect administration, site settings, audit log API) if explicitly prioritized.
 - **Detailed Tracking**: See [`apps/api/IMPLEMENTATION_STATUS.md`](apps/api/IMPLEMENTATION_STATUS.md).
 
 ### 3.2 Admin Dashboard (`apps/admin`)
 
-- **Current State**: Next.js 16 App Router with React 19 and Tailwind CSS 4. Browser-side sign-in against Keycloak (`ttu-web` client) is implemented as a server-side Authorization Code + PKCE flow: encrypted `HttpOnly` session cookie, automatic token refresh in `proxy.ts`, and `GET /api/v1/admin/me` hydration on every page load. No content/taxonomy management views yet.
+- **Current State**: Next.js 16 App Router with React 19 and Tailwind CSS 4. Browser-side sign-in against Keycloak (`ttu-web` client) is implemented as a server-side Authorization Code + PKCE flow: encrypted `HttpOnly` session cookie, automatic token refresh in `proxy.ts`, and `GET /api/v1/me` hydration on every page load. No content/taxonomy management views yet.
 - **Next Priorities**: Application shell (sidebar, breadcrumbs, permission-gated navigation), then Content and Taxonomy management views.
 - **Detailed Tracking**: See [`apps/admin/IMPLEMENTATION_STATUS.md`](apps/admin/IMPLEMENTATION_STATUS.md).
 
 ### 3.3 Public Website (`apps/web`)
 
 - **Current State**: Project is scaffolded on Next.js 16 App Router with React 19 and Tailwind CSS 4. Basic header, footer, layout, not-found page, robots.txt, and sitemap.ts are present.
-- **Next Priorities**: Integrate public content feeds from `apps/api` (`GET /api/v1/public/content`), implement article/news detail pages with SSR, build academic program listing pages, and configure multilingual routing (`vi`/`en`).
+- **Next Priorities**: Integrate public content feeds from `apps/api` (`GET /api/v1/content`, anonymous), implement article/news detail pages with SSR, build academic program listing pages, and configure multilingual routing (`vi`/`en`).
 - **Detailed Tracking**: See [`apps/web/IMPLEMENTATION_STATUS.md`](apps/web/IMPLEMENTATION_STATUS.md).
 
 ---

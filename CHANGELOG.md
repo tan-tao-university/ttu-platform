@@ -4,16 +4,34 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
-## 2026-09-09 — Navigation domain: menus and menu items ([#18](https://github.com/tan-tao-university/ttu-platform/pull/18))
+## 2026-09-09 — Navigation domain, then RBAC-merged Content & Navigation endpoints ([#18](https://github.com/tan-tao-university/ttu-platform/pull/18))
 
 ### Added
 
-- `apps/api/src/navigation/` — hierarchical menus (`main-header`, `footer`, `quick-links`) with a flat admin CRUD API (`AdminNavigationController`, `navigation.manage`) and a no-auth public API (`PublicNavigationController`) returning a nested tree with every item's `href` already resolved.
+- `apps/api/src/navigation/` — hierarchical menus (`main-header`, `footer`, `quick-links`), `MenusRepository`, 5 link types (`PAGE`/`CONTENT`/`EXTERNAL`/`CUSTOM_PATH`/`GROUP`).
 - `menu-item-link.util.ts` — `assertValidLinkTarget` (mirrors the DB's `menu_items_link_type_check` discriminated union as a field-level 422 instead of a raw constraint violation) and `resolveMenuItemHref` (per-link-type href resolution, including a `public_routes` join for `CONTENT`/`PAGE`).
-- `docs/architecture/navigation.md` — the model, the 5 link types, and the flat-admin-vs-resolved-public-tree split.
+- `docs/architecture/navigation.md` — the model, the 5 link types, and the flat-editor-vs-resolved-delivery-tree split.
 - `apps/api/test/navigation/menu-item-link.util.spec.ts` — the discriminated-union and href-resolution invariants.
+- `OptionalJwtAuthGuard` and `TokenVerificationService` (extracted from `JwtAuthGuard`, now shared by both guards) — verifies a Bearer token when present but never rejects a request for lacking one.
+- `OptionalCurrentUser` decorator — the `@CurrentUser()` counterpart for a route that may or may not have an authenticated caller.
 
-Verified directly against the real dev Postgres (bypassing HTTP): a menu with all 5 link types, including a `GROUP`/`CUSTOM_PATH` parent-child pair and a `CONTENT` item pointing at a genuinely published article — hidden-item exclusion, per-type href resolution, tree nesting, and inactive-menu handling all confirmed. Also verified over real HTTP: unauthenticated admin routes 401, and a real menu resolves correctly through `GET /api/v1/public/menus/:key`.
+### Changed
+
+Landed on this branch as a single design evolution, not two separate features: Navigation first shipped with the same split-namespace convention Content already had (`admin/*` CRUD controller + no-auth `public/*` controller), then both domains were merged into design doc 06 §5's single-resource, RBAC-branched convention before this PR closed:
+
+- Every controller (`content`, `media`, `categories`, `tags`, `menus`, `me`) dropped its `admin/`/`public/` URL prefix — `apps/api/src/**/controllers/admin-*.controller.ts` and `public-*.controller.ts` are gone, replaced by one controller per resource.
+- `ContentController` and `NavigationController` now branch in application code on `content.read`/`navigation.manage` instead of splitting into separate controllers: the same `GET /content`, `GET /content/:id`, and `GET /menus/:key` URLs serve the full editorial view to a privileged caller and the published-only delivery view to everyone else, including an authenticated-but-unprivileged one. `GET /content/by-slug/:locale/:slug` has no privileged variant — draft slugs are not unique.
+- `PermissionsGuard` now distinguishes `401` (never authenticated) from `403` (authenticated, missing the permission) instead of a single undifferentiated rejection.
+- Navigation's addressing switched from `id` to the immutable `key` throughout (`GET/PATCH/DELETE /menus/:key`, `/menus/:key/items...`).
+- `docs/api/conventions.md`, `docs/api/endpoints.md`, `docs/setup.md`, `docs/architecture/navigation.md`, `docs/identity/authentication.md`, `docs/identity/authorization.md`, `docs/frontend/*.md`, `docs/media/storage-and-pipeline.md`, `docs/assets/identity-auth-flow.mmd`, root and per-app `IMPLEMENTATION_STATUS.md` trackers, and `apps/admin/src/lib/api/me.ts` (renamed from `admin-me.ts`) all updated for the new `/api/v1/me` and prefix-free convention.
+
+### Verification — real infra, not mocked
+
+Directly against the real dev Postgres (`MenusRepository`, bypassing HTTP): a menu with all 5 link types, including a `GROUP`/`CUSTOM_PATH` parent-child pair and a `CONTENT` item pointing at a genuinely published article — hidden-item exclusion, per-type href resolution, tree nesting, and inactive-menu → `undefined` all confirmed.
+
+Over real HTTP against the merged endpoints, with real Keycloak-issued tokens (`admin.test` temporarily granted `super_admin`, `student.test` with no grants, both cleaned up after): the same `GET /api/v1/content` and `GET /api/v1/menus/:key` URLs returned the admin shape for a permission-holder and the public delivery shape otherwise; `POST /api/v1/content` 401s anonymously and 403s for an authenticated caller missing `content.create`; `GET /api/v1/menus` 401s anonymously and 403s without `navigation.manage`; an unknown menu key 404s.
+
+`bun run format:check`, `bun run lint`, `bun run duplication` (0.98%), `bun run knip`, `moon run :typecheck`, `moon run api:test` (72/72), `moon run :build` — all clean.
 
 ## 2026-09-09 — Admin dashboard: browser-side OIDC sign-in ([#17](https://github.com/tan-tao-university/ttu-platform/pull/17))
 

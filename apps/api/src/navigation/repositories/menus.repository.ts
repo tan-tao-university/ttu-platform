@@ -27,15 +27,15 @@ export interface MenuItemTranslationRow {
 export type MenuItemWithTranslations = MenuItem & { translations: MenuItemTranslationRow[] };
 
 /**
- * Doc 01 §12's render-ready shape: unlike the admin flat list, a public consumer needs a nested
- * tree with the item's actual href already resolved.
+ * Doc 01 §12's render-ready shape: unlike the management flat list, a delivery consumer needs a
+ * nested tree with the item's actual href already resolved.
  */
-export interface PublicMenuItemNode {
+export interface DeliveryMenuItemNode {
   id: string;
   linkType: MenuItemLinkType;
   label: string;
   href: string | null;
-  children: PublicMenuItemNode[];
+  children: DeliveryMenuItemNode[];
 }
 
 @Injectable()
@@ -75,9 +75,9 @@ export class MenusRepository {
 
   /**
    * Flat, ordered by `sortOrder` — the same shape `CategoriesRepository.list` uses (parentId per
-   * row, not a server-built tree). The admin drag-and-drop tree editor assembles it client-side;
-   * the public resolver (`public-navigation.controller.ts`) builds a render tree separately because
-   * that consumer genuinely needs one.
+   * row, not a server-built tree). The management drag-and-drop tree editor assembles it
+   * client-side; the delivery resolver (`resolveDeliveryTree` below) builds a render tree
+   * separately because that consumer genuinely needs one.
    */
   async listItemsWithTranslations(menuId: string): Promise<MenuItemWithTranslations[]> {
     const items = await db
@@ -202,7 +202,10 @@ export class MenusRepository {
    * Page Builder domain (doc 02-03) is blocked and never publishes a page, but the join is correct
    * and forward-compatible once it does. `undefined` means the menu does not exist or is inactive.
    */
-  async resolvePublicTree(key: string, locale: string): Promise<PublicMenuItemNode[] | undefined> {
+  async resolveDeliveryTree(
+    key: string,
+    locale: string,
+  ): Promise<DeliveryMenuItemNode[] | undefined> {
     const menu = await this.findByKey(key);
     if (!menu || !menu.isActive) return undefined;
 
@@ -233,7 +236,7 @@ export class MenusRepository {
       .where(and(eq(menuItems.menuId, menu.id), eq(menuItems.isVisible, true)))
       .orderBy(menuItems.sortOrder);
 
-    const nodesById = new Map<string, PublicMenuItemNode>();
+    const nodesById = new Map<string, DeliveryMenuItemNode>();
     for (const row of rows) {
       nodesById.set(row.item.id, {
         id: row.item.id,
@@ -244,7 +247,7 @@ export class MenusRepository {
       });
     }
 
-    const roots: PublicMenuItemNode[] = [];
+    const roots: DeliveryMenuItemNode[] = [];
     for (const row of rows) {
       const node = nodesById.get(row.item.id);
       if (!node) continue;

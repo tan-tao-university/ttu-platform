@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -13,27 +14,39 @@ import {
 } from '@nestjs/common';
 import { RequirePermission } from '../../access/decorators/require-permission.decorator';
 import { CurrentUser } from '../../access/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../../access/guards/jwt-auth.guard';
+import { OptionalCurrentUser } from '../../access/decorators/optional-current-user.decorator';
+import { OptionalJwtAuthGuard } from '../../access/guards/optional-jwt-auth.guard';
 import { PermissionsGuard } from '../../access/guards/permissions.guard';
 import type { AuthenticatedUser } from '../../access/access.types';
 import { ApiError } from '../../common/http/api-error';
 import { isForeignKeyViolation } from '../../common/db/postgres-error.util';
 import { paginationMeta } from '../../common/dto/pagination-query.dto';
-import { AdminContentListQueryDto } from '../dto/admin-content-list-query.dto';
 import { AssignCategoryDto } from '../dto/assign-category.dto';
 import { AssignTagDto } from '../dto/assign-tag.dto';
+import { ContentListQueryDto } from '../dto/content-list-query.dto';
 import { CreateContentItemDto } from '../dto/create-content-item.dto';
 import { PublishContentDto } from '../dto/publish-content.dto';
 import { UpdateContentItemDto } from '../dto/update-content-item.dto';
 import { UpsertContentTranslationDto } from '../dto/upsert-content-translation.dto';
 import { UpsertEventDto } from '../dto/upsert-event.dto';
 import { ContentAssignmentsRepository } from '../repositories/content-assignments.repository';
-import { ContentItemsRepository } from '../repositories/content-items.repository';
+import {
+  ContentItemsRepository,
+  type ContentItemWithRevision,
+} from '../repositories/content-items.repository';
 import { ContentPublishingService } from '../services/content-publishing.service';
 
-@Controller('admin/content')
-@UseGuards(JwtAuthGuard, PermissionsGuard)
-export class AdminContentController {
+/**
+ * One resource, one URL — `content.read` decides depth of access rather than a separate
+ * `/admin/content` + `/public/content` namespace (design doc 06 §5). Read routes (`list`, `get`,
+ * `getBySlug`) branch in application code on the caller's permission set; every write route keeps
+ * requiring the specific permission it always has via `@RequirePermission(...)`, enforced the same
+ * as before by `PermissionsGuard` — the only thing that changed is `OptionalJwtAuthGuard` no longer
+ * 401s an anonymous caller before the handler gets a chance to serve the public view.
+ */
+@Controller('content')
+@UseGuards(OptionalJwtAuthGuard, PermissionsGuard)
+export class ContentController {
   constructor(
     private readonly contentItems: ContentItemsRepository,
     private readonly assignments: ContentAssignmentsRepository,
@@ -41,26 +54,59 @@ export class AdminContentController {
   ) {}
 
   @Get()
-  @RequirePermission('content.read')
-  async list(@Query() query: AdminContentListQueryDto) {
-    const { items, total } = await this.contentItems.listForAdmin(query);
-    return { items, ...paginationMeta(query.page, query.pageSize, total) };
+  async list(@Query() query: ContentListQueryDto, @OptionalCurrentUser() user?: AuthenticatedUser) {
+    if (user?.permissions.has('content.read')) {
+      const { items, total } = await this.contentItems.listForAdmin(query);
+      return { items, ...paginationMeta(query.page, query.pageSize, total) };
+    }
+
+    const { items, total } = await this.contentItems.listPublished(query);
+    return {
+      items: items.map((item) => toPublicResource(item)),
+      ...paginationMeta(query.page, query.pageSize, total),
+    };
+  }
+
+  /**
+   * Always resolves the currently _published_ item for that locale, regardless of caller privilege
+   * — draft slugs are not unique (doc 05 §8.2), so there is no well-defined "admin" answer to "find
+   * the draft matching this slug". Declared ahead of `:id` so `by-slug` is never captured by it.
+   */
+  @Get('by-slug/:locale/:slug')
+  async getBySlug(@Param('locale') locale: string, @Param('slug') slug: string) {
+    const result = await this.contentItems.findPublishedBySlug(locale, slug);
+    if (!result) throw new NotFoundException(`Content "${slug}" not found`);
+    return this.enrichedPublicResource(result, locale);
   }
 
   @Get(':id')
-  @RequirePermission('content.read')
-  async get(@Param('id', ParseUUIDPipe) id: string, @Query('locale') locale?: string) {
-    const item = await this.contentItems.findById(id);
-    if (!item) throw notFound(id);
+  async get(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('locale') locale: string | undefined,
+    @OptionalCurrentUser() user?: AuthenticatedUser,
+  ) {
+    if (user?.permissions.has('content.read')) {
+      const item = await this.contentItems.findById(id);
+      if (!item) throw notFound(id);
 
-    const [translations, event, categories, tags] = await Promise.all([
-      this.contentItems.listTranslations(id),
-      this.contentItems.findEvent(id),
-      this.assignments.listCategories(id, locale ?? 'vi'),
-      this.assignments.listTags(id, locale ?? 'vi'),
-    ]);
+      const [translations, event, categories, tags] = await Promise.all([
+        this.contentItems.listTranslations(id),
+        this.contentItems.findEvent(id),
+        this.assignments.listCategories(id, locale ?? 'vi'),
+        this.assignments.listTags(id, locale ?? 'vi'),
+      ]);
 
-    return { ...item, translations, event: event ?? null, categories, tags };
+      return { ...item, translations, event: event ?? null, categories, tags };
+    }
+
+    if (!locale) {
+      throw new ApiError(422, 'validation_error', 'Dữ liệu không hợp lệ', 'locale is required', [
+        { field: 'locale', code: 'required', message: 'locale query parameter is required' },
+      ]);
+    }
+    const result = await this.contentItems.findPublishedById(id, locale);
+    if (!result) throw notFound(id);
+    return this.enrichedPublicResource(result, locale);
   }
 
   @Post()
@@ -235,6 +281,41 @@ export class AdminContentController {
   ): Promise<void> {
     await this.assignments.unassignTag(id, tagId);
   }
+
+  private async enrichedPublicResource(result: ContentItemWithRevision, locale: string) {
+    const [event, categories, tags] = await Promise.all([
+      result.type === 'EVENT' ? this.contentItems.findEvent(result.id) : Promise.resolve(undefined),
+      this.assignments.listCategories(result.id, locale),
+      this.assignments.listTags(result.id, locale),
+    ]);
+    return { ...toPublicResource(result), event: event ?? null, categories, tags };
+  }
+}
+
+function toPublicResource(item: ContentItemWithRevision) {
+  const translation = item.snapshot.translation;
+
+  // API never returns database internals (created_by, updated_at, deleted_at, ...) to an
+  // unprivileged caller — only the contract fields a visitor's page actually needs (doc 06 §7.1).
+  return {
+    id: item.id,
+    type: item.type,
+    slug: translation.slug,
+    title: translation.title,
+    excerpt: translation.excerpt,
+    body: translation.body,
+    bodyFormat: translation.bodyFormat,
+    seo: {
+      title: translation.seoTitle,
+      description: translation.seoDescription,
+      ogTitle: translation.ogTitle,
+      ogDescription: translation.ogDescription,
+      canonicalUrl: translation.canonicalUrl,
+      robotsIndex: translation.robotsIndex,
+      robotsFollow: translation.robotsFollow,
+    },
+    publishedAt: item.publishedAt,
+  };
 }
 
 function notFound(id: string): ApiError {

@@ -23,7 +23,7 @@ The admin frontend authenticates against Keycloak using OpenID Connect (OIDC) **
 
 ## 3. JWT Verification at the API
 
-The NestJS API guard (`JwtAuthGuard`) verifies incoming Bearer tokens using `jwks-rsa`:
+`TokenVerificationService` (`apps/api/src/access/services/token-verification.service.ts`) verifies incoming Bearer tokens using `jwks-rsa` and is shared by two guards: `JwtAuthGuard` (rejects with `401` if no valid token is present) and `OptionalJwtAuthGuard` (verifies a token if present, but never rejects a request for lacking one — used by `Content`/`Navigation`'s RBAC-branched read routes, `docs/api/conventions.md` §1.1):
 
 - **JWKS Endpoint**: Derived dynamically from `KEYCLOAK_ISSUER_URL` (`/protocol/openid-connect/certs`).
 - **In-Memory Key Caching**: Caches public signing keys for 10 minutes with rate limiting, eliminating per-request HTTP round-trips to Keycloak.
