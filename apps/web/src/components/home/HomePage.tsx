@@ -61,7 +61,6 @@ function SectionHeading({
   description?: string;
   white?: boolean;
 }) {
-  const textColor = white ? "text-ttu-white" : "text-foreground";
   const descColor = white ? "text-ttu-white/70" : "text-muted-foreground";
   return (
     <div className="text-left">
@@ -153,14 +152,14 @@ function HeroSection({ locale }: { locale: Locale }) {
             paddingBottom: "clamp(48px, 8vh, 80px)",
           }}
         >
-          {/* Title — "From Knowledge to the Stars" */}
+          {/* Title — "From Knowledge to the Stars" — Figma node 1387:181554 */}
           <div className="max-w-2xl">
             <div className="flex items-start gap-4 mb-4">
               <div className="flex flex-col items-center shrink-0 mt-1">
-                <div className="w-2 h-12 bg-ttu-white/90 rounded-sm" />
-                <div className="w-2 h-8 bg-orange rounded-sm mt-1" />
+                <div className="w-[4px] h-[58px] bg-white rounded-sm" />
+                <div className="w-[4px] h-[38px] bg-orange rounded-sm mt-0.5" />
               </div>
-              <h1 className="text-ttu-white font-bold leading-none tracking-tight font-heading text-hero">
+              <h1 className="text-ttu-white font-bold leading-[50px] tracking-tight font-heading text-[40px] uppercase">
                 From Knowledge
                 <br />
                 to the Stars
@@ -168,13 +167,13 @@ function HeroSection({ locale }: { locale: Locale }) {
             </div>
 
             {/* Subtitle */}
-            <p className="ml-6 max-w-lg text-ttu-white/90 text-body-lg leading-relaxed">
+            <p className="ml-6 w-[435px] text-ttu-white/90 text-body-lg leading-relaxed">
               Tiên phong Giáo dục Khai phóng: Nơi tài năng Việt vươn tầm quốc tế
             </p>
 
             {/* CTA Button */}
             <div className="mt-8 ml-6">
-              <OrangeButton href={`/${locale}/tuyen-sinh/dang-ky`}>
+              <OrangeButton href={`/${locale}/tuyen-sinh/dang-ky`} className="gap-[10px] w-[262px]">
                 Đăng ký xét tuyển ngay
                 {/* Arrow icon */}
                 <svg
@@ -202,25 +201,37 @@ function HeroSection({ locale }: { locale: Locale }) {
 }
 
 // ─── Section 2: Statistics ───────────────────────────────────────────────────
-
+// Figma node 189:13315 (Frame 81) - 4 stats inside a green-to-navy gradient card.
+// Heading column on the left + 809px gradient card on the right.
 const STATS = [
-  { value: "21", label: "Ngành đào tạo", sub: "đại học & cao đẳng" },
-  { value: "50+", label: "Đối tác quốc tế", sub: "từ 20 quốc gia" },
-  { value: "10K+", label: "Sinh viên", sub: "đang theo học" },
-  { value: "95%", label: "SV tốt nghiệp", sub: "có việc làm trong 12 tháng" },
+  { value: "15", suffix: "+", lines: ["Năm kinh nghiệm", "đào tạo"] },
+  {
+    value: "10K",
+    suffix: "+",
+    lines: ["Sinh viên & Cựu", "sinh viên thành đạt"],
+  },
+  {
+    value: "100",
+    suffix: "%",
+    lines: ["Tỷ lệ sinh viên có việc làm sau tốt nghiệp"],
+  },
+  {
+    value: "80",
+    suffix: "%",
+    lines: ["Giảng viên tốt nghiệp từ các ĐH quốc tế"],
+  },
 ];
 
 function StatisticsSection() {
   return (
     <section
-      className="relative overflow-hidden bg-primary"
+      className="relative overflow-hidden"
       style={{
         paddingTop: "clamp(40px, 6vh, 72px)",
         paddingBottom: "clamp(40px, 6vh, 72px)",
-        minHeight: "clamp(420px, 50vh, 597px)",
       }}
     >
-      {/* Decorative vector — bottom right (Figma node 188:13224) */}
+      {/* Decorative vector - bottom right (Figma node 188:13224) */}
       <div
         className="absolute right-0 bottom-0 opacity-20 pointer-events-none"
         style={{ width: "clamp(200px, 25vw, 400px)" }}
@@ -229,35 +240,47 @@ function StatisticsSection() {
       </div>
 
       <div className="mx-auto w-full px-6 lg:px-8 max-w-7xl">
-        {/* Heading */}
-        <div className="flex items-start gap-4 mb-10">
-          <div className="flex flex-col items-center shrink-0 mt-1">
-            <div className="w-1 h-6 bg-ttu-white/60 rounded-sm" />
-            <div className="w-1 h-5 bg-orange rounded-sm mt-0.5" />
-          </div>
-          <h2 className="text-ttu-white font-bold tracking-tight leading-tight font-heading text-section">
-            Những con số ấn tượng
-          </h2>
-        </div>
-
-        {/* Stats grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {STATS.map((stat) => (
-            <div
-              key={stat.value}
-              className="border-l-2 border-ttu-white/30 pl-5"
-            >
-              <div className="text-ttu-white font-bold leading-none font-heading text-display">
-                {stat.value}
-              </div>
-              <div className="mt-2 text-ttu-white/90 font-medium leading-tight text-body-lg">
-                {stat.label}
-              </div>
-              <div className="mt-1 text-ttu-white/60 text-body-sm">
-                {stat.sub}
-              </div>
+        <div className="flex flex-col lg:flex-row items-start gap-[57px]">
+          {/* Left: heading column - Figma node 188:13310 */}
+          <div className="flex items-center gap-[17px] shrink-0">
+            <div className="flex flex-col items-center justify-center shrink-0">
+              <div className="bg-green-deep w-1 h-[58px] rounded-sm" />
+              <div className="bg-orange w-1 h-[38px] rounded-sm mt-0.5" />
             </div>
-          ))}
+            <h2 className="font-bold uppercase leading-[50px] tracking-tight text-[40px] text-green-deep w-[329px]">
+              Những con số
+              <br />
+              ấn tượng
+            </h2>
+          </div>
+
+          {/* Right: gradient card - Figma node 188:13223 */}
+          <div className="bg-ttu-gradient-stat-card rounded-[20px] p-[30px] flex flex-col gap-[29px] items-start justify-center w-full lg:w-[809px] lg:max-w-[809px]">
+            {STATS.map((stat) => (
+              <div
+                key={stat.value}
+                className="content-stretch flex gap-[25px] h-[77px] items-center relative shrink-0 w-full"
+              >
+                {/* Number block - 150px wide, number 64px + suffix 32px */}
+                <div className="flex items-start justify-end w-[150px] shrink-0 text-right whitespace-nowrap">
+                  <span className="font-bold leading-normal text-[64px] text-ttu-white">
+                    {stat.value}
+                  </span>
+                  <span className="leading-[40px] text-[32px] text-orange font-bold">
+                    {stat.suffix}
+                  </span>
+                </div>
+                {/* Label - 176px wide, 16px SemiBold white, multi-line */}
+                <div className="font-semibold leading-normal text-[16px] text-ttu-white w-[176px] shrink-0 whitespace-pre-wrap">
+                  {stat.lines.map((line, i) => (
+                    <p key={i} className="mb-0">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -356,6 +379,11 @@ const WHY_TTU_FEATURES = [
 ];
 
 function WhyTTUSection() {
+  const f0 = WHY_TTU_FEATURES[0]!;
+  const f1 = WHY_TTU_FEATURES[1]!;
+  const f2 = WHY_TTU_FEATURES[2]!;
+  const f3 = WHY_TTU_FEATURES[3]!;
+  const f4 = WHY_TTU_FEATURES[4]!;
   return (
     <section
       className="relative overflow-hidden"
@@ -404,35 +432,15 @@ function WhyTTUSection() {
         {/* 5 feature cards — Figma Frame 90 / 91 / 92 */}
         <div className="mt-10 grid gap-4 lg:gap-6 max-w-3xl">
           <div className="grid gap-4 sm:grid-cols-2 lg:gap-6">
-            <FeatureCard
-              title={WHY_TTU_FEATURES[0].title}
-              desc={WHY_TTU_FEATURES[0].desc}
-              Icon={WHY_TTU_FEATURES[0].Icon}
-            />
-            <FeatureCard
-              title={WHY_TTU_FEATURES[1].title}
-              desc={WHY_TTU_FEATURES[1].desc}
-              Icon={WHY_TTU_FEATURES[1].Icon}
-            />
+            <FeatureCard title={f0.title} desc={f0.desc} Icon={f0.Icon} />
+            <FeatureCard title={f1.title} desc={f1.desc} Icon={f1.Icon} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:gap-6">
-            <FeatureCard
-              title={WHY_TTU_FEATURES[2].title}
-              desc={WHY_TTU_FEATURES[2].desc}
-              Icon={WHY_TTU_FEATURES[2].Icon}
-            />
-            <FeatureCard
-              title={WHY_TTU_FEATURES[3].title}
-              desc={WHY_TTU_FEATURES[3].desc}
-              Icon={WHY_TTU_FEATURES[3].Icon}
-            />
+            <FeatureCard title={f2.title} desc={f2.desc} Icon={f2.Icon} />
+            <FeatureCard title={f3.title} desc={f3.desc} Icon={f3.Icon} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:gap-6">
-            <FeatureCard
-              title={WHY_TTU_FEATURES[4].title}
-              desc={WHY_TTU_FEATURES[4].desc}
-              Icon={WHY_TTU_FEATURES[4].Icon}
-            />
+            <FeatureCard title={f4.title} desc={f4.desc} Icon={f4.Icon} />
           </div>
         </div>
       </div>
@@ -611,6 +619,13 @@ const PROGRAMS = [
 ];
 
 function ProgramsSection() {
+  const p0 = PROGRAMS[0]!;
+  const p1 = PROGRAMS[1]!;
+  const p2 = PROGRAMS[2]!;
+  const p3 = PROGRAMS[3]!;
+  const p4 = PROGRAMS[4]!;
+  const p5 = PROGRAMS[5]!;
+  const p6 = PROGRAMS[6]!;
   return (
     <section
       className="relative overflow-hidden bg-ttu-gray-light"
@@ -666,17 +681,17 @@ function ProgramsSection() {
         {/* Faculty cards — 3 columns × 2 rows + 1 centered (matches Frame 102/103/104) */}
         <div className="mt-12 flex flex-col gap-[30px] items-start">
           <div className="grid gap-x-[93px] gap-y-5 sm:grid-cols-2 lg:grid-cols-3 w-full justify-items-center">
-            {PROGRAMS.slice(0, 3).map((p) => (
+            {[p0, p1, p2].map((p) => (
               <FacultyCard key={p.faculty} {...p} />
             ))}
           </div>
           <div className="grid gap-x-[93px] gap-y-5 sm:grid-cols-2 lg:grid-cols-3 w-full justify-items-center">
-            {PROGRAMS.slice(3, 6).map((p) => (
+            {[p3, p4, p5].map((p) => (
               <FacultyCard key={p.faculty} {...p} />
             ))}
           </div>
           <div className="grid gap-x-[93px] gap-y-5 sm:grid-cols-2 lg:grid-cols-3 w-full justify-items-center">
-            <FacultyCard {...PROGRAMS[6]} />
+            <FacultyCard {...p6} />
           </div>
         </div>
       </div>
@@ -1063,6 +1078,11 @@ const ANNOUNCEMENTS = [
 ];
 
 function AnnouncementsSection() {
+  const a0 = ANNOUNCEMENTS[0]!;
+  const a1 = ANNOUNCEMENTS[1]!;
+  const a2 = ANNOUNCEMENTS[2]!;
+  const a3 = ANNOUNCEMENTS[3]!;
+  const a4 = ANNOUNCEMENTS[4]!;
   return (
     <section
       className="relative overflow-hidden bg-ttu-gradient-primary-secondary-tb"
@@ -1087,18 +1107,18 @@ function AnnouncementsSection() {
 
         {/* Featured announcement — Frame 137 */}
         <div className="mt-12">
-          <FeaturedAnnouncement announcement={ANNOUNCEMENTS[0]} />
+          <FeaturedAnnouncement announcement={a0} />
         </div>
 
         {/* 4 smaller announcements — Frame 142 (2 rows × 2 cols) */}
         <div className="mt-10 flex flex-col gap-7">
           <div className="grid gap-x-[82px] gap-y-7 sm:grid-cols-2">
-            <SmallAnnouncement announcement={ANNOUNCEMENTS[1]} />
-            <SmallAnnouncement announcement={ANNOUNCEMENTS[2]} />
+            <SmallAnnouncement announcement={a1} />
+            <SmallAnnouncement announcement={a2} />
           </div>
           <div className="grid gap-x-[82px] gap-y-7 sm:grid-cols-2">
-            <SmallAnnouncement announcement={ANNOUNCEMENTS[3]} />
-            <SmallAnnouncement announcement={ANNOUNCEMENTS[4]} />
+            <SmallAnnouncement announcement={a3} />
+            <SmallAnnouncement announcement={a4} />
           </div>
         </div>
       </div>
