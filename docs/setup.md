@@ -39,7 +39,7 @@ bun run db:studio                 # optional — browse ttu_main in Drizzle Stud
 
 ```bash
 cd apps/api
-bun run db:seed                                            # permission catalog + the 5 named roles
+bun run db:seed                                            # permission catalog + 5 roles + bootstrap site settings
 bun run db:create-super-admin -- --sub <keycloak-sub> --email you@ttu.edu.vn --name "You"
 ```
 
@@ -185,6 +185,18 @@ DELETE /api/v1/redirects/:id            hard delete
 ```
 
 Gated by `redirect.manage` on every route. `locale` omitted is the global fallback tier. Rejects (`422`) a self-redirect, a direct `A -> B -> A` loop, or a `destinationPath` that already redirects elsewhere (a chain — point at the final destination instead); rejects (`409`) a `sourcePath` that is still a live `public_routes` entry, or a duplicate active rule for the same `locale`+`sourcePath`.
+
+## Site Settings API
+
+`apps/api/src/settings/` implements `SETTINGS_CATALOG` (design doc 05 §12.2) against the existing `site_settings` table. No extra env vars needed. Every catalog key is public-safe, so reads carry no guard; only the write requires `settings.manage`.
+
+```plain text
+GET /api/v1/settings        every currently-set setting
+GET /api/v1/settings/:key   single setting; 404 outside the catalog or never set
+PUT /api/v1/settings/:key   upsert value, validated against that key's Zod schema; 422 on mismatch
+```
+
+`bun run db:seed` seeds real bootstrap values for the 4 current catalog keys (`site.contact`, `site.social_links`, `seo.defaults`, `features.public`), sourced by reading the live `https://ttu.edu.vn/` site this platform replaces — insert-if-missing, so it never overwrites a real admin edit made through the API.
 
 ## Checks
 

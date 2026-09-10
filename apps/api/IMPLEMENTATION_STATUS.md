@@ -22,22 +22,22 @@ Cross-application trackers:
 
 ## 1. Current Status
 
-|   # | Domain                      | Status      | PR / Reference            |
-| --: | --------------------------- | ----------- | ------------------------- |
-|   1 | Database schema             | ✅ Complete | Design docs               |
-|   2 | Database infrastructure     | ✅ Complete | PR #9                     |
-|   3 | Identity & authorization    | ✅ Complete | PR #10                    |
-|   4 | Content & taxonomy          | ✅ Complete | PR #11                    |
-|   5 | Role → permission grants    | ✅ Complete | PR #15                    |
-|   6 | Media / MinIO               | ✅ Complete | PR #16                    |
-|   7 | Admin authentication UI     | ✅ Complete | `apps/admin` PR           |
-|   8 | CMS Page Builder            | 🟠 Partial  | PR #20; Design docs 02–03 |
-|   9 | Navigation                  | ✅ Complete | —                         |
-|  10 | Redirect administration     | ✅ Complete | PR #21                    |
-|  11 | Site settings               | ⚪ Backlog  | Design doc 06 §12         |
-|  12 | Audit log API               | ✅ Complete | PR #19                    |
-|  13 | Public website integration  | ⚪ Backlog  | —                         |
-|  14 | WordPress migration tooling | ⚪ Backlog  | Design doc 09             |
+|   # | Domain                      | Status      | PR / Reference              |
+| --: | --------------------------- | ----------- | --------------------------- |
+|   1 | Database schema             | ✅ Complete | Design docs                 |
+|   2 | Database infrastructure     | ✅ Complete | PR #9                       |
+|   3 | Identity & authorization    | ✅ Complete | PR #10                      |
+|   4 | Content & taxonomy          | ✅ Complete | PR #11                      |
+|   5 | Role → permission grants    | ✅ Complete | PR #15                      |
+|   6 | Media / MinIO               | ✅ Complete | PR #16                      |
+|   7 | Admin authentication UI     | ✅ Complete | `apps/admin` PR             |
+|   8 | CMS Page Builder            | 🟠 Partial  | PR #20; Design docs 02–03   |
+|   9 | Navigation                  | ✅ Complete | —                           |
+|  10 | Redirect administration     | ✅ Complete | PR #21                      |
+|  11 | Site settings               | ✅ Complete | PR #22; Design doc 05 §12.2 |
+|  12 | Audit log API               | ✅ Complete | PR #19                      |
+|  13 | Public website integration  | ⚪ Backlog  | —                           |
+|  14 | WordPress migration tooling | ⚪ Backlog  | Design doc 09               |
 
 ### Status legend
 
@@ -54,14 +54,15 @@ Cross-application trackers:
 
 # 2. Current Priority
 
-Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) plus Navigation, Audit Log API, and Redirect Administration is now complete. The Component Registry (`packages/cms-registry`) is implemented and the CMS Page Builder API (`src/cms/`) is wired end-to-end against it (§3.11) — but only `hero` v1 is registered, so this domain is **Partial**, not Complete: adding the other ~19 named components from design doc 03 §21 each requires their own full field-level contract (doc 03 §22) first, and the Admin Page Editor UI / Web renderer don't exist.
+Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) plus Navigation, Audit Log API, Redirect Administration, and Site Settings is now complete. The Component Registry (`packages/cms-registry`) is implemented and the CMS Page Builder API (`src/cms/`) is wired end-to-end against it (§3.11) — but only `hero` v1 is registered, so this domain is **Partial**, not Complete: adding the other ~19 named components from design doc 03 §21 each requires their own full field-level contract (doc 03 §22) first, and the Admin Page Editor UI / Web renderer don't exist.
 
-No backend domain is currently prioritized ahead of the others. Of the remaining Backlog items (§5): Site Settings is blocked on a Settings Registry (valid keys/types/validation/defaults/scopes) that does not exist yet — design doc 05 §12.2 names four example keys (`site.contact`, `site.social_links`, `seo.defaults`, `features.public`) but gives no field-level shape for any of them, the same missing-contract problem doc 03's remaining component names have. Public Website Integration is sequenced after enough public-facing backend domains exist. WordPress Migration Tooling has not yet been scoped, and needs real legacy WordPress data access to execute against. The next concrete step is either:
+No backend domain is currently prioritized ahead of the others. Of the remaining Backlog items (§5): Public Website Integration is sequenced after enough public-facing backend domains exist — every backend domain `apps/web` would need (Content, Pages, Navigation, Settings) now exists. WordPress Migration Tooling has not yet been scoped, and needs real legacy WordPress data access to execute against. The next concrete step is either:
 
 ```text
 write a real field-level contract for one more doc 03 §21 component name, or
 build the Admin Page Editor UI / Web renderer against the now-existing Page/Section API, or
-design a Settings Registry (valid keys, types, validation, defaults, scopes) before Site Settings can start
+wire apps/web to the now-complete public-facing backend domains, or
+scope WordPress Migration Tooling once real legacy data access exists
 ```
 
 # 3. Completed
@@ -674,6 +675,24 @@ apps/api/src/redirects/
 
 Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: created a locale-specific redirect and a global (`locale` omitted) one, listed and filtered by locale, updated and deactivated a rule, deleted a rule; a self-redirect, a duplicate active source, a bad path format, a live-route shadow, a direct loop, and a chain (both on create and on a `PATCH` that would introduce one) each produced the expected `409`/`422` with precise field-level errors; all test rows and the temporary role grant cleaned up after.
 
+## 3.13 Site Settings
+
+**Status:** ✅ Complete **PR:** #22
+
+### Relevant paths
+
+```text
+apps/api/src/settings/
+```
+
+`apps/api/src/settings/settings.catalog.ts` is the Settings Registry §5.1 (below, formerly §5.2) said didn't exist: a fixed `SETTINGS_CATALOG` mapping each of design doc 05 §12.2's four example keys (`site.contact`, `site.social_links`, `seo.defaults`, `features.public`) to a Zod schema. Every field in every schema is sourced from what `https://ttu.edu.vn/` — the live WordPress site this platform replaces — actually renders today (footer phone/email/hours/map embed, header/footer social icons, `og:`/`twitter:` meta tags, the homepage's "EVENTS" widget), not invented. `site_settings` has no `locale` column, so fields that are genuinely per-locale on the live site (org name, postal address, SEO copy) are locale-keyed records nested inside one key's JSONB `value`, keyed by `locales.code` rather than a hardcoded `vi`/`en` union.
+
+`SiteSettingsController` has no RBAC branch: every catalog key is public-safe by design (they are all things the public website itself needs), and there is no draft/published split to hide from an unprivileged caller, so `GET /settings`/`GET /settings/:key` carry no guard at all — only `PUT /settings/:key` requires `settings.manage`. `SiteSettingsService` validates `value` against the matching Zod schema on every write (`422` with field-level errors, including unrecognized extra fields on each `.strict()` schema); an unknown key is `404` on every route.
+
+`db:seed` now also seeds real bootstrap values for all 4 keys (insert-if-missing, so a later re-seed never overwrites a real admin edit made through the API), grounded in the same live-site read.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: `db:seed` populated all 4 real settings; anonymous `GET /settings` and `GET /settings/:key` returned them without a token; an unknown key was `404` on both read and write; `PUT` without a token was `401`; a valid `PUT` updated `features.public` and a subsequent anonymous `GET` reflected it; a payload missing required `site.contact` fields, an unrecognized extra field on `site.social_links`, and an invalid email on `site.contact` each produced the expected `422` naming the exact field; the modified setting was restored to its seeded value and the temporary role grant revoked after.
+
 # 4. Blocked
 
 ## 4.1 Remaining CMS Page Builder Component Contracts, Admin UI, and Web Renderer
@@ -708,31 +727,7 @@ The following domains are known but are not currently part of the implementation
 
 ---
 
-## 5.1 Site Settings
-
-**Status:** ⚪ Not started **Reference:** Design document 06 §12
-
-Existing schema:
-
-```text
-site_settings
-```
-
-No endpoints exist.
-
-Implementation is additionally dependent on a Settings Registry describing:
-
-- valid setting keys;
-- types;
-- validation;
-- defaults;
-- scopes.
-
-Design doc 05 §12.2 names four example keys (`site.contact`, `site.social_links`, `seo.defaults`, `features.public`) but gives no field-level shape for any of them — the same missing-contract gap Redirect Administration did _not_ have (doc 05 §12.1 fully specified `redirects` down to its validation rules, which is why that domain could ship in PR #21 while this one still can't). The registry has not yet been implemented.
-
----
-
-## 5.2 Public Website Integration
+## 5.1 Public Website Integration
 
 **Status:** ⚪ Not started
 
@@ -756,11 +751,11 @@ Public API
 Content / Pages / Navigation / Settings
 ```
 
-This should be implemented only after enough public-facing backend domains are available.
+This should be implemented only after enough public-facing backend domains are available — as of PR #22, Content, Pages, Navigation, and Settings all exist.
 
 ---
 
-## 5.3 WordPress Migration Tooling
+## 5.2 WordPress Migration Tooling
 
 **Status:** ⚪ Not started **Reference:** Design document 09
 
@@ -799,7 +794,7 @@ ttu-platform
 │   ├── Pages                        🟠 partial (hero only, no preview)
 │   ├── Navigation                   ✅
 │   ├── Redirects                    ✅
-│   ├── Settings                     ⏳
+│   ├── Settings                     ✅
 │   └── Audit API                    ✅
 │
 ├── apps/admin
@@ -822,9 +817,8 @@ Unless requirements change, backend work should proceed in this order:
 
 1. Write full field-level contracts for more doc 03 §21 components, as real product/design work justifies each
 2. Admin Page Editor UI, against the now-existing Page/Section API
-3. Web component renderer + apps/web public API integration
-4. Design a Settings Registry, then Site Settings
-5. WordPress migration tooling
+3. Web component renderer + apps/web public API integration (Content, Pages, Navigation, Settings backends all now exist)
+4. WordPress migration tooling, once scoped
 
 This order is based on implementation dependencies rather than feature visibility.
 
@@ -881,14 +875,14 @@ This document describes the **current state of the repository**, not a changelog
 
 ```text
 Latest completed backend domain:
-Redirect Administration (#10) (#21)
+Site Settings (#11) (#22)
 
 Current priority:
 None — every queued backend domain is complete or partial-as-specified; see §2
 
 Next:
-A doc 03 §21 component's full contract, the Admin Page Editor UI / Web renderer against the existing Page/Section API, or a Settings Registry design for Site Settings (#11)
+A doc 03 §21 component's full contract, the Admin Page Editor UI / Web renderer against the existing Page/Section API, or wiring apps/web to the now-complete public-facing backends (Content, Pages, Navigation, Settings)
 
 Primary blocker:
-Product/design specification for any component beyond hero (doc 03 §22), or for Site Settings' JSONB `value` shape per key (doc 05 §12.2)
+Product/design specification for any component beyond hero (doc 03 §22); WordPress Migration Tooling additionally needs real legacy data access to scope against
 ```
