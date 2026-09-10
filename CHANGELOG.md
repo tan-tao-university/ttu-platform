@@ -4,6 +4,15 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-10 — Audit Log API ([#19](https://github.com/tan-tao-university/ttu-platform/pull/19))
+
+### Added
+
+- `apps/api/src/audit/` — `AuditLogsRepository`, `AuditLogsController` (`GET /api/v1/audit-logs`, `audit.read`), `AuditLogListQueryDto`. Read-only, paginated, newest-first surface over `audit_logs` (design doc 06 §16), which already receives rows from `content.publish`/`content.restore`. Optional `actorUserId`/`action`/`entityType`/`entityId`/`occurredFrom`/`occurredTo` filters, AND-combined.
+- `docs/api/endpoints.md`, `docs/setup.md`, root and `apps/api` `IMPLEMENTATION_STATUS.md` trackers updated.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token (`audit.read` is withheld from every other seeded role): an anonymous request 401s, an authenticated request with no grants 403s, publishing a real content item produces a real `content.publish` row visible in the very next list call, `action=`/`entityType=`+`entityId=` filters return exactly the matching row, and an invalid `entityId` 422s with a field-level error. `bun run format:check`, `bun run lint`, `bun run duplication` (0.96%), `bun run knip`, `moon run :typecheck`, `moon run api:test` (72/72), `moon run :build` — all clean.
+
 ## 2026-09-09 — Navigation domain, then RBAC-merged Content & Navigation endpoints ([#18](https://github.com/tan-tao-university/ttu-platform/pull/18))
 
 ### Added

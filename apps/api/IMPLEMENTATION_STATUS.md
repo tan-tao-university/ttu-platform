@@ -35,7 +35,7 @@ Cross-application trackers:
 |   9 | Navigation                  | ✅ Complete | —                 |
 |  10 | Redirect administration     | ⚪ Backlog  | —                 |
 |  11 | Site settings               | ⚪ Backlog  | Design doc 06 §12 |
-|  12 | Audit log API               | ⚪ Backlog  | —                 |
+|  12 | Audit log API               | ✅ Complete | PR #19            |
 |  13 | Public website integration  | ⚪ Backlog  | —                 |
 |  14 | WordPress migration tooling | ⚪ Backlog  | Design doc 09     |
 
@@ -53,9 +53,9 @@ Cross-application trackers:
 
 # 2. Current Priority
 
-Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) plus Navigation is now complete.
+Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) plus Navigation and Audit Log API is now complete.
 
-No backend domain is currently prioritized ahead of the others. The next concrete step is either:
+No backend domain is currently prioritized ahead of the others. Of the remaining Backlog items (§5): Redirect Administration is self-contained and unblocked, same as Audit Log API was before this entry — it is simply not yet prioritized. Site Settings is blocked on a Settings Registry (valid keys/types/validation/defaults/scopes) that does not exist yet. Public Website Integration is sequenced after enough public-facing backend domains exist. WordPress Migration Tooling has not yet been scoped. The next concrete step is either:
 
 ```text
 promote a Backlog item (§5) to Next explicitly, or
@@ -604,6 +604,26 @@ Verified directly against the real dev Postgres (`MenusRepository`, bypassing HT
 
 Verified over real HTTP against the dev API and real Postgres, with real Keycloak-issued tokens (`admin.test` granted `super_admin`, `student.test` with no grants): the same `GET /api/v1/content` and `GET /api/v1/menus/:key` URLs return the admin shape for a `content.read`/`navigation.manage` holder and the public delivery shape otherwise; `POST /api/v1/content` 401s anonymously and 403s for an authenticated caller without `content.create`; `GET /api/v1/menus` 401s anonymously and 403s without `navigation.manage`; an unknown menu key 404s. See `docs/api/conventions.md` §1 and `docs/api/endpoints.md` for the resulting contract.
 
+## 3.10 Audit Log API
+
+**Status:** ✅ Complete **PR:** #19
+
+### Relevant paths
+
+```text
+apps/api/src/audit/
+```
+
+Read-only surface over `audit_logs` (design doc 06 §16), which already receives rows from `content.publish`/`content.restore` (`content-publishing.service.ts`) — this domain adds the query layer, not the writes.
+
+```text
+GET /api/v1/audit-logs
+```
+
+Newest-first, paginated; optional `actorUserId`/`action`/`entityType`/`entityId`/`occurredFrom`/`occurredTo` filters (`AuditLogListQueryDto`), combined with AND. Gated by `audit.read`, always required — `role-permissions.catalog.ts` withholds it from every role but `super_admin` (doc 07 §10 reserves "sensitive system administration" to it), so there is no unprivileged branch on this controller.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: an anonymous request 401s, an authenticated request with no grants 403s, publishing a real content item produces a real `content.publish` audit row visible in the very next list call, `action=`/`entityType=`+`entityId=` filters return exactly the matching row, and an invalid `entityId` 422s with a field-level error.
+
 # 4. Blocked
 
 ## 4.1 CMS Page Builder
@@ -755,34 +775,7 @@ The registry has not yet been implemented.
 
 ---
 
-## 5.3 Audit Log API
-
-**Status:** ⚪ Not started
-
-Existing table:
-
-```text
-audit_logs
-```
-
-Audit records are already written by operations such as:
-
-```text
-publish
-restore
-```
-
-Missing capability:
-
-```http
-GET /api/v1/audit-logs
-```
-
-or equivalent administrative read surfaces.
-
----
-
-## 5.4 Public Website Integration
+## 5.3 Public Website Integration
 
 **Status:** ⚪ Not started
 
@@ -810,7 +803,7 @@ This should be implemented only after enough public-facing backend domains are a
 
 ---
 
-## 5.5 WordPress Migration Tooling
+## 5.4 WordPress Migration Tooling
 
 **Status:** ⚪ Not started **Reference:** Design document 09
 
@@ -849,7 +842,7 @@ ttu-platform
 │   ├── Pages                        🚫 blocked
 │   ├── Navigation                   ✅
 │   ├── Settings                     ⏳
-│   └── Audit API                    ⏳
+│   └── Audit API                    ✅
 │
 ├── apps/admin
 │   └── OIDC login                   ✅
@@ -871,9 +864,8 @@ Unless requirements change, backend work should proceed in this order:
 1. Component Registry
 2. CMS Page Builder
 3. Site Settings
-4. Audit Log API
-5. apps/web integration
-6. WordPress migration tooling
+4. apps/web integration
+5. WordPress migration tooling
 ```
 
 This order is based on implementation dependencies rather than feature visibility.
@@ -931,7 +923,7 @@ This document describes the **current state of the repository**, not a changelog
 
 ```text
 Latest completed backend domain:
-Navigation (#9)
+Audit Log API (#12)
 
 Current priority:
 None — every queued backend domain is complete; see §2

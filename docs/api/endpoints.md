@@ -77,3 +77,11 @@ One resource, one URL, addressed by the immutable `key` (never `id` — the same
 | `PATCH` | `/api/v1/menus/:key/items/:itemId` | `navigation.manage` | Reparent, reorder, or hide/show — `linkType`/target are immutable. |
 | `DELETE` | `/api/v1/menus/:key/items/:itemId` | `navigation.manage` | Delete an item — `409` if it still has children. |
 | `PUT` | `/api/v1/menus/:key/items/:itemId/translations/:locale` | `navigation.manage` | Upsert `label`/`customPath` for a locale. |
+
+## 6. Audit Domain (`apps/api/src/audit`)
+
+Read-only, admin-only — `audit.read` is withheld from every seeded role but `super_admin` (`role-permissions.catalog.ts`), so there is no unprivileged or partial view.
+
+| Method | Path | Required Permission | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/audit-logs` | `audit.read` | Paginated, newest-first audit trail. Optional filters: `actorUserId`, `action`, `entityType`, `entityId`, `occurredFrom`/`occurredTo` (ISO 8601, inclusive). Rows are written by other domains' sensitive operations (`content.publish`/`content.restore` today). |
