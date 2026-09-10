@@ -4,6 +4,16 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-10 — CMS Page Builder Preview API ([#24](https://github.com/tan-tao-university/ttu-platform/pull/24))
+
+### Added
+
+- `POST /api/v1/pages/:id/locales/:locale/preview` — the read-only counterpart to publish design doc 02 §9 / doc 06 §5.2, §10 describe: resolves and validates the exact same draft state `publish()` would snapshot, against the exact same `@ttu/cms-registry` contract, but never creates a revision, moves the published pointer, syncs `public_routes`, or writes an audit record. `PagePublishingService.resolveDraftSnapshot()` is the one resolve-and-validate step `publish()` and `preview()` now share (previously inlined only inside `publish()`). Gated by `page.read`, same as every other draft-visibility route.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: an empty section list previews cleanly; a section missing its locale translation `422`s with `incomplete_translation`, identical to what `publish()` would raise; a successful preview never changes `published_revision_id`/`status`; after publishing, a further draft edit shows up in a subsequent preview while the already-published delivery view keeps serving the untouched old snapshot; anonymous `401`s, an authenticated caller without `page.read` `403`s; an unknown page and an unknown locale translation each `404`. `bun run format:check`, `bun run lint`, `bun run duplication`, `bun run knip`, `moon run :typecheck`, `moon run api:test` (99/99), `moon run :build` — all clean.
+
+With this, the CMS Page Builder domain (`apps/api/src/cms/`) implements every step design doc 02 §9 names — Draft, Preview, Publish, Rollback — remaining Partial only on the component set (19 of ~20 doc 03 §21 components still need a field-level contract), the Admin Page Editor UI, and the Web renderer; see `apps/api/IMPLEMENTATION_STATUS.md` §3.11/§4.1.
+
 ## 2026-09-10 — Public Route Resolution API ([#23](https://github.com/tan-tao-university/ttu-platform/pull/23))
 
 ### Added

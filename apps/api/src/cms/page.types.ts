@@ -1,4 +1,4 @@
-import type { PageType } from '../db/schema';
+import type { Page, PageTranslation, PageType } from '../db/schema';
 
 /**
  * One `page_sections` row plus its resolved content for the locale being published (design doc 02
@@ -40,5 +40,20 @@ export interface PageSnapshot {
     robotsIndex: boolean;
     robotsFollow: boolean;
   };
+  sections: PageSectionSnapshot[];
+}
+
+/**
+ * Read-only counterpart to `PageSnapshot` (design doc 02 §9 / doc 06 §5.2, §10): the exact same
+ * resolved-and-validated draft state `publish()` would snapshot, returned to the caller instead of
+ * persisted. `page`/`translation` carry their full row shape (not the narrower fields
+ * `page_revisions.snapshot` needs) since a preview response has no storage-size constraint and the
+ * caller benefits from `translation.status`/`publishedAt`/etc.
+ */
+export interface PagePreview {
+  pageId: string;
+  locale: string;
+  page: Pick<Page, 'id' | 'pageType' | 'lockVersion'>;
+  translation: PageTranslation;
   sections: PageSectionSnapshot[];
 }

@@ -138,6 +138,12 @@ export class PagesController {
     return this.publishing.publish(id, locale, user.id, dto);
   }
 
+  @Post(':id/locales/:locale/preview')
+  @RequirePermission('page.read')
+  async preview(@Param('id', ParseUUIDPipe) id: string, @Param('locale') locale: string) {
+    return this.publishing.preview(id, locale);
+  }
+
   @Get(':id/locales/:locale/revisions')
   @RequirePermission('page.read')
   async listRevisions(@Param('id', ParseUUIDPipe) id: string, @Param('locale') locale: string) {

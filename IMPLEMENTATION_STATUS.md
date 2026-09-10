@@ -43,7 +43,7 @@ This document tracks the overall architectural progress and cross-application mi
 | 6 | **Admin OIDC Authentication** | Browser-side Keycloak redirect (`ttu-web` client) in Admin dashboard | ✅ Complete | Authorization Code + PKCE, encrypted `HttpOnly` session cookie, automatic refresh; verified against real Keycloak dev instance |
 | 7 | **Navigation / Menus** | Hierarchical menus, 5 link types, admin CRUD, resolved public tree | ✅ Complete | Verified against real Postgres + HTTP; `docs/architecture/navigation.md` |
 | 8 | **CMS Component Registry** | Shared package defining ~15–20 page components and validation schemas | 🔵 Active Build-out | `packages/cms-registry`: engine + Level A style tokens implemented; only `hero` v1 registered |
-| 9 | **CMS Page Builder** | Page drafts, section ordering, visual editing, published revisions | 🔵 Active Build-out | `apps/api/src/cms/`: Page/Section/Publish/Rollback API complete; Admin editor UI and Web renderer not started |
+| 9 | **CMS Page Builder** | Page drafts, section ordering, visual editing, preview, published revisions | 🔵 Active Build-out | `apps/api/src/cms/`: Page/Section/Preview/Publish/Rollback API complete; Admin editor UI and Web renderer not started |
 | 10 | **Public Content Consumption** | Public website fetching news, events, taxonomies, and static routes | ⚪ Backlog | Consumes the unprivileged branch of `/api/v1/content*` and `/api/v1/menus/:key` |
 | 11 | **Production Deployment** | Multi-stage Dockerfiles, Docker Compose joining `ttu-backend` network | ⚪ Backlog | Server deployment with host Nginx reverse proxy |
 | 12 | **Audit Log API** | Read-only, paginated, filterable surface over `audit_logs` | ✅ Complete | `audit.read`, `super_admin`-only; verified against real Postgres + HTTP |

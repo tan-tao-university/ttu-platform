@@ -98,6 +98,7 @@ One resource, one URL, mirroring the Content Domain exactly (§2). `page.read` d
 | `GET` | `/api/v1/pages/by-slug/:locale/:slug` | None | Always resolves the currently published page for `:locale` matching `:slug` — draft slugs are not unique. |
 | `DELETE` | `/api/v1/pages/:id` | `page.delete` | Soft-delete a page. |
 | `POST` | `/api/v1/pages/:id/translations/:locale` | `page.edit` | Upsert translation draft (title, slug, path, SEO fields). |
+| `POST` | `/api/v1/pages/:id/locales/:locale/preview` | `page.read` | Resolve and validate the current draft against the exact publish-time Component Registry contract, without creating a revision or moving the published pointer. |
 | `POST` | `/api/v1/pages/:id/locales/:locale/publish` | `page.publish` | Validate every section against the registry, snapshot, publish, sync `public_routes`. |
 | `GET` | `/api/v1/pages/:id/locales/:locale/revisions` | `page.read` | List historical revisions for a locale. |
 | `POST` | `/api/v1/pages/:id/locales/:locale/restore/:revisionId` | `page.restore` | Restore translation fields and the shared section structure from a historical revision. |

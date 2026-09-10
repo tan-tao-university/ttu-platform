@@ -7,6 +7,7 @@ import {
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { db } from '../../db';
 import {
+  type Page,
   type PageRevision,
   type PageTranslation,
   auditLogs,
@@ -21,15 +22,16 @@ import {
 import { ApiError } from '../../common/http/api-error';
 import { isUniqueViolation } from '../../common/db/postgres-error.util';
 import type { PublishPageDto } from '../dto/publish-page.dto';
-import type { PageSectionSnapshot, PageSnapshot } from '../page.types';
+import type { PagePreview, PageSectionSnapshot, PageSnapshot } from '../page.types';
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /**
- * The publish/restore transaction logic design doc 06 §10-11 / doc 02 §9-10 describe, adapted from
- * the pattern `ContentPublishingService` already ships for Content — validate → snapshot →
- * immutable revision → move the published pointer → keep the public route registry in sync, all in
- * one transaction, audited, never partially applied.
+ * The publish/preview/restore transaction logic design doc 06 §10-11 / doc 02 §9-10 describe,
+ * adapted from the pattern `ContentPublishingService` already ships for Content — validate →
+ * snapshot → immutable revision → move the published pointer → keep the public route registry in
+ * sync, all in one transaction, audited, never partially applied. `preview()` shares the exact same
+ * resolve-and-validate step (`resolveDraftSnapshot`) but stops there.
  */
 @Injectable()
 export class PagePublishingService {
@@ -40,70 +42,7 @@ export class PagePublishingService {
     dto: PublishPageDto,
   ): Promise<{ translation: PageTranslation; revision: PageRevision }> {
     return db.transaction(async (tx) => {
-      const [page] = await tx
-        .select()
-        .from(pages)
-        .where(and(eq(pages.id, pageId), sql`${pages.deletedAt} IS NULL`));
-      if (!page) throw pageNotFound(pageId);
-
-      const [translation] = await tx
-        .select()
-        .from(pageTranslations)
-        .where(and(eq(pageTranslations.pageId, pageId), eq(pageTranslations.locale, locale)));
-      if (!translation) throw translationNotFound(pageId, locale);
-
-      const sectionRows = await tx
-        .select()
-        .from(pageSections)
-        .where(eq(pageSections.pageId, pageId))
-        .orderBy(pageSections.sortOrder);
-
-      const sections: PageSectionSnapshot[] = [];
-      for (const section of sectionRows) {
-        const [sectionTranslation] = await tx
-          .select()
-          .from(pageSectionTranslations)
-          .where(
-            and(
-              eq(pageSectionTranslations.sectionId, section.id),
-              eq(pageSectionTranslations.locale, locale),
-            ),
-          );
-        if (!sectionTranslation) {
-          throw new ApiError(
-            422,
-            'validation_error',
-            'Dữ liệu không hợp lệ',
-            `Section "${section.id}" has no "${locale}" translation`,
-            [
-              {
-                field: 'sections',
-                code: 'incomplete_translation',
-                message: `Every section must have a "${locale}" translation before publishing`,
-              },
-            ],
-          );
-        }
-
-        const validated = validateComponentContract({
-          componentKey: section.componentKey,
-          componentVersion: section.componentVersion,
-          content: sectionTranslation.content,
-          config: section.config,
-          style: section.style,
-        });
-
-        sections.push({
-          id: section.id,
-          componentKey: section.componentKey,
-          componentVersion: section.componentVersion,
-          sortOrder: section.sortOrder,
-          isVisible: section.isVisible,
-          config: validated.config,
-          style: validated.style,
-          content: validated.content,
-        });
-      }
+      const { page, translation, sections } = await this.resolveDraftSnapshot(tx, pageId, locale);
 
       const [{ maxVersion }] = await tx
         .select({ maxVersion: sql<number>`coalesce(max(${pageRevisions.versionNumber}), 0)` })
@@ -163,6 +102,28 @@ export class PagePublishingService {
       });
 
       return { translation: publishedTranslation, revision };
+    });
+  }
+
+  /**
+   * Read-only counterpart to `publish()` (design doc 02 §9 / doc 06 §5.2, §10): resolves and
+   * validates the exact same draft state `publish()` would snapshot, against the exact same
+   * Component Registry contract, but never creates a revision, moves the published pointer, syncs
+   * `public_routes`, or writes an audit record. Wrapped in a transaction purely for a consistent
+   * read across `pages`/`page_translations`/`page_sections`/`page_section_translations`, not for
+   * mutation — callers only ever see a fully resolved draft or the same `422`/`404` publish itself
+   * would raise for that draft.
+   */
+  async preview(pageId: string, locale: string): Promise<PagePreview> {
+    return db.transaction(async (tx) => {
+      const { page, translation, sections } = await this.resolveDraftSnapshot(tx, pageId, locale);
+      return {
+        pageId,
+        locale,
+        page: { id: page.id, pageType: page.pageType, lockVersion: page.lockVersion },
+        translation,
+        sections,
+      };
     });
   }
 
@@ -251,6 +212,86 @@ export class PagePublishingService {
       .from(pageRevisions)
       .where(and(eq(pageRevisions.pageId, pageId), eq(pageRevisions.locale, locale)))
       .orderBy(desc(pageRevisions.versionNumber));
+  }
+
+  /**
+   * Loads the current draft for `pageId + locale` and validates every section's `content`/
+   * `config`/`style` against `@ttu/cms-registry`, exactly as `publish()` requires (doc 06 §13):
+   * every section must have a translation for the target locale, and every component must still be
+   * registered and schema-valid. Shared by `publish()` (which snapshots the result into an
+   * immutable revision) and `preview()` (which returns it directly).
+   */
+  private async resolveDraftSnapshot(
+    tx: Tx,
+    pageId: string,
+    locale: string,
+  ): Promise<{ page: Page; translation: PageTranslation; sections: PageSectionSnapshot[] }> {
+    const [page] = await tx
+      .select()
+      .from(pages)
+      .where(and(eq(pages.id, pageId), sql`${pages.deletedAt} IS NULL`));
+    if (!page) throw pageNotFound(pageId);
+
+    const [translation] = await tx
+      .select()
+      .from(pageTranslations)
+      .where(and(eq(pageTranslations.pageId, pageId), eq(pageTranslations.locale, locale)));
+    if (!translation) throw translationNotFound(pageId, locale);
+
+    const sectionRows = await tx
+      .select()
+      .from(pageSections)
+      .where(eq(pageSections.pageId, pageId))
+      .orderBy(pageSections.sortOrder);
+
+    const sections: PageSectionSnapshot[] = [];
+    for (const section of sectionRows) {
+      const [sectionTranslation] = await tx
+        .select()
+        .from(pageSectionTranslations)
+        .where(
+          and(
+            eq(pageSectionTranslations.sectionId, section.id),
+            eq(pageSectionTranslations.locale, locale),
+          ),
+        );
+      if (!sectionTranslation) {
+        throw new ApiError(
+          422,
+          'validation_error',
+          'Dữ liệu không hợp lệ',
+          `Section "${section.id}" has no "${locale}" translation`,
+          [
+            {
+              field: 'sections',
+              code: 'incomplete_translation',
+              message: `Every section must have a "${locale}" translation before publishing`,
+            },
+          ],
+        );
+      }
+
+      const validated = validateComponentContract({
+        componentKey: section.componentKey,
+        componentVersion: section.componentVersion,
+        content: sectionTranslation.content,
+        config: section.config,
+        style: section.style,
+      });
+
+      sections.push({
+        id: section.id,
+        componentKey: section.componentKey,
+        componentVersion: section.componentVersion,
+        sortOrder: section.sortOrder,
+        isVisible: section.isVisible,
+        config: validated.config,
+        style: validated.style,
+        content: validated.content,
+      });
+    }
+
+    return { page, translation, sections };
   }
 }
 

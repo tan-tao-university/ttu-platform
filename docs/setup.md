@@ -150,7 +150,7 @@ Gated by `audit.read`, which `db:seed` grants only to `super_admin` (doc 07 §10
 
 ## CMS Page Builder API
 
-`apps/api/src/cms/` implements the Page/Section/Publish/Rollback domain against `packages/cms-registry` — design docs 02, 03, 06 §5. Only `hero` v1 is registered; see `docs/architecture/cms-page-builder.md` and `docs/architecture/component-registry.md` for the full model and what's still unbuilt (Admin Page Editor UI, Web renderer, every component beyond `hero`).
+`apps/api/src/cms/` implements the Page/Section/Preview/Publish/Rollback domain against `packages/cms-registry` — design docs 02, 03, 06 §5. Only `hero` v1 is registered; see `docs/architecture/cms-page-builder.md` and `docs/architecture/component-registry.md` for the full model and what's still unbuilt (Admin Page Editor UI, Web renderer, every component beyond `hero`).
 
 ```plain text
 POST   /api/v1/pages                                          create (pageType only; HOMEPAGE/STANDARD/LANDING/SYSTEM)
@@ -159,6 +159,7 @@ GET    /api/v1/pages/:id                                      privileged: page +
 GET    /api/v1/pages/by-slug/:locale/:slug                    always published-only
 DELETE /api/v1/pages/:id                                      soft delete
 POST   /api/v1/pages/:id/translations/:locale                 upsert draft translation (title/slug/path/SEO)
+POST   /api/v1/pages/:id/locales/:locale/preview               resolve + validate the current draft against the exact publish-time registry contract; never creates a revision or moves the published pointer
 POST   /api/v1/pages/:id/locales/:locale/publish               validate every section against the registry, snapshot, publish, sync public_routes + redirects
 GET    /api/v1/pages/:id/locales/:locale/revisions             immutable publish history for this locale
 POST   /api/v1/pages/:id/locales/:locale/restore/:revisionId   restore translation fields + the shared section structure from a revision (doc 02 §9 — never republishes automatically)
