@@ -4,6 +4,17 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-10 — Site Settings API ([#22](https://github.com/tan-tao-university/ttu-platform/pull/22))
+
+### Added
+
+- `apps/api/src/settings/settings.catalog.ts` — the Settings Registry design doc 05 §12.2 named four example keys for but gave no field-level shape: `SETTINGS_CATALOG` maps `site.contact`, `site.social_links`, `seo.defaults`, and `features.public` to Zod schemas, every field sourced from reading the live `https://ttu.edu.vn/` site this platform replaces (footer contact block, header/footer social icons, `og:`/`twitter:` meta tags, the homepage "EVENTS" widget) rather than invented. `site_settings` has no `locale` column, so per-locale fields (org name, address, SEO copy) are locale-keyed records nested inside one key's JSONB `value`.
+- `apps/api/src/settings/` — `GET /settings`, `GET /settings/:key` (unauthenticated — every catalog key is public-safe by design, and there is no draft/published split to hide), `PUT /settings/:key` (`settings.manage`, `422` with field-level errors on any schema mismatch including unrecognized extra fields, `404` for a key outside the catalog).
+- `apps/api/src/db/seed.ts` — `seedSiteSettings()` seeds real bootstrap values for all 4 keys (insert-if-missing, so a later re-seed never overwrites a real admin edit made through the API).
+- 10 new unit tests (`apps/api/test/settings/services/site-settings.service.spec.ts`).
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: `db:seed` populated all 4 real settings; anonymous reads returned them without a token; an unknown key was `404` on read and write; a write without a token was `401`; a valid write updated and was reflected in a subsequent anonymous read; a payload missing required fields, an unrecognized extra field, and an invalid email each produced the expected `422` naming the exact field; state restored and the temporary role grant revoked after. `bun run format:check`, `bun run lint`, `bun run duplication`, `bun run knip`, `moon run :typecheck`, `moon run api:test` (91/91), `moon run :build` — all clean.
+
 ## 2026-09-10 — Redirect Administration API ([#21](https://github.com/tan-tao-university/ttu-platform/pull/21))
 
 ### Added

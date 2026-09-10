@@ -8,6 +8,7 @@ import { ContentModule } from './content/content.module';
 import { MediaModule } from './media/media.module';
 import { NavigationModule } from './navigation/navigation.module';
 import { RedirectsModule } from './redirects/redirects.module';
+import { SettingsModule } from './settings/settings.module';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
 
 /** Root application module for TTU Platform API. */
@@ -21,6 +22,7 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
     AuditModule,
     CmsModule,
     RedirectsModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

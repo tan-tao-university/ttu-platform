@@ -118,3 +118,15 @@ Admin-only — `redirects` has no public-read concept of its own (doc 06 §5.2):
 | `POST` | `/api/v1/redirects` | `redirect.manage` | Create a rule (`locale`?, `sourcePath`, `destinationPath`, `statusCode`? default `301`, `isActive`? default `true`). `locale` omitted is the global fallback tier. Rejects (`422`) a self-redirect, a direct `A -> B -> A` loop, or a `destinationPath` that is itself already an active redirect source (a chain — point `destinationPath` at the final destination instead); rejects (`409`) a `sourcePath` that is still a live `public_routes` entry, or a duplicate active rule for the same `locale`+`sourcePath`. |
 | `PATCH` | `/api/v1/redirects/:id` | `redirect.manage` | Update `destinationPath`/`statusCode`/`isActive` — `locale`/`sourcePath` are immutable after creation. Changing `destinationPath` re-runs the loop/chain checks. |
 | `DELETE` | `/api/v1/redirects/:id` | `redirect.manage` | Hard-delete a rule. |
+
+## 9. Site Settings Domain (`apps/api/src/settings`)
+
+Every catalog key is public-safe by design (design doc 05 §12.2's four example keys are all things the public website itself needs to render — contact info, social links, SEO fallbacks, feature toggles), and `site_settings` holds one current value per key with no draft/published split to hide from an unprivileged caller. So unlike `content`/`pages`/`menus`, reads carry no guard at all; only the write requires `settings.manage`. `SETTINGS_CATALOG` (`apps/api/src/settings/settings.catalog.ts`) fixes the current 4 keys, each with its own Zod schema — grounded in what `https://ttu.edu.vn/` (the live site this platform replaces) actually renders, not invented.
+
+| Method | Path | Auth | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/settings` | None | Every currently-set setting (`key`, `value`, `schemaVersion`, `updatedBy`, `updatedAt`). Unset catalog keys are simply absent, not defaulted. |
+| `GET` | `/api/v1/settings/:key` | None | Single setting. `404` for a key outside the catalog, or a catalog key that has never been set. |
+| `PUT` | `/api/v1/settings/:key` | `settings.manage` | Upsert `value`, validated against that key's Zod schema (`422` with field-level errors on any mismatch, including unrecognized extra fields). `404` for a key outside the catalog. |
+
+Catalog keys today: `site.contact` (phone/email/hours/map + per-locale org name/address), `site.social_links` (facebook/instagram/twitter/youtube/linkedin), `seo.defaults` (per-locale fallback title/description + default OG image reference), `features.public` (`showEventsWidget`, `maintenanceMode`).

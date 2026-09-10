@@ -2,7 +2,8 @@ import { and, eq, notInArray, sql } from 'drizzle-orm';
 import { db, client } from './index';
 import { PERMISSION_CATALOG } from './permissions.catalog';
 import { ROLE_PERMISSION_GRANTS } from './role-permissions.catalog';
-import { locales, permissions, rolePermissions, roles } from './schema';
+import { locales, permissions, rolePermissions, roles, siteSettings } from './schema';
+import { SETTINGS_CATALOG } from '../settings/settings.catalog';
 
 /**
  * Doc 01 §8: `vi` and `en` are the minimum supported locales. `vi` is the default — Tan Tao
@@ -144,12 +145,68 @@ async function seedRoleGrants(
   }
 }
 
+/**
+ * Bootstrap values for the 4 `SETTINGS_CATALOG` keys, sourced by reading the live
+ * `https://ttu.edu.vn/` site this platform replaces (footer contact block, header/footer social
+ * icons, `og:`/`twitter:` meta tags, and the homepage's "EVENTS" widget) - not invented. Parsed
+ * through each key's own Zod schema before insert so a typo here fails loudly at seed time rather
+ * than silently persisting invalid data.
+ */
+const SITE_SETTINGS_SEED_DATA: Record<string, unknown> = {
+  'site.contact': {
+    phone: '(+84) 272 376 9216',
+    email: 'info@ttu.edu.vn',
+    workingHours: 'Thứ 2 – Thứ 6, 8:00 sáng – 4:30 chiều',
+    mapEmbedUrl:
+      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.245651167569!2d106.4397433146529!3d10.792488261848522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310ad3f703fc2821%3A0xd03984a57f051ab8!2sTan+Tao+University!5e0!3m2!1sen!2s!4v1482826842333',
+    organizationNameByLocale: { vi: 'Đại học Tân Tạo', en: 'Tan Tao University' },
+    addressByLocale: {
+      vi: 'Đại lộ Đại học Tân Tạo, Tân Đức E.City, Xã Đức Hòa, Tỉnh Tây Ninh',
+      en: 'Tan Tao University Avenue, Ecity Tan Duc, Duc Hoa Commune, Tay Ninh Province, Vietnam',
+    },
+  },
+  'site.social_links': {
+    facebook: 'https://www.facebook.com/tantaouniversity',
+    instagram: 'https://www.instagram.com/tantaouniversity/',
+    twitter: 'https://twitter.com/TanTaoUni',
+    youtube: 'https://www.youtube.com/user/DHTANTAO',
+    linkedin: null,
+  },
+  'seo.defaults': {
+    defaultTitleByLocale: { vi: 'Đại học Tân Tạo', en: 'Tan Tao University' },
+    defaultDescriptionByLocale: {
+      vi: 'Khám phá thêm Tin tức TTU',
+      en: 'Explore more TTU News',
+    },
+    defaultOgImageId: null,
+  },
+  'features.public': {
+    showEventsWidget: true,
+    maintenanceMode: false,
+  },
+};
+
+/**
+ * Insert-if-missing, never overwrite: unlike locales/permissions/roles, settings become admin-owned
+ * mutable data the moment they're seeded - a later `db:seed` re-run must not silently discard a
+ * real edit made through `PUT /api/v1/settings/:key`.
+ */
+async function seedSiteSettings() {
+  const rows = Object.entries(SITE_SETTINGS_SEED_DATA).map(([key, value]) => ({
+    key,
+    value: SETTINGS_CATALOG[key].schema.parse(value),
+  }));
+  await db.insert(siteSettings).values(rows).onConflictDoNothing({ target: siteSettings.key });
+  return rows;
+}
+
 async function seed() {
   const localeRows = await seedLocales();
   const permissionRows = await seedPermissions();
   const roleRows = await seedRoles();
   await seedSuperAdminGrants(roleRows, permissionRows);
   await seedRoleGrants(roleRows, permissionRows);
+  const settingsRows = await seedSiteSettings();
 
   console.log(`Seeded ${localeRows.length} locales: ${localeRows.map((l) => l.code).join(', ')}.`);
   console.log(`Seeded ${permissionRows.length} permissions.`);
@@ -157,6 +214,9 @@ async function seed() {
   console.log(`Granted "super_admin" all ${permissionRows.length} permissions.`);
   console.log(
     `Synced grants for ${Object.keys(ROLE_PERMISSION_GRANTS).length} other roles per design doc 07 §10.`,
+  );
+  console.log(
+    `Seeded ${settingsRows.length} site settings (insert-if-missing): ${settingsRows.map((r) => r.key).join(', ')}.`,
   );
 }
 
