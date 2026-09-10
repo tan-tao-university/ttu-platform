@@ -4,6 +4,15 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-10 — Redirect Administration API ([#21](https://github.com/tan-tao-university/ttu-platform/pull/21))
+
+### Added
+
+- `apps/api/src/redirects/` — admin-only manual CRUD (`GET/POST /redirects`, `GET/PATCH/DELETE /redirects/:id`, all gated by `redirect.manage`) over the existing `redirects` table (design doc 05 §12.1). `RedirectsService` enforces the business rules the DB's own constraints can't express: rejects (`409`) a `sourcePath` that is still a live `public_routes` entry or a duplicate active rule for the same `locale`+`sourcePath`; rejects (`422`) a self-redirect, a direct `A -> B -> A` loop, or a `destinationPath` that is itself already an active redirect source (a chain — the caller is told the final destination to point at directly instead). `locale` omitted is the global fallback tier; `locale`/`sourcePath` are immutable after creation.
+- 9 new unit tests (`apps/api/test/redirects/services/redirects.service.spec.ts`) covering every rejection path plus the default-value and global-locale-normalization behavior on create.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: created a locale-specific and a global redirect, listed/filtered by locale, updated and deactivated a rule, deleted a rule; a self-redirect, a duplicate active source, a malformed path, a live-route shadow, a direct loop, and a chain (on both create and an update that would introduce one) each produced the expected `409`/`422` with precise field-level errors. `bun run format:check`, `bun run lint`, `bun run duplication`, `bun run knip`, `moon run :typecheck`, `moon run api:test` (81/81), `moon run :build` — all clean.
+
 ## 2026-09-10 — CMS Page Builder API + Component Registry ([#20](https://github.com/tan-tao-university/ttu-platform/pull/20))
 
 ### Added

@@ -4,9 +4,10 @@
 
 ## Do not build ahead of the wiring order
 
-`apps/api` has a database connection, a Keycloak auth guard (`src/access/`), and backend domains for Content/Taxonomy, Media/MinIO, Navigation, Audit, and — as of the Component Registry package (`packages/cms-registry`) — a Page/Section/Publish/Rollback CMS domain (`src/cms/`). See root [README.md](README.md) Status, [docs/setup.md](docs/setup.md), and [apps/api/IMPLEMENTATION_STATUS.md](apps/api/IMPLEMENTATION_STATUS.md) for the current, authoritative state.
+`apps/api` has a database connection, a Keycloak auth guard (`src/access/`), and backend domains for Content/Taxonomy, Media/MinIO, Navigation, Redirects, Audit, and — as of the Component Registry package (`packages/cms-registry`) — a Page/Section/Publish/Rollback CMS domain (`src/cms/`). See root [README.md](README.md) Status, [docs/setup.md](docs/setup.md), and [apps/api/IMPLEMENTATION_STATUS.md](apps/api/IMPLEMENTATION_STATUS.md) for the current, authoritative state.
 
 - The CMS Page Builder API (`src/cms/`) is wired end-to-end, but only `hero` v1 is registered in `packages/cms-registry` (design doc 03 §3 is the only component with a complete field-level contract). Do not register another component name from doc 03 §21's list without first writing its full contract (content/config/style schemas, defaults, editor metadata, doc 03 §22) — that is real product/design work, not something to infer from a category name.
+- Site Settings (`site_settings`) has no API yet. Design doc 05 §12.2 names four example keys (`site.contact`, `site.social_links`, `seo.defaults`, `features.public`) but no field-level shape for any of them — do not wire endpoints against it until a real Settings Registry (valid keys/types/validation/defaults/scopes) exists; that registry is itself the same kind of missing product/design work the CMS component list has.
 - The Admin Page Editor UI and the Next.js Web component renderer do not exist yet — do not build them speculatively ahead of a real request.
 - `apps/admin` has its own OIDC sign-in implemented, but does not yet call any of the CMS/Content/Navigation/Media/Audit APIs from its UI beyond `GET /api/v1/me` on the home page.
 

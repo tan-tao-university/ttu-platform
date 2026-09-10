@@ -33,7 +33,7 @@ Cross-application trackers:
 |   7 | Admin authentication UI     | ✅ Complete | `apps/admin` PR           |
 |   8 | CMS Page Builder            | 🟠 Partial  | PR #20; Design docs 02–03 |
 |   9 | Navigation                  | ✅ Complete | —                         |
-|  10 | Redirect administration     | ⚪ Backlog  | —                         |
+|  10 | Redirect administration     | ✅ Complete | PR #21                    |
 |  11 | Site settings               | ⚪ Backlog  | Design doc 06 §12         |
 |  12 | Audit log API               | ✅ Complete | PR #19                    |
 |  13 | Public website integration  | ⚪ Backlog  | —                         |
@@ -54,14 +54,14 @@ Cross-application trackers:
 
 # 2. Current Priority
 
-Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) plus Navigation and Audit Log API is now complete. The Component Registry (`packages/cms-registry`) is implemented and the CMS Page Builder API (`src/cms/`) is wired end-to-end against it (§3.11) — but only `hero` v1 is registered, so this domain is **Partial**, not Complete: adding the other ~19 named components from design doc 03 §21 each requires their own full field-level contract (doc 03 §22) first, and the Admin Page Editor UI / Web renderer don't exist.
+Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) plus Navigation, Audit Log API, and Redirect Administration is now complete. The Component Registry (`packages/cms-registry`) is implemented and the CMS Page Builder API (`src/cms/`) is wired end-to-end against it (§3.11) — but only `hero` v1 is registered, so this domain is **Partial**, not Complete: adding the other ~19 named components from design doc 03 §21 each requires their own full field-level contract (doc 03 §22) first, and the Admin Page Editor UI / Web renderer don't exist.
 
-No backend domain is currently prioritized ahead of the others. Of the remaining Backlog items (§5): Redirect Administration is self-contained and unblocked, same as Audit Log API was before this entry — it is simply not yet prioritized. Site Settings is blocked on a Settings Registry (valid keys/types/validation/defaults/scopes) that does not exist yet. Public Website Integration is sequenced after enough public-facing backend domains exist. WordPress Migration Tooling has not yet been scoped. The next concrete step is either:
+No backend domain is currently prioritized ahead of the others. Of the remaining Backlog items (§5): Site Settings is blocked on a Settings Registry (valid keys/types/validation/defaults/scopes) that does not exist yet — design doc 05 §12.2 names four example keys (`site.contact`, `site.social_links`, `seo.defaults`, `features.public`) but gives no field-level shape for any of them, the same missing-contract problem doc 03's remaining component names have. Public Website Integration is sequenced after enough public-facing backend domains exist. WordPress Migration Tooling has not yet been scoped, and needs real legacy WordPress data access to execute against. The next concrete step is either:
 
 ```text
-promote a Backlog item (§5) to Next explicitly, or
 write a real field-level contract for one more doc 03 §21 component name, or
-build the Admin Page Editor UI / Web renderer against the now-existing Page/Section API
+build the Admin Page Editor UI / Web renderer against the now-existing Page/Section API, or
+design a Settings Registry (valid keys, types, validation, defaults, scopes) before Site Settings can start
 ```
 
 # 3. Completed
@@ -652,6 +652,28 @@ Verified over real HTTP against the dev API and real Postgres, with a real Keycl
 - The Admin Page Editor UI (`apps/admin`) and the Next.js Web component renderer (`apps/web`) — neither exists yet.
 - Preview (doc 02 §9) is not implemented — only draft/publish/rollback.
 
+## 3.12 Redirect Administration
+
+**Status:** ✅ Complete **PR:** #21
+
+### Relevant paths
+
+```text
+apps/api/src/redirects/
+```
+
+`apps/api/src/redirects/` implements the admin-only manual CRUD design doc 05 §12.1 describes for the existing `redirects` table (schema already shipped with the initial migration — this PR only adds the API surface). Unlike `content`/`menus`, `redirects` has no public-read concept of its own (doc 06 §5.2): resolving an incoming request against `public_routes` then `redirects` is the public routing layer's job (doc 05 §12.1's locale-specific → global → `404` order), not a JSON resource here, so every route requires `redirect.manage` outright.
+
+`RedirectsService` enforces the business rules doc 05 §12.1 spells out that the DB's own constraints can't express on their own:
+
+- a redirect must not shadow a path `public_routes` still serves live (`409`);
+- a direct `A → B → A` loop is rejected (`422`);
+- a `destinationPath` that is itself already an active redirect source is rejected as a chain (`422`) — the caller is told the final destination to point at directly instead, per doc 05 §12.1's "nên: `/old-a → /new-c`; không nên: `/old-a → /old-b → /new-c`".
+
+`locale`/`sourcePath` are immutable after creation, the same precedent `page_sections.componentKey` sets; `PATCH` only accepts `destinationPath`/`statusCode`/`isActive`, and only re-runs the loop/chain checks when `destinationPath` actually changes.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: created a locale-specific redirect and a global (`locale` omitted) one, listed and filtered by locale, updated and deactivated a rule, deleted a rule; a self-redirect, a duplicate active source, a bad path format, a live-route shadow, a direct loop, and a chain (both on create and on a `PATCH` that would introduce one) each produced the expected `409`/`422` with precise field-level errors; all test rows and the temporary role grant cleaned up after.
+
 # 4. Blocked
 
 ## 4.1 Remaining CMS Page Builder Component Contracts, Admin UI, and Web Renderer
@@ -686,31 +708,7 @@ The following domains are known but are not currently part of the implementation
 
 ---
 
-## 5.1 Redirect Administration
-
-**Status:** ⚪ Not started
-
-Redirect rows are already generated automatically when Content publishing changes a public path.
-
-Current capability:
-
-```text
-content path change
-        ↓
-automatic redirect
-```
-
-Missing capability:
-
-```text
-Admin manual redirect CRUD
-```
-
-No standalone redirect management API exists yet.
-
----
-
-## 5.2 Site Settings
+## 5.1 Site Settings
 
 **Status:** ⚪ Not started **Reference:** Design document 06 §12
 
@@ -730,11 +728,11 @@ Implementation is additionally dependent on a Settings Registry describing:
 - defaults;
 - scopes.
 
-The registry has not yet been implemented.
+Design doc 05 §12.2 names four example keys (`site.contact`, `site.social_links`, `seo.defaults`, `features.public`) but gives no field-level shape for any of them — the same missing-contract gap Redirect Administration did _not_ have (doc 05 §12.1 fully specified `redirects` down to its validation rules, which is why that domain could ship in PR #21 while this one still can't). The registry has not yet been implemented.
 
 ---
 
-## 5.3 Public Website Integration
+## 5.2 Public Website Integration
 
 **Status:** ⚪ Not started
 
@@ -762,7 +760,7 @@ This should be implemented only after enough public-facing backend domains are a
 
 ---
 
-## 5.4 WordPress Migration Tooling
+## 5.3 WordPress Migration Tooling
 
 **Status:** ⚪ Not started **Reference:** Design document 09
 
@@ -800,6 +798,7 @@ ttu-platform
 │   ├── Media                        ✅
 │   ├── Pages                        🟠 partial (hero only, no preview)
 │   ├── Navigation                   ✅
+│   ├── Redirects                    ✅
 │   ├── Settings                     ⏳
 │   └── Audit API                    ✅
 │
@@ -821,13 +820,11 @@ ttu-platform
 
 Unless requirements change, backend work should proceed in this order:
 
-```text
 1. Write full field-level contracts for more doc 03 §21 components, as real product/design work justifies each
 2. Admin Page Editor UI, against the now-existing Page/Section API
 3. Web component renderer + apps/web public API integration
-4. Site Settings
+4. Design a Settings Registry, then Site Settings
 5. WordPress migration tooling
-```
 
 This order is based on implementation dependencies rather than feature visibility.
 
@@ -884,14 +881,14 @@ This document describes the **current state of the repository**, not a changelog
 
 ```text
 Latest completed backend domain:
-CMS Page Builder API + Component Registry (#8, partial — hero only) (#20)
+Redirect Administration (#10) (#21)
 
 Current priority:
 None — every queued backend domain is complete or partial-as-specified; see §2
 
 Next:
-A doc 03 §21 component's full contract, or the Admin Page Editor UI / Web renderer against the existing Page/Section API
+A doc 03 §21 component's full contract, the Admin Page Editor UI / Web renderer against the existing Page/Section API, or a Settings Registry design for Site Settings (#11)
 
 Primary blocker:
-Product/design specification for any component beyond hero (doc 03 §22)
+Product/design specification for any component beyond hero (doc 03 §22), or for Site Settings' JSONB `value` shape per key (doc 05 §12.2)
 ```

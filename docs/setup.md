@@ -172,6 +172,20 @@ POST   /api/v1/pages/:id/sections/:sectionId/translations/:locale   upsert a sec
 
 Gated by `page.read`/`page.create`/`page.edit`/`page.delete`/`page.publish`/`page.restore` — already seeded per role, same permission codes design doc 07 always defined for Pages. Section structure mutations additionally require `expectedLockVersion` (`pages.lock_version`, doc 06 §14's optimistic-concurrency pattern) — `409` if it's stale. Every `content`/`config`/`style` write is validated against `@ttu/cms-registry`; an unregistered `componentKey`/`componentVersion` or a schema mismatch is `422`.
 
+## Redirect API
+
+`apps/api/src/redirects/` implements admin-only manual CRUD over `redirects` (design doc 05 §12.1). No extra env vars needed. `redirects` has no public-read concept — resolving an incoming request against `public_routes` then `redirects` is the public routing layer's job, not a JSON resource here.
+
+```plain text
+GET    /api/v1/redirects                paginated list; optional locale/isActive/sourcePath filters
+GET    /api/v1/redirects/:id            single rule
+POST   /api/v1/redirects                create (locale?, sourcePath, destinationPath, statusCode? default 301, isActive? default true)
+PATCH  /api/v1/redirects/:id            update destinationPath/statusCode/isActive — locale/sourcePath immutable after creation
+DELETE /api/v1/redirects/:id            hard delete
+```
+
+Gated by `redirect.manage` on every route. `locale` omitted is the global fallback tier. Rejects (`422`) a self-redirect, a direct `A -> B -> A` loop, or a `destinationPath` that already redirects elsewhere (a chain — point at the final destination instead); rejects (`409`) a `sourcePath` that is still a live `public_routes` entry, or a duplicate active rule for the same `locale`+`sourcePath`.
+
 ## Checks
 
 ```bash
