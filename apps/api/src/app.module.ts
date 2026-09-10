@@ -8,6 +8,7 @@ import { ContentModule } from './content/content.module';
 import { MediaModule } from './media/media.module';
 import { NavigationModule } from './navigation/navigation.module';
 import { RedirectsModule } from './redirects/redirects.module';
+import { RoutingModule } from './routing/routing.module';
 import { SettingsModule } from './settings/settings.module';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
 
@@ -23,6 +24,7 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
     CmsModule,
     RedirectsModule,
     SettingsModule,
+    RoutingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -6,5 +6,6 @@ import { RedirectsService } from './services/redirects.service';
 @Module({
   controllers: [RedirectsController],
   providers: [RedirectsRepository, RedirectsService],
+  exports: [RedirectsRepository],
 })
 export class RedirectsModule {}
