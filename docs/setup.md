@@ -138,6 +138,16 @@ PUT    /api/v1/menus/:key/items/:itemId/translations/:locale   upsert label/cust
 
 Gated by `navigation.manage` on every write route; the single `GET /api/v1/menus/:key` read route branches on it instead of requiring it outright (unlike Content, navigation has no separate read/write/publish permission split in the design docs).
 
+## Audit Log API
+
+`apps/api/src/audit/` implements a read-only surface over `audit_logs` (design doc 06 §16). No extra env vars needed. Rows are already written by other domains' sensitive operations — `content.publish`/`content.restore` today, every future `*.publish`/`*.restore`/role-assignment/media-deletion action per the doc.
+
+```plain text
+GET /api/v1/audit-logs   newest first; optional actorUserId/action/entityType/entityId/occurredFrom/occurredTo filters
+```
+
+Gated by `audit.read`, which `db:seed` grants only to `super_admin` (doc 07 §10 reserves "sensitive system administration" to it) — there is no unprivileged or partial view.
+
 ## Checks
 
 ```bash
