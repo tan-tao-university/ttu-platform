@@ -36,8 +36,9 @@ Cross-application trackers:
 |  10 | Redirect administration     | ✅ Complete | PR #21                      |
 |  11 | Site settings               | ✅ Complete | PR #22; Design doc 05 §12.2 |
 |  12 | Audit log API               | ✅ Complete | PR #19                      |
-|  13 | Public website integration  | ⚪ Backlog  | —                           |
-|  14 | WordPress migration tooling | ⚪ Backlog  | Design doc 09               |
+|  13 | Public route resolution     | ✅ Complete | PR #23; Design doc 05 §12.1 |
+|  14 | Public website integration  | ⚪ Backlog  | —                           |
+|  15 | WordPress migration tooling | ⚪ Backlog  | Design doc 09               |
 
 ### Status legend
 
@@ -54,14 +55,14 @@ Cross-application trackers:
 
 # 2. Current Priority
 
-Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) plus Navigation, Audit Log API, Redirect Administration, and Site Settings is now complete. The Component Registry (`packages/cms-registry`) is implemented and the CMS Page Builder API (`src/cms/`) is wired end-to-end against it (§3.11) — but only `hero` v1 is registered, so this domain is **Partial**, not Complete: adding the other ~19 named components from design doc 03 §21 each requires their own full field-level contract (doc 03 §22) first, and the Admin Page Editor UI / Web renderer don't exist.
+Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) plus Navigation, Audit Log API, Redirect Administration, Site Settings, and Public Route Resolution is now complete. The Component Registry (`packages/cms-registry`) is implemented and the CMS Page Builder API (`src/cms/`) is wired end-to-end against it (§3.11) — but only `hero` v1 is registered, so this domain is **Partial**, not Complete: adding the other ~19 named components from design doc 03 §21 each requires their own full field-level contract (doc 03 §22) first, and the Admin Page Editor UI / Web renderer don't exist.
 
-No backend domain is currently prioritized ahead of the others. Of the remaining Backlog items (§5): Public Website Integration is sequenced after enough public-facing backend domains exist — every backend domain `apps/web` would need (Content, Pages, Navigation, Settings) now exists. WordPress Migration Tooling has not yet been scoped, and needs real legacy WordPress data access to execute against. The next concrete step is either:
+No backend domain is currently prioritized ahead of the others. `apps/api` has nothing left to build speculatively: every public-facing backend domain `apps/web` needs (Content, Pages, Navigation, Settings, and now route resolution) exists. Of the remaining Backlog items (§5): Public Website Integration is `apps/web`'s work, not `apps/api`'s. WordPress Migration Tooling has not yet been scoped, and needs real legacy WordPress data access to execute against. The next concrete step is either:
 
 ```text
 write a real field-level contract for one more doc 03 §21 component name, or
 build the Admin Page Editor UI / Web renderer against the now-existing Page/Section API, or
-wire apps/web to the now-complete public-facing backend domains, or
+wire apps/web to the now-complete public-facing backend domains (this is apps/web scope, not apps/api), or
 scope WordPress Migration Tooling once real legacy data access exists
 ```
 
@@ -693,6 +694,20 @@ apps/api/src/settings/
 
 Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: `db:seed` populated all 4 real settings; anonymous `GET /settings` and `GET /settings/:key` returned them without a token; an unknown key was `404` on both read and write; `PUT` without a token was `401`; a valid `PUT` updated `features.public` and a subsequent anonymous `GET` reflected it; a payload missing required `site.contact` fields, an unrecognized extra field on `site.social_links`, and an invalid email on `site.contact` each produced the expected `422` naming the exact field; the modified setting was restored to its seeded value and the temporary role grant revoked after.
 
+## 3.14 Public Route Resolution
+
+**Status:** ✅ Complete **PR:** #23
+
+### Relevant paths
+
+```text
+apps/api/src/routing/
+```
+
+`GET /api/v1/routes/resolve?locale=&path=` implements design doc 05 §12.1's exact resolve order for `apps/web`: check `public_routes(locale, path)` first — a live entry always wins; if none, fall through to `redirects` (locale-specific before the global `locale IS NULL` fallback tier, reusing `RedirectsRepository.findActiveMatchesForLocale` exported from `RedirectsModule`); otherwise `404`. Returns a routing pointer only (`{ type: 'page', pageId }` / `{ type: 'content', contentId }` / `{ type: 'redirect', destinationPath, statusCode }`), never the rendered resource — `apps/web` makes one further `GET /pages/:id`/`GET /content/:id` call once it knows the type, so this never duplicates `PagesController`'s/`ContentController`'s own delivery-view logic. Public, unauthenticated.
+
+Verified over real HTTP against the dev API and real Postgres: seeded a real `public_routes` row for each target type, a locale-specific redirect, a global redirect, and a same-source locale-vs-global priority pair — resolving each path returned the correct pointer/redirect target; a locale-specific redirect correctly won over an active global rule for the identical source path; a path with no match anywhere was `404`; a malformed `path` and a missing `locale` were each `422`; all seeded rows cleaned up after.
+
 # 4. Blocked
 
 ## 4.1 Remaining CMS Page Builder Component Contracts, Admin UI, and Web Renderer
@@ -751,7 +766,7 @@ Public API
 Content / Pages / Navigation / Settings
 ```
 
-This should be implemented only after enough public-facing backend domains are available — as of PR #22, Content, Pages, Navigation, and Settings all exist.
+This should be implemented only after enough public-facing backend domains are available — as of PR #23, Content, Pages, Navigation, Settings, and public route resolution all exist. This is entirely `apps/web` scope now; `apps/api` has nothing left to build for it speculatively.
 
 ---
 
@@ -795,6 +810,7 @@ ttu-platform
 │   ├── Navigation                   ✅
 │   ├── Redirects                    ✅
 │   ├── Settings                     ✅
+│   ├── Route resolution             ✅
 │   └── Audit API                    ✅
 │
 ├── apps/admin
@@ -817,7 +833,7 @@ Unless requirements change, backend work should proceed in this order:
 
 1. Write full field-level contracts for more doc 03 §21 components, as real product/design work justifies each
 2. Admin Page Editor UI, against the now-existing Page/Section API
-3. Web component renderer + apps/web public API integration (Content, Pages, Navigation, Settings backends all now exist)
+3. Web component renderer + apps/web public API integration (Content, Pages, Navigation, Settings, and route resolution backends all now exist — this is entirely apps/web scope now)
 4. WordPress migration tooling, once scoped
 
 This order is based on implementation dependencies rather than feature visibility.
@@ -875,13 +891,13 @@ This document describes the **current state of the repository**, not a changelog
 
 ```text
 Latest completed backend domain:
-Site Settings (#11) (#22)
+Public Route Resolution (#13) (#23)
 
 Current priority:
 None — every queued backend domain is complete or partial-as-specified; see §2
 
 Next:
-A doc 03 §21 component's full contract, the Admin Page Editor UI / Web renderer against the existing Page/Section API, or wiring apps/web to the now-complete public-facing backends (Content, Pages, Navigation, Settings)
+A doc 03 §21 component's full contract, the Admin Page Editor UI / Web renderer against the existing Page/Section API, or wiring apps/web to the now-complete public-facing backends (Content, Pages, Navigation, Settings, route resolution) — apps/api has no more speculative backend work to do
 
 Primary blocker:
 Product/design specification for any component beyond hero (doc 03 §22); WordPress Migration Tooling additionally needs real legacy data access to scope against

@@ -4,6 +4,17 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-10 — Public Route Resolution API ([#23](https://github.com/tan-tao-university/ttu-platform/pull/23))
+
+### Added
+
+- `apps/api/src/routing/` — `GET /api/v1/routes/resolve?locale=&path=`, public and unauthenticated. Implements design doc 05 §12.1's exact resolve order: a live `public_routes` entry always wins; otherwise fall through to `redirects` (locale-specific before the global `locale IS NULL` fallback tier, reusing `RedirectsRepository.findActiveMatchesForLocale` now exported from `RedirectsModule`); otherwise `404`. Returns a routing pointer only (`{ type: 'page', pageId }` / `{ type: 'content', contentId }` / `{ type: 'redirect', destinationPath, statusCode }`) — never the rendered resource, so it never duplicates `PagesController`'s/`ContentController`'s own delivery-view logic; `apps/web` makes one further by-id call once it knows the type.
+- 8 new unit tests (`apps/api/test/routing/services/route-resolution.service.spec.ts`).
+
+Verified over real HTTP against the dev API and real Postgres: seeded a real `public_routes` row for each target type, a locale-specific redirect, a global redirect, and a same-source locale-vs-global priority pair — every path resolved to the correct pointer/redirect target, the locale-specific redirect correctly won over an active global rule for the identical source, a path with no match anywhere was `404`, a malformed `path` and a missing `locale` were each `422`. `bun run format:check`, `bun run lint`, `bun run duplication`, `bun run knip`, `moon run :typecheck`, `moon run api:test` (99/99), `moon run :build` — all clean.
+
+With this, every public-facing backend domain `apps/web` needs (Content, Pages, Navigation, Settings, and now route resolution) exists — `apps/api` has no more unblocked backend work; see `apps/api/IMPLEMENTATION_STATUS.md` §2.
+
 ## 2026-09-10 — Site Settings API ([#22](https://github.com/tan-tao-university/ttu-platform/pull/22))
 
 ### Added

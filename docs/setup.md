@@ -198,6 +198,16 @@ PUT /api/v1/settings/:key   upsert value, validated against that key's Zod schem
 
 `bun run db:seed` seeds real bootstrap values for the 4 current catalog keys (`site.contact`, `site.social_links`, `seo.defaults`, `features.public`), sourced by reading the live `https://ttu.edu.vn/` site this platform replaces — insert-if-missing, so it never overwrites a real admin edit made through the API.
 
+## Public Route Resolution API
+
+`apps/api/src/routing/` implements `GET /api/v1/routes/resolve?locale=&path=` — the single call `apps/web` will make per incoming request once wired (design doc 05 §12.1's resolve order: `public_routes` → `redirects` locale-specific → `redirects` global → `404`). No extra env vars needed.
+
+```plain text
+GET /api/v1/routes/resolve?locale=vi&path=/gioi-thieu
+```
+
+Returns a routing pointer, never the rendered resource: `{ type: "page", pageId }`, `{ type: "content", contentId }`, or `{ type: "redirect", destinationPath, statusCode }`. `404` if nothing matches; `422` for a malformed `path` or a missing `locale`.
+
 ## Checks
 
 ```bash

@@ -130,3 +130,11 @@ Every catalog key is public-safe by design (design doc 05 §12.2's four example 
 | `PUT` | `/api/v1/settings/:key` | `settings.manage` | Upsert `value`, validated against that key's Zod schema (`422` with field-level errors on any mismatch, including unrecognized extra fields). `404` for a key outside the catalog. |
 
 Catalog keys today: `site.contact` (phone/email/hours/map + per-locale org name/address), `site.social_links` (facebook/instagram/twitter/youtube/linkedin), `seo.defaults` (per-locale fallback title/description + default OG image reference), `features.public` (`showEventsWidget`, `maintenanceMode`).
+
+## 10. Public Route Resolution (`apps/api/src/routing`)
+
+`apps/web` (once wired) calls this once per incoming request to decide what a path means, before making one further Pages/Content by-id call — it returns a routing pointer, never the rendered resource itself, so it doesn't duplicate `PagesController`'s/`ContentController`'s own delivery-view logic. Implements design doc 05 §12.1's exact resolve order: a live `public_routes` entry always wins; otherwise fall through to `redirects` (locale-specific before the global `locale IS NULL` fallback tier); otherwise `404`.
+
+| Method | Path | Auth | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/routes/resolve?locale=&path=` | None | `{ type: 'page', pageId }` \| `{ type: 'content', contentId }` \| `{ type: 'redirect', destinationPath, statusCode }`. `404` if nothing matches either table. `422` for a malformed `path` (must start with `/`, no `?`/`#`) or a missing `locale`. |
