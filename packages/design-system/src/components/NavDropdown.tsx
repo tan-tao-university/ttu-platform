@@ -69,8 +69,8 @@ export function NavDropdown({
         <Link
           href={href}
           className={cn(
-            "rounded-md px-2 py-2 text-sm font-medium transition-colors",
-            "text-foreground/80 hover:text-primary",
+            "rounded-md px-2 py-2 text-sm font-medium transition-colors whitespace-nowrap",
+            "text-primary hover:text-primary/80",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
           )}
         >
@@ -84,8 +84,8 @@ export function NavDropdown({
           onClick={() => setOpen((prev) => !prev)}
           onKeyDown={onTriggerKeyDown}
           className={cn(
-            "inline-flex h-8 w-6 items-center justify-center rounded-md text-foreground/70 transition-colors",
-            "hover:bg-muted hover:text-primary",
+            "inline-flex h-8 w-6 items-center justify-center rounded-md text-primary transition-colors",
+            "hover:bg-muted hover:text-primary/80",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
           )}
         >
