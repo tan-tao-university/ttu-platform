@@ -42,8 +42,8 @@ This document tracks the overall architectural progress and cross-application mi
 | 5 | **Media Storage Integration** | MinIO S3 client, upload endpoints, asset metadata & translations | ✅ Complete | `ttu-media` public bucket, scoped app credential, MIME/size/signature validation, delete-reference protection |
 | 6 | **Admin OIDC Authentication** | Browser-side Keycloak redirect (`ttu-web` client) in Admin dashboard | ✅ Complete | Authorization Code + PKCE, encrypted `HttpOnly` session cookie, automatic refresh; verified against real Keycloak dev instance |
 | 7 | **Navigation / Menus** | Hierarchical menus, 5 link types, admin CRUD, resolved public tree | ✅ Complete | Verified against real Postgres + HTTP; `docs/architecture/navigation.md` |
-| 8 | **CMS Component Registry** | Shared package defining ~15–20 page components and validation schemas | 🔴 Blocked | Required before CMS Page Builder (`pages`/`page_sections`) |
-| 9 | **CMS Page Builder** | Page drafts, section ordering, visual editing, published revisions | 🔴 Blocked | Depends on Milestone 8 (Component Registry) |
+| 8 | **CMS Component Registry** | Shared package defining ~15–20 page components and validation schemas | 🔵 Active Build-out | `packages/cms-registry`: engine + Level A style tokens implemented; only `hero` v1 registered |
+| 9 | **CMS Page Builder** | Page drafts, section ordering, visual editing, published revisions | 🔵 Active Build-out | `apps/api/src/cms/`: Page/Section/Publish/Rollback API complete; Admin editor UI and Web renderer not started |
 | 10 | **Public Content Consumption** | Public website fetching news, events, taxonomies, and static routes | ⚪ Backlog | Consumes the unprivileged branch of `/api/v1/content*` and `/api/v1/menus/:key` |
 | 11 | **Production Deployment** | Multi-stage Dockerfiles, Docker Compose joining `ttu-backend` network | ⚪ Backlog | Server deployment with host Nginx reverse proxy |
 | 12 | **Audit Log API** | Read-only, paginated, filterable surface over `audit_logs` | ✅ Complete | `audit.read`, `super_admin`-only; verified against real Postgres + HTTP |
@@ -54,7 +54,7 @@ This document tracks the overall architectural progress and cross-application mi
 
 ### 3.1 Backend API (`apps/api`)
 
-- **Current State**: Database schema (36 tables) is fully wired against `ttu_main`. Core authentication guard verifies Keycloak JWTs and checks permissions against local database roles; all 5 seeded roles carry an explicit, documented permission grant set. Content and Taxonomy modules are fully operational with immutable revision snapshots, category/tag assignments, and automated 301 redirect generation on path changes. The Media domain (`apps/api/src/media/`) uploads to and deletes from `ttu-data-infra`'s MinIO instance with server-side MIME/size/signature validation and delete-reference protection against published content. Content and Navigation are each a single resource at a single URL, RBAC-branched (`content.read`/`navigation.manage`) between the full editorial view and the published-only delivery view — see `docs/api/conventions.md` §1. The Audit domain (`apps/api/src/audit/`) exposes a read-only, `super_admin`-only, paginated/filterable view over `audit_logs`.
+- **Current State**: Database schema (36 tables) is fully wired against `ttu_main`. Core authentication guard verifies Keycloak JWTs and checks permissions against local database roles; all 5 seeded roles carry an explicit, documented permission grant set. Content and Taxonomy modules are fully operational with immutable revision snapshots, category/tag assignments, and automated 301 redirect generation on path changes. The Media domain (`apps/api/src/media/`) uploads to and deletes from `ttu-data-infra`'s MinIO instance with server-side MIME/size/signature validation and delete-reference protection against published content. Content and Navigation are each a single resource at a single URL, RBAC-branched (`content.read`/`navigation.manage`) between the full editorial view and the published-only delivery view — see `docs/api/conventions.md` §1. The Component Registry (`packages/cms-registry`) and the CMS Page Builder API (`apps/api/src/cms/`) are implemented against that pattern too, but only `hero` v1 is registered — see `docs/architecture/cms-page-builder.md` and `docs/architecture/component-registry.md`.
 - **Next Priorities**: Content and Taxonomy management views in the Admin dashboard, or a Backlog item (redirect administration, site settings) if explicitly prioritized.
 - **Detailed Tracking**: See [`apps/api/IMPLEMENTATION_STATUS.md`](apps/api/IMPLEMENTATION_STATUS.md).
 
@@ -78,7 +78,7 @@ Strict guidelines enforced across the monorepo (see [`AGENTS.md`](AGENTS.md)):
 
 1. **Do not build ahead of wiring order**:
    - Do not add an S3/MinIO client speculatively; wire it when a real upload endpoint needs it (doc 08).
-   - Do not add `pages`/`page_sections` endpoints or invent fake component schemas; wait for the Component Registry (`packages/cms-registry`).
+   - `pages`/`page_sections` endpoints and the Component Registry (`packages/cms-registry`) are implemented, but only `hero` v1 is registered — do not register another component name without first writing its full field-level contract (design doc 03 §22); a category placeholder name is not a contract.
 2. **Sibling infrastructure ownership**:
    - `ttu-data-infra` owns shared PostgreSQL and MinIO instances.
    - `ttu-identity` owns Keycloak realm configuration and clients (`ttu-web`).

@@ -47,6 +47,7 @@
         "@nestjs/common": "^11.0.1",
         "@nestjs/core": "^11.0.1",
         "@nestjs/platform-express": "^11.0.1",
+        "@ttu/cms-registry": "workspace:*",
         "class-transformer": "^0.5.1",
         "class-validator": "^0.15.1",
         "compression": "^1.8.1",
@@ -101,6 +102,17 @@
         "eslint": "^9",
         "eslint-config-next": "16.2.12",
         "tailwindcss": "^4",
+        "typescript": "^5",
+      },
+    },
+    "packages/cms-registry": {
+      "name": "@ttu/cms-registry",
+      "version": "0.1.0",
+      "dependencies": {
+        "zod": "^4.5.4",
+      },
+      "devDependencies": {
+        "@types/node": "^24.0.0",
         "typescript": "^5",
       },
     },
@@ -827,6 +839,8 @@
     "@ttu/admin": ["@ttu/admin@workspace:apps/admin"],
 
     "@ttu/api": ["@ttu/api@workspace:apps/api"],
+
+    "@ttu/cms-registry": ["@ttu/cms-registry@workspace:packages/cms-registry"],
 
     "@ttu/web": ["@ttu/web@workspace:apps/web"],
 
@@ -2372,6 +2386,8 @@
 
     "@ttu/api/@types/node": ["@types/node@24.13.3", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-Dh8vAsV36ig5wa9OX4pXvMc9D3Veibfw2wix0CUwYODLD8nkj9UsLjASr49nPg+2eKzxhBV+v7L8pXvT4e639Q=="],
 
+    "@ttu/cms-registry/@types/node": ["@types/node@24.13.3", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-Dh8vAsV36ig5wa9OX4pXvMc9D3Veibfw2wix0CUwYODLD8nkj9UsLjASr49nPg+2eKzxhBV+v7L8pXvT4e639Q=="],
+
     "@types/body-parser/@types/node": ["@types/node@26.4.1", "", { "dependencies": { "undici-types": "~8.3.0" } }, "sha512-k97ENvZWtvA6yqz5/FS6a7duDgOPEeOQOc2iKS/nY6mX6qJUKtLnWzQS+Xj6tXweyj6ZcTAK2Qecetnvi9nCLA=="],
 
     "@types/compression/@types/node": ["@types/node@26.4.1", "", { "dependencies": { "undici-types": "~8.3.0" } }, "sha512-k97ENvZWtvA6yqz5/FS6a7duDgOPEeOQOc2iKS/nY6mX6qJUKtLnWzQS+Xj6tXweyj6ZcTAK2Qecetnvi9nCLA=="],
@@ -2641,6 +2657,8 @@
     "@tailwindcss/oxide-wasm32-wasi/@emnapi/core/@emnapi/wasi-threads": ["@emnapi/wasi-threads@1.2.2", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-c95qOXkHdydNKhscBTebqEC1CVAZpyqOfVfBzQ1qgzyl3gfeldUjIggDbIZgDKsHLgnsM+igH7TJ/eAasaVuMA=="],
 
     "@ttu/api/@types/node/undici-types": ["undici-types@7.18.2", "", {}, "sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w=="],
+
+    "@ttu/cms-registry/@types/node/undici-types": ["undici-types@7.18.2", "", {}, "sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w=="],
 
     "@types/body-parser/@types/node/undici-types": ["undici-types@8.3.0", "", {}, "sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ=="],
 

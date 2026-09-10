@@ -4,11 +4,11 @@
 
 ## Do not build ahead of the wiring order
 
-`apps/api` has a database connection, a Keycloak auth guard (`src/access/`), and its first business domain, Content (`src/content/`, `src/taxonomy/`) — see root [README.md](README.md) Status and [docs/setup.md](docs/setup.md#content--taxonomy-api). It still has **no storage integration and no CMS Page Builder domain**.
+`apps/api` has a database connection, a Keycloak auth guard (`src/access/`), and backend domains for Content/Taxonomy, Media/MinIO, Navigation, Audit, and — as of the Component Registry package (`packages/cms-registry`) — a Page/Section/Publish/Rollback CMS domain (`src/cms/`). See root [README.md](README.md) Status, [docs/setup.md](docs/setup.md), and [apps/api/IMPLEMENTATION_STATUS.md](apps/api/IMPLEMENTATION_STATUS.md) for the current, authoritative state.
 
-- Do not add an S3/MinIO client speculatively — wire it when a real upload endpoint needs it (doc 08).
-- Do not add `pages`/`page_sections` endpoints, and do not invent components/schemas to unblock them: the CMS Page Builder domain (doc 02-03) depends on a Component Registry (`packages/cms-registry`) and a real ~15-20-component set that don't exist in this repo yet — that is real product/design work, not something to fabricate to fill the gap.
-- `apps/admin`'s actual sign-in UI (the browser-side OIDC redirect against `ttu-web`) is still open — nothing in `apps/admin` calls the API yet.
+- The CMS Page Builder API (`src/cms/`) is wired end-to-end, but only `hero` v1 is registered in `packages/cms-registry` (design doc 03 §3 is the only component with a complete field-level contract). Do not register another component name from doc 03 §21's list without first writing its full contract (content/config/style schemas, defaults, editor metadata, doc 03 §22) — that is real product/design work, not something to infer from a category name.
+- The Admin Page Editor UI and the Next.js Web component renderer do not exist yet — do not build them speculatively ahead of a real request.
+- `apps/admin` has its own OIDC sign-in implemented, but does not yet call any of the CMS/Content/Navigation/Media/Audit APIs from its UI beyond `GET /api/v1/me` on the home page.
 
 ## Toolchain & stack
 

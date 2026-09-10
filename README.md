@@ -224,8 +224,8 @@ Track our completed milestones and upcoming domains. For exhaustive technical pr
   - [ ] MinIO S3-compatible object upload and asset metadata management
   - [ ] Media translation and responsive variant generation
 - [ ] **Phase 5: CMS Page Builder**
-  - [ ] Component Registry package (`packages/cms-registry`)
-  - [ ] Dynamic section drafting and published revision snapshots
+  - [x] Component Registry package (`packages/cms-registry`) — engine + Level A style tokens; only `hero` v1 registered
+  - [x] Dynamic section drafting and published revision snapshots — `apps/api/src/cms/` (Page/Section/Publish/Rollback API)
 - [ ] **Phase 6: Frontend Applications**
   - [ ] Admin dashboard authentication flow (OIDC redirect)
   - [ ] Admin content and taxonomy management UI

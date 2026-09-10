@@ -22,47 +22,47 @@ Cross-application trackers:
 
 ## 1. Current Status
 
-|   # | Domain                      | Status      | PR / Reference    |
-| --: | --------------------------- | ----------- | ----------------- |
-|   1 | Database schema             | ✅ Complete | Design docs       |
-|   2 | Database infrastructure     | ✅ Complete | PR #9             |
-|   3 | Identity & authorization    | ✅ Complete | PR #10            |
-|   4 | Content & taxonomy          | ✅ Complete | PR #11            |
-|   5 | Role → permission grants    | ✅ Complete | PR #15            |
-|   6 | Media / MinIO               | ✅ Complete | PR #16            |
-|   7 | Admin authentication UI     | ✅ Complete | `apps/admin` PR   |
-|   8 | CMS Page Builder            | 🔴 Blocked  | Design docs 02–03 |
-|   9 | Navigation                  | ✅ Complete | —                 |
-|  10 | Redirect administration     | ⚪ Backlog  | —                 |
-|  11 | Site settings               | ⚪ Backlog  | Design doc 06 §12 |
-|  12 | Audit log API               | ✅ Complete | PR #19            |
-|  13 | Public website integration  | ⚪ Backlog  | —                 |
-|  14 | WordPress migration tooling | ⚪ Backlog  | Design doc 09     |
+|   # | Domain                      | Status      | PR / Reference            |
+| --: | --------------------------- | ----------- | ------------------------- |
+|   1 | Database schema             | ✅ Complete | Design docs               |
+|   2 | Database infrastructure     | ✅ Complete | PR #9                     |
+|   3 | Identity & authorization    | ✅ Complete | PR #10                    |
+|   4 | Content & taxonomy          | ✅ Complete | PR #11                    |
+|   5 | Role → permission grants    | ✅ Complete | PR #15                    |
+|   6 | Media / MinIO               | ✅ Complete | PR #16                    |
+|   7 | Admin authentication UI     | ✅ Complete | `apps/admin` PR           |
+|   8 | CMS Page Builder            | 🟠 Partial  | PR #20; Design docs 02–03 |
+|   9 | Navigation                  | ✅ Complete | —                         |
+|  10 | Redirect administration     | ⚪ Backlog  | —                         |
+|  11 | Site settings               | ⚪ Backlog  | Design doc 06 §12         |
+|  12 | Audit log API               | ✅ Complete | PR #19                    |
+|  13 | Public website integration  | ⚪ Backlog  | —                         |
+|  14 | WordPress migration tooling | ⚪ Backlog  | Design doc 09             |
 
 ### Status legend
 
-| Status         | Meaning                                                           |
-| -------------- | ----------------------------------------------------------------- |
-| ✅ Complete    | Implemented and merged                                            |
-| 🟡 Next        | Current or immediate implementation priority                      |
-| 🔵 In progress | Actively being implemented                                        |
-| ⚪ Not started | Known work but implementation has not started                     |
-| 🔴 Blocked     | Must not be implemented until the dependency/specification exists |
+| Status | Meaning |
+| --- | --- |
+| ✅ Complete | Implemented and merged |
+| 🟠 Partial | Implemented for what's currently specified; more is planned but blocked on a missing spec |
+| 🟡 Next | Current or immediate implementation priority |
+| 🔵 In progress | Actively being implemented |
+| ⚪ Not started | Known work but implementation has not started |
+| 🔴 Blocked | Must not be implemented until the dependency/specification exists |
 
 ---
 
 # 2. Current Priority
 
-Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) plus Navigation and Audit Log API is now complete.
+Every backend domain in the original priority queue (role → permission grants, media/MinIO, admin authentication UI) plus Navigation and Audit Log API is now complete. The Component Registry (`packages/cms-registry`) is implemented and the CMS Page Builder API (`src/cms/`) is wired end-to-end against it (§3.11) — but only `hero` v1 is registered, so this domain is **Partial**, not Complete: adding the other ~19 named components from design doc 03 §21 each requires their own full field-level contract (doc 03 §22) first, and the Admin Page Editor UI / Web renderer don't exist.
 
 No backend domain is currently prioritized ahead of the others. Of the remaining Backlog items (§5): Redirect Administration is self-contained and unblocked, same as Audit Log API was before this entry — it is simply not yet prioritized. Site Settings is blocked on a Settings Registry (valid keys/types/validation/defaults/scopes) that does not exist yet. Public Website Integration is sequenced after enough public-facing backend domains exist. WordPress Migration Tooling has not yet been scoped. The next concrete step is either:
 
 ```text
 promote a Backlog item (§5) to Next explicitly, or
-unblock CMS Page Builder via the Component Registry (§4.1)
+write a real field-level contract for one more doc 03 §21 component name, or
+build the Admin Page Editor UI / Web renderer against the now-existing Page/Section API
 ```
-
-The CMS Page Builder must **not** be implemented yet because its Component Registry does not exist.
 
 # 3. Completed
 
@@ -624,100 +624,59 @@ Newest-first, paginated; optional `actorUserId`/`action`/`entityType`/`entityId`
 
 Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: an anonymous request 401s, an authenticated request with no grants 403s, publishing a real content item produces a real `content.publish` audit row visible in the very next list call, `action=`/`entityType=`+`entityId=` filters return exactly the matching row, and an invalid `entityId` 422s with a field-level error.
 
+## 3.11 CMS Page Builder API & Component Registry
+
+**Status:** 🟠 Partial **PR:** #20
+
+### Relevant paths
+
+```text
+packages/cms-registry/
+apps/api/src/cms/
+```
+
+`packages/cms-registry` implements the registry engine design doc 03 §2-4, 13, 16-20 describes: `ComponentDefinition` (Zod `contentSchema`/`configSchema`/`styleSchema`, defaults, `editorMetadata`, `variants`, `lifecycle`), the Level A safe style-token vocabulary (doc 03 §9), and `registerComponent`/`getComponentDefinition`/`validateSectionStructure`/`validateSectionContent`/`validateSection`. Only `hero` v1 is registered — the one component doc 03 §3 gives a complete, field-by-field spec for. The other ~19 names in doc 03 §21 are category placeholders only; each needs its own full contract (doc 03 §22) before it can be registered — that is real product/design work, not something inferred from a category name.
+
+`apps/api/src/cms/` wires the full Page/Section/Publish/Rollback API against the existing `pages`/`page_sections`/`page_translations`/`page_revisions`/`page_section_translations` schema, reusing the exact patterns already shipped for Content (§3.4) and Navigation (§3.8, §3.9):
+
+- `PagesController` merges the admin and delivery views into one resource at one URL (design doc 06 §5): `GET /pages`, `GET /pages/:id`, `GET /pages/by-slug/:locale/:slug` branch on `page.read`, exactly like `ContentController`. Every write route requires its permission outright (`page.create`/`page.edit`/`page.delete`/`page.publish`/`page.restore` — already seeded per role).
+- `PageSectionsService` validates every `content`/`config`/`style` write against the registry before it reaches the database, and `PagePublishingService.publish()` re-validates the full resolved state of every section at publish time (doc 03 §13: "ưu tiên reject khi publish để phát hiện data drift sớm").
+- Section structure (create/update/delete/reorder) is protected by `pages.lock_version` optimistic concurrency (doc 06 §14) — a stale `expectedLockVersion` is `409`.
+- `PagePublishingService.restore()` follows the exact precedent `ContentPublishingService.restore()` set for its own shared `events` sub-resource: rollback unconditionally replaces the current shared section structure with the snapshot's, since `page_sections`/`config`/`style` are locale-independent (doc 02 §8). See `docs/architecture/cms-page-builder.md` §6 for the resulting, currently-unresolved cross-locale tradeoff this implies.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: created a page, added a `hero` section using the component's own defaults, translated it, published it, and confirmed the anonymous delivery view matches the admin editorial view's data with hidden sections filtered and internal fields stripped; an unregistered `componentKey`, a stale `expectedLockVersion`, and an invalid style token each produced the expected `422`/`409`; reorder and restore-to-an-earlier-revision both verified against real data.
+
+### What's still missing
+
+- 19 more component contracts (doc 03 §21/§22) — each is real design work, not fabricated here.
+- The Admin Page Editor UI (`apps/admin`) and the Next.js Web component renderer (`apps/web`) — neither exists yet.
+- Preview (doc 02 §9) is not implemented — only draft/publish/rollback.
+
 # 4. Blocked
 
-## 4.1 CMS Page Builder
+## 4.1 Remaining CMS Page Builder Component Contracts, Admin UI, and Web Renderer
 
 **Status:** 🔴 Blocked
 
-### Existing database schema
+The Page/Section/Publish/Rollback API and the Component Registry engine are implemented (§3.11). What remains blocked:
 
-The following tables already exist:
+### Component contracts beyond `hero`
 
-```text
-pages
-page_sections
-```
+Design doc 03 §21 names ~19 more components (`cta`, `image-banner`, `statistics`, `rich-text`, `image-text`, `columns`, `spacer`, `news-grid`, `announcement-list`, `event-list`, `featured-article`, `faculty-grid`, `program-grid`, `people-grid`, `research-highlight`, `gallery`, `video`, `partner-logos`, `quick-links`) but only as category placeholders — a key and a one-line purpose, not the field-level `contentSchema`/`configSchema`/`styleSchema`/defaults/`editorMetadata` doc 03 §22 requires before a component can actually be registered. Registering one without that contract means inventing product and design decisions.
 
-However, no Page Builder endpoints exist.
+> Do not register a component from the doc 03 §21 list without first writing its complete contract (doc 03 §22's checklist). A category name and a purpose sentence are not a contract.
 
----
+### Admin Page Editor UI
 
-### Why implementation is blocked
+`apps/admin` has no Page Builder screens — no Component Library, Live Preview, or Inspector (doc 02 §6). It calls `GET /api/v1/me` only (see `apps/admin/IMPLEMENTATION_STATUS.md`).
 
-Page publishing depends on a Component Registry.
+### Web component renderer
 
-Expected package:
+`apps/web` has no `@ttu/cms-registry` consumer — no code maps a `(componentKey, componentVersion)` to a React component (doc 03 §19). It is still the default Next.js scaffold (see `apps/web/IMPLEMENTATION_STATUS.md`).
 
-```text
-packages/cms-registry
-```
+### Preview
 
-That registry does not currently exist.
-
-A page section contains values such as:
-
-```text
-component_key
-component_version
-config
-style
-```
-
-These values must be validated against the Component Registry before a page can safely be published.
-
-Conceptually:
-
-```text
-page_section
-    │
-    ├── component_key
-    ├── component_version
-    ├── config
-    └── style
-           │
-           ▼
-    Component Registry
-           │
-           ├── component exists?
-           ├── version exists?
-           ├── config valid?
-           └── style valid?
-```
-
----
-
-### Missing product specification
-
-The registry requires a real component set described by design documents 02–03.
-
-Approximately:
-
-```text
-15–20 CMS components
-```
-
-are expected.
-
-But the repository currently does not define their exact:
-
-- component keys;
-- versions;
-- field schemas;
-- validation rules;
-- layout rules;
-- style tokens;
-- frontend mappings.
-
-Creating these without a specification would mean inventing product and design decisions.
-
----
-
-### Rule
-
-> Do not implement Page Builder publishing, revision, rollback, or section validation until the Component Registry exists.
-
-Database tables may remain unused until the dependency is implemented.
+Design doc 02 §9's Preview step (render the current draft, locale-scoped, without touching the published pointer) is not implemented — only Draft, Publish, and Rollback exist today.
 
 ---
 
@@ -839,19 +798,21 @@ ttu-platform
 │   ├── Content                      ✅
 │   ├── Taxonomy                     ✅
 │   ├── Media                        ✅
-│   ├── Pages                        🚫 blocked
+│   ├── Pages                        🟠 partial (hero only, no preview)
 │   ├── Navigation                   ✅
 │   ├── Settings                     ⏳
 │   └── Audit API                    ✅
 │
 ├── apps/admin
-│   └── OIDC login                   ✅
+│   ├── OIDC login                   ✅
+│   └── Page Editor UI               ⏳
 │
 ├── apps/web
-│   └── Public API integration       ⏳
+│   ├── Public API integration       ⏳
+│   └── Component renderer           ⏳
 │
 └── packages
-    └── cms-registry                 ❌ missing
+    └── cms-registry                 🟠 partial (engine done, only hero registered)
 ```
 
 ---
@@ -861,10 +822,10 @@ ttu-platform
 Unless requirements change, backend work should proceed in this order:
 
 ```text
-1. Component Registry
-2. CMS Page Builder
-3. Site Settings
-4. apps/web integration
+1. Write full field-level contracts for more doc 03 §21 components, as real product/design work justifies each
+2. Admin Page Editor UI, against the now-existing Page/Section API
+3. Web component renderer + apps/web public API integration
+4. Site Settings
 5. WordPress migration tooling
 ```
 
@@ -923,14 +884,14 @@ This document describes the **current state of the repository**, not a changelog
 
 ```text
 Latest completed backend domain:
-Audit Log API (#12)
+CMS Page Builder API + Component Registry (#8, partial — hero only) (#20)
 
 Current priority:
-None — every queued backend domain is complete; see §2
+None — every queued backend domain is complete or partial-as-specified; see §2
 
 Next:
-Component Registry (packages/cms-registry) → CMS Page Builder (#8)
+A doc 03 §21 component's full contract, or the Admin Page Editor UI / Web renderer against the existing Page/Section API
 
 Primary blocker:
-CMS Component Registry
+Product/design specification for any component beyond hero (doc 03 §22)
 ```

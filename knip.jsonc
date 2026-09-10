@@ -20,5 +20,8 @@
       "next": true,
       "project": ["src/**/*.{ts,tsx,css}"],
     },
+    "packages/cms-registry": {
+      "project": ["src/**/*.ts"],
+    },
   },
 }
