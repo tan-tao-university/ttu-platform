@@ -29,9 +29,9 @@ import { TagsRepository } from '../repositories/tags.repository';
  *
  * Reuses `content.read` and `content.edit` permissions for tag management.
  */
-@Controller('admin/tags')
+@Controller('tags')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
-export class AdminTagsController {
+export class TagsController {
   constructor(private readonly tags: TagsRepository) {}
 
   @Get()

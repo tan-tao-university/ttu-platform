@@ -29,9 +29,9 @@ import { CategoriesRepository } from '../repositories/categories.repository';
  *
  * Reuses `content.read` and `content.edit` permissions for category management (doc 07 §11).
  */
-@Controller('admin/categories')
+@Controller('categories')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
-export class AdminCategoriesController {
+export class CategoriesController {
   constructor(private readonly categories: CategoriesRepository) {}
 
   @Get()

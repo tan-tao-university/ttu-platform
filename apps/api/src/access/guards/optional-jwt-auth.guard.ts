@@ -1,18 +1,20 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import type { AuthenticatedRequest } from '../access.types';
 import { IdentityService } from '../services/identity.service';
 import { TokenVerificationService } from '../services/token-verification.service';
 import { extractBearerToken } from './bearer-token.util';
 
 /**
- * Verifies a Keycloak-issued access token is present and valid, then resolves — JIT-provisioning if
- * this is the caller's first request — the local CMS identity and attaches it to `request.user`.
- * `PermissionsGuard` reads that. For a route only ever reachable by an authenticated caller (doc 07
- * §6, §8); a route a single resource endpoint serves to both anonymous and authenticated callers
- * uses `OptionalJwtAuthGuard` instead.
+ * For a resource one URL serves to both anonymous and authenticated callers, RBAC deciding depth of
+ * access rather than a separate namespace (design doc 06 §5 — a single `content`/`menus` endpoint,
+ * not `/admin/content` + `/public/content`). No token → proceeds with `request.user` left
+ * `undefined`, exactly like a never-authenticated request; `PermissionsGuard` and the controller
+ * itself treat that as "anonymous". A token that _is_ present must still be genuinely valid —
+ * silently downgrading a bad or expired token to "anonymous" would mask real auth bugs instead of
+ * surfacing them as 401.
  */
 @Injectable()
-export class JwtAuthGuard implements CanActivate {
+export class OptionalJwtAuthGuard implements CanActivate {
   constructor(
     private readonly tokenVerification: TokenVerificationService,
     private readonly identityService: IdentityService,
@@ -21,10 +23,7 @@ export class JwtAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const token = extractBearerToken(request.headers.authorization);
-
-    if (!token) {
-      throw new UnauthorizedException('No access token provided');
-    }
+    if (!token) return true;
 
     const payload = await this.tokenVerification.verify(token);
     request.user = await this.identityService.resolveFromToken(payload);

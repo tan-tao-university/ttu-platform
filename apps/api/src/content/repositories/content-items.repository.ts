@@ -10,9 +10,8 @@ import {
   contentTranslations,
   events,
 } from '../../db/schema';
-import type { AdminContentListQueryDto } from '../dto/admin-content-list-query.dto';
+import type { ContentListQueryDto } from '../dto/content-list-query.dto';
 import type { CreateContentItemDto } from '../dto/create-content-item.dto';
-import type { PublicContentListQueryDto } from '../dto/public-content-list-query.dto';
 import type { UpdateContentItemDto } from '../dto/update-content-item.dto';
 import type { UpsertContentTranslationDto } from '../dto/upsert-content-translation.dto';
 import type { UpsertEventDto } from '../dto/upsert-event.dto';
@@ -32,7 +31,7 @@ export type ContentItemWithRevision = Content & {
 @Injectable()
 export class ContentItemsRepository {
   async listForAdmin(
-    query: AdminContentListQueryDto,
+    query: ContentListQueryDto,
   ): Promise<{ items: ContentItemWithTranslation[]; total: number }> {
     const conditions = [
       sql`${contents.deletedAt} IS NULL`,
@@ -80,7 +79,7 @@ export class ContentItemsRepository {
    * the still-live revision; doc 06 §11).
    */
   async listPublished(
-    query: PublicContentListQueryDto,
+    query: ContentListQueryDto,
   ): Promise<{ items: ContentItemWithRevision[]; total: number }> {
     const conditions = [
       sql`${contents.deletedAt} IS NULL`,
@@ -174,6 +173,33 @@ export class ContentItemsRepository {
           sql`${contentRevisions.snapshot} -> 'translation' ->> 'slug' = ${slug}`,
         ),
       );
+    if (!row) return undefined;
+    return {
+      ...row.item,
+      publishedAt: row.translation.publishedAt,
+      snapshot: row.revision.snapshot as ContentSnapshot,
+    };
+  }
+
+  /**
+   * The by-id counterpart to `findPublishedBySlug` — the merged `GET /content/:id` route's
+   * anonymous/unprivileged branch (design doc 06 §5: one resource endpoint, RBAC decides depth of
+   * access, not a separate namespace) uses this to serve the published snapshot for a caller who
+   * knows the item's UUID but not its slug.
+   */
+  async findPublishedById(
+    id: string,
+    locale: string,
+  ): Promise<ContentItemWithRevision | undefined> {
+    const [row] = await db
+      .select({ item: contents, translation: contentTranslations, revision: contentRevisions })
+      .from(contents)
+      .innerJoin(
+        contentTranslations,
+        and(eq(contentTranslations.contentId, contents.id), eq(contentTranslations.locale, locale)),
+      )
+      .innerJoin(contentRevisions, eq(contentRevisions.id, contentTranslations.publishedRevisionId))
+      .where(and(eq(contents.id, id), sql`${contents.deletedAt} IS NULL`));
     if (!row) return undefined;
     return {
       ...row.item,

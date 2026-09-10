@@ -214,7 +214,7 @@ Track our completed milestones and upcoming domains. For exhaustive technical pr
 - [x] **Phase 2: Access & Identity**
   - [x] Keycloak JWT verification guard (`JwtAuthGuard`) via JWKS
   - [x] Local RBAC permissions guard (`PermissionsGuard` & `@RequirePermission`)
-  - [x] Just-In-Time (JIT) user synchronization and `GET /api/v1/admin/me`
+  - [x] Just-In-Time (JIT) user synchronization and `GET /api/v1/me`
 - [x] **Phase 3: Content Domain & Taxonomy**
   - [x] Hierarchical categories and tags with per-locale translations
   - [x] Multi-type editorial content items (News, Announcements, Press Releases, Articles, Events)

@@ -1,4 +1,4 @@
-import { ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { AuthenticatedRequest, AuthenticatedUser } from '@/access/access.types';
 import { REQUIRE_PERMISSION_KEY } from '@/access/decorators/require-permission.decorator';
@@ -55,10 +55,10 @@ describe('PermissionsGuard', () => {
     expect(() => guard.canActivate(context)).toThrow(ForbiddenException);
   });
 
-  it('403s a request with no resolved user at all', () => {
+  it('401s a request with no resolved user at all — never authenticated, not merely unauthorized (doc 06 §15)', () => {
     reflector.getAllAndOverride.mockReturnValue('page.publish');
     const context = contextRequiring('page.publish', undefined);
-    expect(() => guard.canActivate(context)).toThrow(ForbiddenException);
+    expect(() => guard.canActivate(context)).toThrow(UnauthorizedException);
   });
 
   it('reads the metadata key both decorators actually set', () => {

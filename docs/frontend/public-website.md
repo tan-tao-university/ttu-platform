@@ -11,7 +11,7 @@ The university public website is located in `apps/web`:
 ## 2. Rendering & Caching Strategy
 
 - **Incremental Static Regeneration (ISR)**: Public article and page routes use Next.js tag-based revalidation (`revalidateTag()`), serving static HTML at edge speed while refreshing instantly upon publication.
-- **Published Snapshot Isolation**: The public website exclusively requests data from `/api/v1/public/*`, ensuring visitor traffic is completely isolated from live draft edits.
+- **Published Snapshot Isolation**: The public website is anonymous and never authenticates — every request to `/api/v1/content`, `/api/v1/content/by-slug/:locale/:slug`, and `/api/v1/menus/:key` resolves to the RBAC-branched unprivileged view, which reads only published revision snapshots, ensuring visitor traffic is completely isolated from live draft edits (see `docs/api/conventions.md` §1).
 - **Localized Subpaths**: Routes are localized using path prefixes (`/vi/...` and `/en/...`) with language switcher controls in the global header.
 
 ## 3. SEO & Structured Data

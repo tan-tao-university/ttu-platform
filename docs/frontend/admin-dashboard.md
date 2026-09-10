@@ -14,7 +14,7 @@ The dashboard interfaces with **TTU Identity (Keycloak 26)** using client `ttu-w
 
 1. Unauthenticated users are redirected to `https://auth.ttu.edu.vn/realms/ttu/protocol/openid-connect/auth` with PKCE challenge parameters.
 2. Upon callback, the application exchanges the authorization code for an ID token and access token.
-3. On application boot, the dashboard fetches `GET /api/v1/admin/me` to hydrate local user details, role assignments, and permission catalog (`permissions[]`).
+3. On application boot, the dashboard fetches `GET /api/v1/me` to hydrate local user details, role assignments, and permission catalog (`permissions[]`).
 4. Protected routes and sidebar items are conditionally rendered based on granted permissions (e.g. `content.read`, `media.upload`).
 
 ## 3. Editorial Views & Page Inspector

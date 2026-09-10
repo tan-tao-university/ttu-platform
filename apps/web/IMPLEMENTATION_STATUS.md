@@ -17,14 +17,14 @@ Read this file before modifying `apps/web` to understand implemented surfaces, c
 | 1 | **Application Scaffold** | ✅ Complete | None | Next.js 16 (App Router), React 19, Tailwind CSS 4 |
 | 2 | **Baseline Layout & Shell** | ✅ Complete | None | Global layout, base Header, Footer, not-found, robots, sitemap |
 | 3 | **Public API Client & Caching** | 🟡 Next | `apps/api` public routes | Fetch wrapper with Next.js ISR/tag-based revalidation |
-| 4 | **Multilingual Routing (`vi`/`en`)** | 🟡 Next | `/api/v1/public/locales` | Next.js localized subpaths or headers, locale switcher |
-| 5 | **Content & News Portal** | ⚪ Not started | `/api/v1/public/content` | News feed, event calendar, category filtering, search |
-| 6 | **Article & Event Detail Pages** | ⚪ Not started | `/api/v1/public/content/:slug` | Server-rendered published snapshot display, OpenGraph tags |
-| 7 | **Academic Programs Showcase** | ⚪ Not started | `/api/v1/public/programs` | School-wide degree catalog (undergraduate, graduate, medical) |
+| 4 | **Multilingual Routing (`vi`/`en`)** | 🟡 Next | None | Next.js localized subpaths or headers, locale switcher |
+| 5 | **Content & News Portal** | ⚪ Not started | `/api/v1/content` | News feed, event calendar, category filtering, search |
+| 6 | **Article & Event Detail Pages** | ⚪ Not started | `/api/v1/content/by-slug/:locale/:slug` | Server-rendered published snapshot display, OpenGraph tags |
+| 7 | **Academic Programs Showcase** | ⚪ Not started | None | School-wide degree catalog (undergraduate, graduate, medical) — no backend domain exists yet |
 | 8 | **Faculty Portals Directory** | ⚪ Not started | None | Curated link directory out to `*.ttu.edu.vn` (sibling platform) |
 | 9 | **Admissions Landing Pages** | ⚪ Not started | None | Marketing pages for admissions cycles, tuition fees, inquiry form |
-| 10 | **CMS Page Builder Renderer** | 🔴 Blocked | `/api/v1/public/pages/*` | Dynamic section renderer; blocked on `@ttu/cms-registry` |
-| 11 | **Dynamic Navigation Menus** | ⚪ Backlog | `/api/v1/public/menus/*` | Header & footer navigation driven by CMS menu endpoints |
+| 10 | **CMS Page Builder Renderer** | 🔴 Blocked | `/api/v1/pages/*` | Dynamic section renderer; blocked on `@ttu/cms-registry` |
+| 11 | **Dynamic Navigation Menus** | ⚪ Backlog | `/api/v1/menus/:key` | Header & footer navigation driven by the CMS menu endpoint |
 | 12 | **SEO & Structured Data** | ⚪ Backlog | None | JSON-LD schema (EducationalOrganization, Article, Event) |
 
 ### Status legend
