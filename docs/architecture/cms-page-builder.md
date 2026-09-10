@@ -1,6 +1,6 @@
 # Architecture: CMS & Page Builder
 
-> **Status:** partially implemented — `apps/api/src/cms/` wires the full Page/Section/Publish/Rollback API against the existing `pages`/`page_sections`/`page_translations`/`page_revisions`/`page_section_translations` schema, validated against `@ttu/cms-registry` (see [`component-registry.md`](component-registry.md)). Only `hero` is registered so far (design doc 03 §3 is the only component with a complete field-level contract); the Admin Page Editor UI and the Next.js Web renderer are not built. See [`../../apps/api/IMPLEMENTATION_STATUS.md`](../../apps/api/IMPLEMENTATION_STATUS.md) §3.11.
+> **Status:** partially implemented — `apps/api/src/cms/` wires the full Page/Section/Preview/Publish/Rollback API against the existing `pages`/`page_sections`/`page_translations`/`page_revisions`/`page_section_translations` schema, validated against `@ttu/cms-registry` (see [`component-registry.md`](component-registry.md)). Only `hero` is registered so far (design doc 03 §3 is the only component with a complete field-level contract); the Admin Page Editor UI and the Next.js Web renderer are not built. See [`../../apps/api/IMPLEMENTATION_STATUS.md`](../../apps/api/IMPLEMENTATION_STATUS.md) §3.11.
 
 ## 1. Controlled Component CMS Philosophy
 
@@ -105,7 +105,7 @@ Page P001
 ```
 
 1. **Draft**: Editing a draft in one locale never modifies or corrupts the live published revision of either locale.
-2. **Preview**: Renders the exact draft state using the frontend component catalog under the requested locale.
+2. **Preview**: `POST /pages/:id/locales/:locale/preview` resolves the exact draft state — the same resolve-and-validate step `publish()` uses — and returns it for the frontend component catalog to render under the requested locale, without touching the published pointer.
 3. **Publish**: Atomically captures an immutable snapshot of shared render state (section order, config, styles) along with that locale's section translations into `page_revisions`, updates `published_revision_id` in `page_translations`, and syncs `public_routes`.
 4. **Rollback**: Clones a historical snapshot for the target locale to initialize a fresh draft, leaving historical revision records untouched.
 

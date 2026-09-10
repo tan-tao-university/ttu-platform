@@ -628,7 +628,7 @@ Verified over real HTTP against the dev API and real Postgres, with a real Keycl
 
 ## 3.11 CMS Page Builder API & Component Registry
 
-**Status:** 🟠 Partial **PR:** #20
+**Status:** 🟠 Partial **PR:** #20, #24
 
 ### Relevant paths
 
@@ -639,20 +639,20 @@ apps/api/src/cms/
 
 `packages/cms-registry` implements the registry engine design doc 03 §2-4, 13, 16-20 describes: `ComponentDefinition` (Zod `contentSchema`/`configSchema`/`styleSchema`, defaults, `editorMetadata`, `variants`, `lifecycle`), the Level A safe style-token vocabulary (doc 03 §9), and `registerComponent`/`getComponentDefinition`/`validateSectionStructure`/`validateSectionContent`/`validateSection`. Only `hero` v1 is registered — the one component doc 03 §3 gives a complete, field-by-field spec for. The other ~19 names in doc 03 §21 are category placeholders only; each needs its own full contract (doc 03 §22) before it can be registered — that is real product/design work, not something inferred from a category name.
 
-`apps/api/src/cms/` wires the full Page/Section/Publish/Rollback API against the existing `pages`/`page_sections`/`page_translations`/`page_revisions`/`page_section_translations` schema, reusing the exact patterns already shipped for Content (§3.4) and Navigation (§3.8, §3.9):
+`apps/api/src/cms/` wires the full Page/Section/Preview/Publish/Rollback API against the existing `pages`/`page_sections`/`page_translations`/`page_revisions`/`page_section_translations` schema, reusing the exact patterns already shipped for Content (§3.4) and Navigation (§3.8, §3.9):
 
 - `PagesController` merges the admin and delivery views into one resource at one URL (design doc 06 §5): `GET /pages`, `GET /pages/:id`, `GET /pages/by-slug/:locale/:slug` branch on `page.read`, exactly like `ContentController`. Every write route requires its permission outright (`page.create`/`page.edit`/`page.delete`/`page.publish`/`page.restore` — already seeded per role).
 - `PageSectionsService` validates every `content`/`config`/`style` write against the registry before it reaches the database, and `PagePublishingService.publish()` re-validates the full resolved state of every section at publish time (doc 03 §13: "ưu tiên reject khi publish để phát hiện data drift sớm").
 - Section structure (create/update/delete/reorder) is protected by `pages.lock_version` optimistic concurrency (doc 06 §14) — a stale `expectedLockVersion` is `409`.
 - `PagePublishingService.restore()` follows the exact precedent `ContentPublishingService.restore()` set for its own shared `events` sub-resource: rollback unconditionally replaces the current shared section structure with the snapshot's, since `page_sections`/`config`/`style` are locale-independent (doc 02 §8). See `docs/architecture/cms-page-builder.md` §6 for the resulting, currently-unresolved cross-locale tradeoff this implies.
+- `POST /pages/:id/locales/:locale/preview` (design doc 02 §9 / doc 06 §5.2, §10) resolves and validates the exact same draft state `publish()` would snapshot, against the exact same Component Registry contract, but never creates a revision, moves the published pointer, or writes an audit record — `PagePublishingService.resolveDraftSnapshot()` is the one resolve-and-validate step both `publish()` and `preview()` share.
 
-Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: created a page, added a `hero` section using the component's own defaults, translated it, published it, and confirmed the anonymous delivery view matches the admin editorial view's data with hidden sections filtered and internal fields stripped; an unregistered `componentKey`, a stale `expectedLockVersion`, and an invalid style token each produced the expected `422`/`409`; reorder and restore-to-an-earlier-revision both verified against real data.
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: created a page, added a `hero` section using the component's own defaults, translated it, published it, and confirmed the anonymous delivery view matches the admin editorial view's data with hidden sections filtered and internal fields stripped; an unregistered `componentKey`, a stale `expectedLockVersion`, and an invalid style token each produced the expected `422`/`409`; reorder and restore-to-an-earlier-revision both verified against real data. Preview verified separately: an empty section list previews cleanly; a section missing its locale translation `422`s with `incomplete_translation`, same as publish would; a successful preview never changes `published_revision_id`/`status`; after publishing, further draft edits show up in a subsequent preview while the already-published delivery view keeps serving the old snapshot untouched; anonymous `401`s, an authenticated caller without `page.read` `403`s.
 
 ### What's still missing
 
 - 19 more component contracts (doc 03 §21/§22) — each is real design work, not fabricated here.
 - The Admin Page Editor UI (`apps/admin`) and the Next.js Web component renderer (`apps/web`) — neither exists yet.
-- Preview (doc 02 §9) is not implemented — only draft/publish/rollback.
 
 ## 3.12 Redirect Administration
 
@@ -710,11 +710,11 @@ Verified over real HTTP against the dev API and real Postgres: seeded a real `pu
 
 # 4. Blocked
 
-## 4.1 Remaining CMS Page Builder Component Contracts, Admin UI, and Web Renderer
+## 4.1 Remaining CMS Page Builder Component Contracts and Admin/Web UI
 
 **Status:** 🔴 Blocked
 
-The Page/Section/Publish/Rollback API and the Component Registry engine are implemented (§3.11). What remains blocked:
+The Page/Section/Preview/Publish/Rollback API and the Component Registry engine are implemented (§3.11). What remains blocked:
 
 ### Component contracts beyond `hero`
 
@@ -729,10 +729,6 @@ Design doc 03 §21 names ~19 more components (`cta`, `image-banner`, `statistics
 ### Web component renderer
 
 `apps/web` has no `@ttu/cms-registry` consumer — no code maps a `(componentKey, componentVersion)` to a React component (doc 03 §19). It is still the default Next.js scaffold (see `apps/web/IMPLEMENTATION_STATUS.md`).
-
-### Preview
-
-Design doc 02 §9's Preview step (render the current draft, locale-scoped, without touching the published pointer) is not implemented — only Draft, Publish, and Rollback exist today.
 
 ---
 
@@ -806,7 +802,7 @@ ttu-platform
 │   ├── Content                      ✅
 │   ├── Taxonomy                     ✅
 │   ├── Media                        ✅
-│   ├── Pages                        🟠 partial (hero only, no preview)
+│   ├── Pages                        🟠 partial (hero only, no more components)
 │   ├── Navigation                   ✅
 │   ├── Redirects                    ✅
 │   ├── Settings                     ✅
@@ -891,13 +887,13 @@ This document describes the **current state of the repository**, not a changelog
 
 ```text
 Latest completed backend domain:
-Public Route Resolution (#13) (#23)
+Public Route Resolution (#23); CMS Page Builder Preview endpoint added on top of the existing Partial domain (#24)
 
 Current priority:
 None — every queued backend domain is complete or partial-as-specified; see §2
 
 Next:
-A doc 03 §21 component's full contract, the Admin Page Editor UI / Web renderer against the existing Page/Section API, or wiring apps/web to the now-complete public-facing backends (Content, Pages, Navigation, Settings, route resolution) — apps/api has no more speculative backend work to do
+A doc 03 §21 component's full contract, the Admin Page Editor UI / Web renderer against the existing Page/Section/Preview API, or wiring apps/web to the now-complete public-facing backends (Content, Pages, Navigation, Settings, route resolution) — apps/api has no more speculative backend work to do
 
 Primary blocker:
 Product/design specification for any component beyond hero (doc 03 §22); WordPress Migration Tooling additionally needs real legacy data access to scope against
