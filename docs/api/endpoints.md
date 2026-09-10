@@ -106,3 +106,15 @@ One resource, one URL, mirroring the Content Domain exactly (§2). `page.read` d
 | `DELETE` | `/api/v1/pages/:id/sections/:sectionId` | `page.edit` | Delete a section. Requires `?expectedLockVersion=`. |
 | `POST` | `/api/v1/pages/:id/sections/reorder` | `page.edit` | Reorder every section (`order`: full section ID list in new order, `expectedLockVersion`). |
 | `POST` | `/api/v1/pages/:id/sections/:sectionId/translations/:locale` | `page.edit` | Upsert a section's `content` for one locale, validated against its component's `contentSchema`. |
+
+## 8. Redirect Domain (`apps/api/src/redirects`)
+
+Admin-only — `redirects` has no public-read concept of its own (doc 06 §5.2): resolving an incoming request against `public_routes` then `redirects` (doc 05 §12.1's locale-specific -> global -> `404` order) is the public routing layer's job, not a JSON resource here.
+
+| Method | Path | Required Permission | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/redirects` | `redirect.manage` | Paginated list, optional `locale`/`isActive`/`sourcePath` filters. |
+| `GET` | `/api/v1/redirects/:id` | `redirect.manage` | Single redirect rule. |
+| `POST` | `/api/v1/redirects` | `redirect.manage` | Create a rule (`locale`?, `sourcePath`, `destinationPath`, `statusCode`? default `301`, `isActive`? default `true`). `locale` omitted is the global fallback tier. Rejects (`422`) a self-redirect, a direct `A -> B -> A` loop, or a `destinationPath` that is itself already an active redirect source (a chain — point `destinationPath` at the final destination instead); rejects (`409`) a `sourcePath` that is still a live `public_routes` entry, or a duplicate active rule for the same `locale`+`sourcePath`. |
+| `PATCH` | `/api/v1/redirects/:id` | `redirect.manage` | Update `destinationPath`/`statusCode`/`isActive` — `locale`/`sourcePath` are immutable after creation. Changing `destinationPath` re-runs the loop/chain checks. |
+| `DELETE` | `/api/v1/redirects/:id` | `redirect.manage` | Hard-delete a rule. |
