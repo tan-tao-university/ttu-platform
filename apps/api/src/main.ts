@@ -3,14 +3,18 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import compression from 'compression';
 import helmet from 'helmet';
+import { Logger as PinoAppLogger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { ApiError } from './common/http/api-error';
 import { AllExceptionsFilter } from './common/http/all-exceptions.filter';
 import { flattenValidationErrors } from './common/http/validation-errors.util';
 
 async function bootstrap() {
+  // Buffered until `useLogger` below runs, so Nest's own startup logs (route mapping, "Nest
+  // application successfully started") are structured Pino output too, not the default console.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
+  app.useLogger(app.get(PinoAppLogger));
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.use(helmet());
   app.use(compression());

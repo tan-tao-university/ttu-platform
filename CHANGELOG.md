@@ -4,6 +4,17 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-10 — Structured Logging with Pino ([#25](https://github.com/tan-tao-university/ttu-platform/pull/25))
+
+### Added
+
+- `apps/api/src/common/logging/logger.module.ts` — wires [`nestjs-pino`](https://github.com/iamolegga/nestjs-pino)'s `LoggerModule` globally; `main.ts` now calls `app.useLogger(app.get(Logger))` so every `@nestjs/common` `Logger` call, including Nest's own framework startup logs, routes through [Pino](https://getpino.io/) instead of the default console logger. The `pino-http` middleware it installs emits one structured line per HTTP request/response.
+- `genReqId` reuses an inbound `x-request-id` header (echoed back on the response) or mints a UUID; `AllExceptionsFilter` now reads that same `request.id` back onto the error envelope's `requestId` field instead of minting an unrelated `randomUUID()` per error, so one identifier ties the access log line, any 5xx error log, and the client-visible error response together.
+- `req.headers.authorization`/`req.headers.cookie`/`res.headers["set-cookie"]` are redacted before a log line is ever written (design doc 06 §16). Log level follows response status: 5xx → `error`, 4xx → `warn`, else `info`.
+- `LOG_LEVEL` env var (default `info`); pretty-printed colorized output in every `NODE_ENV` except `production`, which ships plain NDJSON to stdout for log aggregation and never depends on the dev-only `pino-pretty` package.
+
+Verified over real HTTP against the dev API: Nest's own startup/route-mapping logs render through Pino; a request carrying `x-request-id: my-custom-trace-id` is echoed on the response and appears as `req.id` on the matching access log line; the identical header value on a request that `401`s appears as both `req.id` in the `WARN`-level access log line and `requestId` in the JSON error envelope; a request with a real `Authorization: Bearer …` header logs `"authorization":"[redacted]"`, never the real token. `bun run format:check`, `bun run lint`, `bun run duplication`, `bun run knip`, `moon run :typecheck`, `moon run api:test`, `moon run :build` — all clean.
+
 ## 2026-09-10 — CMS Page Builder Preview API ([#24](https://github.com/tan-tao-university/ttu-platform/pull/24))
 
 ### Added

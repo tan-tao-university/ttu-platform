@@ -39,6 +39,7 @@ Cross-application trackers:
 |  13 | Public route resolution     | ✅ Complete | PR #23; Design doc 05 §12.1 |
 |  14 | Public website integration  | ⚪ Backlog  | —                           |
 |  15 | WordPress migration tooling | ⚪ Backlog  | Design doc 09               |
+|  16 | Structured logging (Pino)   | ✅ Complete | PR #25; Design doc 06 §16   |
 
 ### Status legend
 
@@ -708,6 +709,23 @@ apps/api/src/routing/
 
 Verified over real HTTP against the dev API and real Postgres: seeded a real `public_routes` row for each target type, a locale-specific redirect, a global redirect, and a same-source locale-vs-global priority pair — resolving each path returned the correct pointer/redirect target; a locale-specific redirect correctly won over an active global rule for the identical source path; a path with no match anywhere was `404`; a malformed `path` and a missing `locale` were each `422`; all seeded rows cleaned up after.
 
+## 3.15 Structured Logging (Pino)
+
+**Status:** ✅ Complete **PR:** #25
+
+### Relevant paths
+
+```text
+apps/api/src/common/logging/logger.module.ts
+apps/api/src/config/logging.ts
+```
+
+`LoggerModule` wires `nestjs-pino`'s `LoggerModule.forRoot()` globally; `main.ts` calls `app.useLogger(app.get(Logger))` (the `Logger` `nestjs-pino` exports) so every `@nestjs/common` `Logger` call — Nest's own framework startup logs included — routes through Pino instead of the default console logger, and the `pino-http` middleware it installs emits one structured line per HTTP request/response (design doc 06 §16 keeps this a separate stream from the `audit_logs` security trail — see `docs/api/conventions.md` §5).
+
+`genReqId` reuses an inbound `x-request-id` header (doc 06 §15's cross-service correlation ID) and echoes it back on the response, otherwise mints a UUID. `AllExceptionsFilter` now reads that same `request.id` back onto the error envelope's `requestId` field instead of minting an unrelated `randomUUID()` per error — one identifier ties the access log line, any 5xx error log, and the client-visible error response together. `req.headers.authorization`/`req.headers.cookie`/`res.headers["set-cookie"]` are redacted before a line is ever written (doc 06 §16: "Không lưu password, access token, refresh token hoặc secret vào log/audit"). Log level follows response status: 5xx → `error`, 4xx → `warn`, else `info`. `LOG_LEVEL` (`.env`, default `info`) controls verbosity; output is pretty-printed outside `NODE_ENV=production`, plain NDJSON to stdout in production.
+
+Verified over real HTTP against the dev API: Nest's own startup/route-mapping logs render through Pino; a request carrying `x-request-id: my-custom-trace-id` is echoed on the response and appears as `req.id` on the matching access log line; the identical header value on a request that 401s appears as both `req.id` in the `WARN`-level access log line and `requestId` in the JSON error envelope; a request with a real `Authorization: Bearer …` header logs `"authorization":"[redacted]"`, never the real token.
+
 # 4. Blocked
 
 ## 4.1 Remaining CMS Page Builder Component Contracts and Admin/Web UI
@@ -887,7 +905,7 @@ This document describes the **current state of the repository**, not a changelog
 
 ```text
 Latest completed backend domain:
-Public Route Resolution (#23); CMS Page Builder Preview endpoint added on top of the existing Partial domain (#24)
+Public Route Resolution (#23); CMS Page Builder Preview endpoint (#24); Structured Pino logging (#25)
 
 Current priority:
 None — every queued backend domain is complete or partial-as-specified; see §2

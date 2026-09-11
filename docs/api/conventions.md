@@ -70,3 +70,13 @@ All list endpoints support standard pagination queries (`page`, `pageSize`) retu
   "totalPages": 7
 }
 ```
+
+## 5. Logging
+
+`apps/api` logs through [Pino](https://getpino.io/) — `apps/api/src/common/logging/logger.module.ts` wires `nestjs-pino`'s `LoggerModule`, and `main.ts` calls `app.useLogger(app.get(Logger))` so every `@nestjs/common` `Logger` call (Nest's own framework logs included) routes through it, not the default console logger.
+
+- **HTTP access log**: `pino-http` middleware (installed globally by `LoggerModule`) emits one structured line per request/response — method, URL, status, response time, headers. `LOG_LEVEL` (`.env`, default `info`) controls verbosity; output is pretty-printed and colorized outside `NODE_ENV=production`, plain NDJSON to stdout in production for log aggregation.
+- **Request correlation**: `genReqId` reuses an inbound `x-request-id` header if present (echoed back on the response), otherwise mints a UUID. `AllExceptionsFilter` reads that same `request.id` back onto the error envelope's `requestId` field (§2) — one identifier ties the access log line, any 5xx error log, and the client-visible error response together.
+- **Redaction**: `req.headers.authorization`, `req.headers.cookie`, and `res.headers["set-cookie"]` are redacted before a log line is ever written — credentials and session tokens never reach application logs (design doc 06 §16).
+- **Log level by response**: a request that ends in a 5xx logs at `error`, 4xx at `warn`, everything else at `info` — a log aggregator can alert on `error`/`warn` volume alone without parsing status codes.
+- This HTTP access/application log is a separate stream from the `audit_logs` security trail (design doc 06 §16) — audit rows record _who did what to which business entity_; the Pino log records _what the HTTP layer did_, including routes with no audit concept at all (reads, redirects, static asset delivery).

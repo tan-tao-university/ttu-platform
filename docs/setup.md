@@ -33,6 +33,10 @@ bun run db:studio                 # optional — browse ttu_main in Drizzle Stud
 
 `bun run db:generate` regenerates a migration after changing `schema.ts`. A handful of constraints Drizzle's schema builder cannot express yet (composite-column `DEFERRABLE`) are hand-written custom migrations — see `apps/api/drizzle/0001_page_sections_deferrable_order.sql` for the pattern before adding another one.
 
+## Logging
+
+`apps/api` logs through [Pino](https://getpino.io/) (`apps/api/src/common/logging/logger.module.ts`) — structured HTTP access logs plus every `@nestjs/common` `Logger` call, pretty-printed in development and plain NDJSON in production. `LOG_LEVEL` (`.env`, default `info`) controls verbosity. See `docs/api/conventions.md` §5 for the request-correlation and redaction behavior.
+
 ## Identity & Authorization
 
 `apps/api` verifies Admin API requests against `ttu-identity`'s Keycloak realm (`ttu`) — signature, issuer, expiry, and the `ttu-web` client the token must have been issued for — then resolves CMS permissions from `ttu_main`'s own `roles`/`permissions` tables, never from the token itself (design doc 07). See `apps/api/src/access/`.
