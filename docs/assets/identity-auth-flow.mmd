@@ -13,7 +13,7 @@ sequenceDiagram
     IDP-->>Web: 4. Redirect callback with Authorization Code
     Web->>IDP: 5. Exchange Code + Code Verifier
     IDP-->>Web: 6. Return Access Token & ID Token
-    Web->>API: 7. Request GET /api/v1/admin/me (Bearer Token)
+    Web->>API: 7. Request GET /api/v1/me (Bearer Token)
     API->>IDP: 8. Verify Token signature via JWKS (Cached)
     API->>DB: 9. Query users table where identity_subject = sub
     alt User record does not exist

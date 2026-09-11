@@ -14,7 +14,7 @@ TTU Platform adheres to a strict storage boundary:
 
 ## 2. Media Upload Pipeline
 
-`POST /api/v1/admin/media` accepts a single `multipart/form-data` `file` field (`FileInterceptor` + in-memory Multer storage — files never touch disk on the API host). `media-upload.service.ts` runs the pipeline synchronously in one request: MIME allowlist check → size-limit check → magic-byte signature check → image dimension extraction (`image-size`, images only) → SHA-256 checksum → backend-generated storage key → `PutObject` to MinIO → `media_assets` insert. If the metadata insert fails after a successful object write, the just-written object is deleted (best-effort) so a failed upload never leaves an orphan in MinIO.
+`POST /api/v1/media` accepts a single `multipart/form-data` `file` field (`FileInterceptor` + in-memory Multer storage — files never touch disk on the API host). `media-upload.service.ts` runs the pipeline synchronously in one request: MIME allowlist check → size-limit check → magic-byte signature check → image dimension extraction (`image-size`, images only) → SHA-256 checksum → backend-generated storage key → `PutObject` to MinIO → `media_assets` insert. If the metadata insert fails after a successful object write, the just-written object is deleted (best-effort) so a failed upload never leaves an orphan in MinIO.
 
 ## 3. File Validation & Size Policies
 
@@ -38,7 +38,7 @@ media_assets (id: e3b0c442)
 
 ## 5. Deletion Protection
 
-`DELETE /api/v1/admin/media/:id` soft-deletes (`deleted_at`); `POST /api/v1/admin/media/:id/restore` undoes it. Before soft-deleting, `MediaAssetsRepository.isReferenced()` checks whether the asset is reachable from _live_ data:
+`DELETE /api/v1/media/:id` soft-deletes (`deleted_at`); `POST /api/v1/media/:id/restore` undoes it. Before soft-deleting, `MediaAssetsRepository.isReferenced()` checks whether the asset is reachable from _live_ data:
 
 1. A `contents` row's `featured_media_id`, or a `content_translations` row's `og_image_id`, where that locale has actually been published (`published_revision_id IS NOT NULL`) — a draft-only reference does not block deletion.
 2. An active (`is_active = true`) `people.portrait_media_id` or `partners.logo_media_id` — those two entities have no separate draft/publish state.
@@ -51,11 +51,13 @@ media_assets (id: e3b0c442)
 
 ## 7. Admin API
 
+No public read route exists for Media — every route requires an authenticated caller with the listed permission (`docs/api/conventions.md` §1.1).
+
 | Method | Path | Required Permission | Description |
 | :-- | :-- | :-- | :-- |
-| `GET` | `/api/v1/admin/media` | `media.read` | Paginated list, optional `mimeType`/`search` filters. |
-| `GET` | `/api/v1/admin/media/:id` | `media.read` | Asset metadata, resolved delivery URL, and translations. |
-| `POST` | `/api/v1/admin/media` | `media.upload` | Multipart upload — validates, stores, persists metadata. |
-| `PUT` | `/api/v1/admin/media/:id/translations/:locale` | `media.update` | Upsert alt text / caption for a locale. |
-| `DELETE` | `/api/v1/admin/media/:id` | `media.delete` | Soft-delete; `409` if still referenced by live data. |
-| `POST` | `/api/v1/admin/media/:id/restore` | `media.delete` | Undo a soft-delete (doc 08 §24 has no dedicated restore permission). |
+| `GET` | `/api/v1/media` | `media.read` | Paginated list, optional `mimeType`/`search` filters. |
+| `GET` | `/api/v1/media/:id` | `media.read` | Asset metadata, resolved delivery URL, and translations. |
+| `POST` | `/api/v1/media` | `media.upload` | Multipart upload — validates, stores, persists metadata. |
+| `PUT` | `/api/v1/media/:id/translations/:locale` | `media.update` | Upsert alt text / caption for a locale. |
+| `DELETE` | `/api/v1/media/:id` | `media.delete` | Soft-delete; `409` if still referenced by live data. |
+| `POST` | `/api/v1/media/:id/restore` | `media.delete` | Undo a soft-delete (doc 08 §24 has no dedicated restore permission). |

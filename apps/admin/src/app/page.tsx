@@ -1,4 +1,4 @@
-import { fetchAdminMe } from '@/lib/api/admin-me';
+import { fetchMe } from '@/lib/api/me';
 import { getSession } from '@/lib/auth/get-session';
 
 export default async function AdminHomePage() {
@@ -7,7 +7,7 @@ export default async function AdminHomePage() {
   const session = await getSession();
   if (!session) return null;
 
-  const me = await fetchAdminMe(session.accessToken);
+  const me = await fetchMe(session.accessToken);
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-16">

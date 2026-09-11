@@ -30,9 +30,9 @@ import { MediaAssetsRepository } from '../repositories/media-assets.repository';
 import { MediaUploadService } from '../services/media-upload.service';
 import { StorageService } from '../services/storage.service';
 
-@Controller('admin/media')
+@Controller('media')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
-export class AdminMediaController {
+export class MediaController {
   constructor(
     private readonly mediaAssets: MediaAssetsRepository,
     private readonly upload: MediaUploadService,

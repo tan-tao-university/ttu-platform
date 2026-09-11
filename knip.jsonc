@@ -11,6 +11,9 @@
         "test/**/*.ts",
       ],
       "project": ["src/**/*.ts", "test/**/*.ts"],
+      // Loaded by pino as a worker-thread transport via the string target
+      // `common/logging/logger.module.ts` passes it, never a static import — knip can't see that.
+      "ignoreDependencies": ["pino-pretty"],
     },
     "apps/admin": {
       "next": true,
@@ -19,6 +22,9 @@
     "apps/web": {
       "next": true,
       "project": ["src/**/*.{ts,tsx,css}"],
+    },
+    "packages/cms-registry": {
+      "project": ["src/**/*.ts"],
     },
   },
 }

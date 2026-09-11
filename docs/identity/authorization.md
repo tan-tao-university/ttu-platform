@@ -58,19 +58,21 @@ Grants are seeded by `bun run --cwd apps/api db:seed` and re-synced on every run
 
 ## 4. Server-Side Guard Enforcement
 
-Authorization is enforced server-side using `@RequirePermission(...)` and `PermissionsGuard`:
+Authorization is enforced server-side using `@RequirePermission(...)` and `PermissionsGuard`, which distinguishes two failure modes precisely: `401` when the caller was never authenticated at all (`request.user` unset), `403` when they are authenticated but lack the specific permission code:
 
 ```ts
-@Controller('admin/content')
+@Controller('media')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
-export class AdminContentController {
-  @Post(':id/publish')
-  @RequirePermission('content.publish')
-  async publish(@Param('id') id: string) { ... }
+export class MediaController {
+  @Post()
+  @RequirePermission('media.upload')
+  async create(@UploadedFile() file: Express.Multer.File) { ... }
 }
 ```
 
-UI button hiding is strictly an ergonomic convenience; the backend API rejects unauthorized operations with `403 Forbidden`.
+`Content` and `Navigation` read routes use `OptionalJwtAuthGuard` instead of `JwtAuthGuard` — it verifies a Bearer token when present but never rejects an unauthenticated request — and check the permission in application code rather than via `@RequirePermission(...)`, so the same URL can serve both a privileged and an unprivileged view (see `docs/api/conventions.md` §1.1). Every write route on those same controllers still uses `@RequirePermission(...)` and gets the identical `401`/`403` split as `MediaController` above.
+
+UI button hiding is strictly an ergonomic convenience; the backend API is the actual enforcement point.
 
 ## 5. Super Admin Bootstrap
 

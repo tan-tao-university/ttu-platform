@@ -1,56 +1,141 @@
 # API: Endpoints Catalog
 
-## 1. Identity & Administration
+Every route lives under `/api/v1/`. See `docs/api/conventions.md` §1 for the single-URL RBAC-branch convention that `Content` and `Navigation` use — it is not repeated per-row here beyond the "Auth" column.
 
-| Method | Path | Required Permission | Description |
-| :-- | :-- | :-- | :-- |
-| `GET` | `/api/v1/admin/me` | Authenticated | Returns current user profile, local database ID, assigned roles, and permission list. |
-
-## 2. Content Domain (`apps/api/src/content`)
-
-### 2.1 Admin Content API
-
-| Method | Path | Required Permission | Description |
-| :-- | :-- | :-- | :-- |
-| `GET` | `/api/v1/admin/content` | `content.read` | Paginated editorial items filtered by type, status, and locale. |
-| `POST` | `/api/v1/admin/content` | `content.edit` | Create a new content root item (e.g. `NEWS`, `EVENT`). |
-| `GET` | `/api/v1/admin/content/:id` | `content.read` | Retrieve content item with current draft translations. |
-| `PUT` | `/api/v1/admin/content/:id/translations/:locale` | `content.edit` | Upsert translation draft (title, slug, path, body). |
-| `PUT` | `/api/v1/admin/content/:id/event` | `content.edit` | Upsert event sub-resource data (dates, venue, registration). |
-| `POST` | `/api/v1/admin/content/:id/categories` | `content.edit` | Assign category to content item. |
-| `DELETE` | `/api/v1/admin/content/:id/categories/:categoryId` | `content.edit` | Remove category assignment. |
-| `POST` | `/api/v1/admin/content/:id/tags` | `content.edit` | Assign tag to content item. |
-| `DELETE` | `/api/v1/admin/content/:id/tags/:tagId` | `content.edit` | Remove tag assignment. |
-| `POST` | `/api/v1/admin/content/:id/publish` | `content.publish` | Execute atomic publication transaction for a locale. |
-| `POST` | `/api/v1/admin/content/:id/restore` | `content.publish` | Restore draft state from historical revision. |
-
-### 2.2 Public Content API
+## 1. Identity & Administration (`apps/api/src/access`)
 
 | Method | Path | Auth | Description |
 | :-- | :-- | :-- | :-- |
-| `GET` | `/api/v1/public/content` | None | Paginated public feed reading published revision snapshots. |
-| `GET` | `/api/v1/public/content/:slug` | None | Single article by slug resolving published snapshot. |
+| `GET` | `/api/v1/me` | Required | Returns current user's local database ID, identity subject, active flag, and permission list. No permission of its own — any authenticated CMS identity can see its own profile. |
+
+## 2. Content Domain (`apps/api/src/content`)
+
+One resource, one URL. `content.read` decides depth: a caller with it gets the full editorial item (all locale translations, event data, current draft state); anyone else gets only the currently published-and-active view for the locale requested.
+
+| Method | Path | Auth | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/content` | Optional (`content.read` branches) | Paginated list. Privileged: filterable by `type`/`status`/`categoryId`, admin shape. Unprivileged: published-only feed for `?locale=` (default `vi`), delivery shape. |
+| `POST` | `/api/v1/content` | `content.create` | Create a new content root item (e.g. `NEWS`, `EVENT`). |
+| `GET` | `/api/v1/content/:id` | Optional (`content.read` branches) | Privileged: full item + all translations + event + categories/tags. Unprivileged: requires `?locale=`; returns the published snapshot for that locale, `404` if none, enriched with resolved categories/tags/event. |
+| `GET` | `/api/v1/content/by-slug/:locale/:slug` | None | Always resolves the currently published item for `:locale` matching `:slug` — draft slugs are not unique, so there is no privileged variant of this lookup. |
+| `PATCH` | `/api/v1/content/:id` | `content.edit` | Update root item fields (`type`, `featuredMediaId`). |
+| `DELETE` | `/api/v1/content/:id` | `content.delete` | Soft-delete a content item. |
+| `POST` | `/api/v1/content/:id/translations/:locale` | `content.edit` | Upsert translation draft (title, slug, path, body, SEO fields). |
+| `POST` | `/api/v1/content/:id/event` | `content.edit` | Upsert event sub-resource data (dates, venue, registration) — `EVENT` type only. |
+| `POST` | `/api/v1/content/:id/locales/:locale/publish` | `content.publish` | Execute the atomic publication transaction for a locale. |
+| `GET` | `/api/v1/content/:id/locales/:locale/revisions` | `content.read` | List historical revisions for a locale. |
+| `POST` | `/api/v1/content/:id/locales/:locale/restore/:revisionId` | `content.restore` | Restore draft state from a historical revision. |
+| `POST` | `/api/v1/content/:id/categories` | `content.edit` | Assign a category to a content item. |
+| `DELETE` | `/api/v1/content/:id/categories/:categoryId` | `content.edit` | Remove a category assignment. |
+| `POST` | `/api/v1/content/:id/tags` | `content.edit` | Assign a tag to a content item. |
+| `DELETE` | `/api/v1/content/:id/tags/:tagId` | `content.edit` | Remove a tag assignment. |
 
 ## 3. Taxonomy Domain (`apps/api/src/taxonomy`)
 
-### 3.1 Admin Taxonomy API
+Admin-only — reuses `content.read`/`content.edit` (doc 07 §11). Public pages consume categories/tags already embedded in the Content Domain's public responses, not through a dedicated taxonomy route.
 
 | Method | Path | Required Permission | Description |
 | :-- | :-- | :-- | :-- |
-| `GET` | `/api/v1/admin/categories` | `content.read` | List category hierarchy tree. |
-| `POST` | `/api/v1/admin/categories` | `content.edit` | Create category with parent reference. |
-| `PUT` | `/api/v1/admin/categories/:id/translations/:locale` | `content.edit` | Upsert category translation name and slug. |
-| `GET` | `/api/v1/admin/tags` | `content.read` | List tags with pagination. |
-| `POST` | `/api/v1/admin/tags` | `content.edit` | Create tag. |
-| `PUT` | `/api/v1/admin/tags/:id/translations/:locale` | `content.edit` | Upsert tag translation name and slug. |
+| `GET` | `/api/v1/categories` | `content.read` | List category hierarchy, flat with `parentId`. |
+| `GET` | `/api/v1/categories/:id` | `content.read` | Single category with translations. |
+| `POST` | `/api/v1/categories` | `content.edit` | Create category with parent reference. |
+| `PATCH` | `/api/v1/categories/:id` | `content.edit` | Update `parentId`/`sortOrder`. |
+| `DELETE` | `/api/v1/categories/:id` | `content.edit` | Delete a category. |
+| `PUT` | `/api/v1/categories/:id/translations/:locale` | `content.edit` | Upsert category translation name and slug. |
+| `GET` | `/api/v1/tags` | `content.read` | List tags with pagination. |
+| `GET` | `/api/v1/tags/:id` | `content.read` | Single tag with translations. |
+| `POST` | `/api/v1/tags` | `content.edit` | Create tag. |
+| `PATCH` | `/api/v1/tags/:id` | `content.edit` | Update tag fields. |
+| `DELETE` | `/api/v1/tags/:id` | `content.edit` | Delete a tag. |
+| `PUT` | `/api/v1/tags/:id/translations/:locale` | `content.edit` | Upsert tag translation name and slug. |
 
 ## 4. Media Domain (`apps/api/src/media`)
 
+Admin-only — no public read endpoint; delivery URLs for published content are resolved server-side and embedded in Content Domain responses.
+
 | Method | Path | Required Permission | Description |
 | :-- | :-- | :-- | :-- |
-| `GET` | `/api/v1/admin/media` | `media.read` | Paginated list, optional `mimeType`/`search` filters. |
-| `GET` | `/api/v1/admin/media/:id` | `media.read` | Asset metadata, resolved delivery URL, and translations. |
-| `POST` | `/api/v1/admin/media` | `media.upload` | Multipart file upload — validates, stores in MinIO, persists metadata. |
-| `PUT` | `/api/v1/admin/media/:id/translations/:locale` | `media.update` | Upsert alt text / caption for a locale. |
-| `DELETE` | `/api/v1/admin/media/:id` | `media.delete` | Soft-delete; `409` if still referenced by published content or an active person/partner profile. |
-| `POST` | `/api/v1/admin/media/:id/restore` | `media.delete` | Undo a soft-delete. |
+| `GET` | `/api/v1/media` | `media.read` | Paginated list, optional `mimeType`/`search` filters. |
+| `GET` | `/api/v1/media/:id` | `media.read` | Asset metadata, resolved delivery URL, and translations. |
+| `POST` | `/api/v1/media` | `media.upload` | Multipart file upload — validates, stores in MinIO, persists metadata. |
+| `PUT` | `/api/v1/media/:id/translations/:locale` | `media.update` | Upsert alt text / caption for a locale. |
+| `DELETE` | `/api/v1/media/:id` | `media.delete` | Soft-delete; `409` if still referenced by published content or an active person/partner profile. |
+| `POST` | `/api/v1/media/:id/restore` | `media.delete` | Undo a soft-delete. |
+
+## 5. Navigation Domain (`apps/api/src/navigation`)
+
+One resource, one URL, addressed by the immutable `key` (never `id` — the same identifier the old public-only route used, now shared by both views). `navigation.manage` decides depth on the single read-by-key route; every other route always requires it.
+
+| Method | Path | Auth | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/menus` | `navigation.manage` | Paginated list of all menus, optional `isActive` filter. No public equivalent — there is no "list every menu" delivery use case. |
+| `POST` | `/api/v1/menus` | `navigation.manage` | Create a menu (`key`, `isActive`). |
+| `GET` | `/api/v1/menus/:key` | Optional (`navigation.manage` branches) | Privileged: menu + every item, flat with `parentId` (client builds the tree). Unprivileged: `?locale=` (default `vi`) resolved, nested, visible-items-only delivery tree with each item's `href` pre-resolved. `404` if the menu doesn't exist or (unprivileged) isn't active. |
+| `PATCH` | `/api/v1/menus/:key` | `navigation.manage` | Update `isActive`. |
+| `DELETE` | `/api/v1/menus/:key` | `navigation.manage` | Delete a menu — cascades to its items and translations. |
+| `POST` | `/api/v1/menus/:key/items` | `navigation.manage` | Create a menu item (`linkType` + matching target field). |
+| `PATCH` | `/api/v1/menus/:key/items/:itemId` | `navigation.manage` | Reparent, reorder, or hide/show — `linkType`/target are immutable. |
+| `DELETE` | `/api/v1/menus/:key/items/:itemId` | `navigation.manage` | Delete an item — `409` if it still has children. |
+| `PUT` | `/api/v1/menus/:key/items/:itemId/translations/:locale` | `navigation.manage` | Upsert `label`/`customPath` for a locale. |
+
+## 6. Audit Domain (`apps/api/src/audit`)
+
+Read-only, admin-only — `audit.read` is withheld from every seeded role but `super_admin` (`role-permissions.catalog.ts`), so there is no unprivileged or partial view.
+
+| Method | Path | Required Permission | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/audit-logs` | `audit.read` | Paginated, newest-first audit trail. Optional filters: `actorUserId`, `action`, `entityType`, `entityId`, `occurredFrom`/`occurredTo` (ISO 8601, inclusive). Rows are written by other domains' sensitive operations (`content.publish`/`content.restore` today). |
+
+## 7. CMS Page Domain (`apps/api/src/cms`)
+
+One resource, one URL, mirroring the Content Domain exactly (§2). `page.read` decides depth on the three read routes; every write route always requires its permission. Section structure (create/update/delete/reorder) is protected by `pages.lock_version` optimistic concurrency (`docs/architecture/cms-page-builder.md` §6); `content`/`config`/`style` are validated against `@ttu/cms-registry` on every write and again at publish. Only `hero` v1 is registered today (`docs/architecture/component-registry.md`), so creating a section with any other `componentKey` returns `422`.
+
+| Method | Path | Auth | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/pages` | Optional (`page.read` branches) | Paginated list. Privileged: filterable by `pageType`/`status`, admin shape. Unprivileged: published-only feed for `?locale=` (default `vi`), delivery shape. |
+| `POST` | `/api/v1/pages` | `page.create` | Create a new page (`pageType`: `HOMEPAGE`/`STANDARD`/`LANDING`/`SYSTEM`, immutable after creation). |
+| `GET` | `/api/v1/pages/:id` | Optional (`page.read` branches) | Privileged: full page + all translations + every section with every locale's translation. Unprivileged: requires `?locale=`; returns the published snapshot for that locale (visible sections only), `404` if none. |
+| `GET` | `/api/v1/pages/by-slug/:locale/:slug` | None | Always resolves the currently published page for `:locale` matching `:slug` — draft slugs are not unique. |
+| `DELETE` | `/api/v1/pages/:id` | `page.delete` | Soft-delete a page. |
+| `POST` | `/api/v1/pages/:id/translations/:locale` | `page.edit` | Upsert translation draft (title, slug, path, SEO fields). |
+| `POST` | `/api/v1/pages/:id/locales/:locale/preview` | `page.read` | Resolve and validate the current draft against the exact publish-time Component Registry contract, without creating a revision or moving the published pointer. |
+| `POST` | `/api/v1/pages/:id/locales/:locale/publish` | `page.publish` | Validate every section against the registry, snapshot, publish, sync `public_routes`. |
+| `GET` | `/api/v1/pages/:id/locales/:locale/revisions` | `page.read` | List historical revisions for a locale. |
+| `POST` | `/api/v1/pages/:id/locales/:locale/restore/:revisionId` | `page.restore` | Restore translation fields and the shared section structure from a historical revision. |
+| `POST` | `/api/v1/pages/:id/sections` | `page.edit` | Create a section (`componentKey`, `componentVersion`, `config`?, `style`?, `expectedLockVersion`). Omitted `config`/`style` default to the component's own defaults. |
+| `PATCH` | `/api/v1/pages/:id/sections/:sectionId` | `page.edit` | Update `sortOrder`/`isVisible`/`config`/`style` — `componentKey`/`componentVersion` are immutable. Requires `expectedLockVersion`. |
+| `DELETE` | `/api/v1/pages/:id/sections/:sectionId` | `page.edit` | Delete a section. Requires `?expectedLockVersion=`. |
+| `POST` | `/api/v1/pages/:id/sections/reorder` | `page.edit` | Reorder every section (`order`: full section ID list in new order, `expectedLockVersion`). |
+| `POST` | `/api/v1/pages/:id/sections/:sectionId/translations/:locale` | `page.edit` | Upsert a section's `content` for one locale, validated against its component's `contentSchema`. |
+
+## 8. Redirect Domain (`apps/api/src/redirects`)
+
+Admin-only — `redirects` has no public-read concept of its own (doc 06 §5.2): resolving an incoming request against `public_routes` then `redirects` (doc 05 §12.1's locale-specific -> global -> `404` order) is the public routing layer's job, not a JSON resource here.
+
+| Method | Path | Required Permission | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/redirects` | `redirect.manage` | Paginated list, optional `locale`/`isActive`/`sourcePath` filters. |
+| `GET` | `/api/v1/redirects/:id` | `redirect.manage` | Single redirect rule. |
+| `POST` | `/api/v1/redirects` | `redirect.manage` | Create a rule (`locale`?, `sourcePath`, `destinationPath`, `statusCode`? default `301`, `isActive`? default `true`). `locale` omitted is the global fallback tier. Rejects (`422`) a self-redirect, a direct `A -> B -> A` loop, or a `destinationPath` that is itself already an active redirect source (a chain — point `destinationPath` at the final destination instead); rejects (`409`) a `sourcePath` that is still a live `public_routes` entry, or a duplicate active rule for the same `locale`+`sourcePath`. |
+| `PATCH` | `/api/v1/redirects/:id` | `redirect.manage` | Update `destinationPath`/`statusCode`/`isActive` — `locale`/`sourcePath` are immutable after creation. Changing `destinationPath` re-runs the loop/chain checks. |
+| `DELETE` | `/api/v1/redirects/:id` | `redirect.manage` | Hard-delete a rule. |
+
+## 9. Site Settings Domain (`apps/api/src/settings`)
+
+Every catalog key is public-safe by design (design doc 05 §12.2's four example keys are all things the public website itself needs to render — contact info, social links, SEO fallbacks, feature toggles), and `site_settings` holds one current value per key with no draft/published split to hide from an unprivileged caller. So unlike `content`/`pages`/`menus`, reads carry no guard at all; only the write requires `settings.manage`. `SETTINGS_CATALOG` (`apps/api/src/settings/settings.catalog.ts`) fixes the current 4 keys, each with its own Zod schema — grounded in what `https://ttu.edu.vn/` (the live site this platform replaces) actually renders, not invented.
+
+| Method | Path | Auth | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/settings` | None | Every currently-set setting (`key`, `value`, `schemaVersion`, `updatedBy`, `updatedAt`). Unset catalog keys are simply absent, not defaulted. |
+| `GET` | `/api/v1/settings/:key` | None | Single setting. `404` for a key outside the catalog, or a catalog key that has never been set. |
+| `PUT` | `/api/v1/settings/:key` | `settings.manage` | Upsert `value`, validated against that key's Zod schema (`422` with field-level errors on any mismatch, including unrecognized extra fields). `404` for a key outside the catalog. |
+
+Catalog keys today: `site.contact` (phone/email/hours/map + per-locale org name/address), `site.social_links` (facebook/instagram/twitter/youtube/linkedin), `seo.defaults` (per-locale fallback title/description + default OG image reference), `features.public` (`showEventsWidget`, `maintenanceMode`).
+
+## 10. Public Route Resolution (`apps/api/src/routing`)
+
+`apps/web` (once wired) calls this once per incoming request to decide what a path means, before making one further Pages/Content by-id call — it returns a routing pointer, never the rendered resource itself, so it doesn't duplicate `PagesController`'s/`ContentController`'s own delivery-view logic. Implements design doc 05 §12.1's exact resolve order: a live `public_routes` entry always wins; otherwise fall through to `redirects` (locale-specific before the global `locale IS NULL` fallback tier); otherwise `404`.
+
+| Method | Path | Auth | Description |
+| :-- | :-- | :-- | :-- |
+| `GET` | `/api/v1/routes/resolve?locale=&path=` | None | `{ type: 'page', pageId }` \| `{ type: 'content', contentId }` \| `{ type: 'redirect', destinationPath, statusCode }`. `404` if nothing matches either table. `422` for a malformed `path` (must start with `/`, no `?`/`#`) or a missing `locale`. |

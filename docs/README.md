@@ -17,6 +17,7 @@ Welcome to the technical documentation for **TTU Platform** (`ttu-platform`), th
 - [**Modular Monolith Architecture**](architecture/modular-monolith.md): Domain module boundaries, layer responsibilities, and ADR-TTU-002 decision.
 - [**CMS & Page Builder Architecture**](architecture/cms-page-builder.md): Controlled Component CMS, Page → Section → Component model, data zones, and per-locale publishing.
 - [**Component Registry & Design Tokens**](architecture/component-registry.md): `@ttu/cms-registry` package contract, Level A safe style controls, and the initial 18-component catalog.
+- [**Navigation & Menus**](architecture/navigation.md): Menu/menu-item hierarchy, the 5 link types, the flat admin API vs. the resolved public tree.
 
 ### 3. Database & Persistence
 

@@ -2,7 +2,7 @@
   "threshold": 15,
   "minTokens": 75,
   "minLines": 10,
-  "path": ["apps"],
+  "path": ["apps", "packages"],
   "ignore": [
     "**/node_modules/**",
     "**/.next/**",

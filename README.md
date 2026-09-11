@@ -214,7 +214,7 @@ Track our completed milestones and upcoming domains. For exhaustive technical pr
 - [x] **Phase 2: Access & Identity**
   - [x] Keycloak JWT verification guard (`JwtAuthGuard`) via JWKS
   - [x] Local RBAC permissions guard (`PermissionsGuard` & `@RequirePermission`)
-  - [x] Just-In-Time (JIT) user synchronization and `GET /api/v1/admin/me`
+  - [x] Just-In-Time (JIT) user synchronization and `GET /api/v1/me`
 - [x] **Phase 3: Content Domain & Taxonomy**
   - [x] Hierarchical categories and tags with per-locale translations
   - [x] Multi-type editorial content items (News, Announcements, Press Releases, Articles, Events)
@@ -224,8 +224,8 @@ Track our completed milestones and upcoming domains. For exhaustive technical pr
   - [ ] MinIO S3-compatible object upload and asset metadata management
   - [ ] Media translation and responsive variant generation
 - [ ] **Phase 5: CMS Page Builder**
-  - [ ] Component Registry package (`packages/cms-registry`)
-  - [ ] Dynamic section drafting and published revision snapshots
+  - [x] Component Registry package (`packages/cms-registry`) — engine + Level A style tokens; only `hero` v1 registered
+  - [x] Dynamic section drafting and published revision snapshots — `apps/api/src/cms/` (Page/Section/Publish/Rollback API)
 - [ ] **Phase 6: Frontend Applications**
   - [ ] Admin dashboard authentication flow (OIDC redirect)
   - [ ] Admin content and taxonomy management UI

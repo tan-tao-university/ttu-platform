@@ -9,9 +9,13 @@ tasks:
   dev:
     command: 'nest start --watch'
     preset: 'server'
+    deps:
+      - '^:build'
 
   build:
     command: 'nest build'
+    deps:
+      - '^:build'
     inputs:
       - 'src/**/*'
       - 'tsconfig.json'
@@ -19,6 +23,10 @@ tasks:
       - 'nest-cli.json'
     outputs:
       - 'dist'
+
+  typecheck:
+    deps:
+      - '^:build'
 
   start:
     command: 'node dist/main.js'

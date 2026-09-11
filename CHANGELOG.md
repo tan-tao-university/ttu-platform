@@ -4,6 +4,111 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-10 — Structured Logging with Pino ([#25](https://github.com/tan-tao-university/ttu-platform/pull/25))
+
+### Added
+
+- `apps/api/src/common/logging/logger.module.ts` — wires [`nestjs-pino`](https://github.com/iamolegga/nestjs-pino)'s `LoggerModule` globally; `main.ts` now calls `app.useLogger(app.get(Logger))` so every `@nestjs/common` `Logger` call, including Nest's own framework startup logs, routes through [Pino](https://getpino.io/) instead of the default console logger. The `pino-http` middleware it installs emits one structured line per HTTP request/response.
+- `genReqId` reuses an inbound `x-request-id` header (echoed back on the response) or mints a UUID; `AllExceptionsFilter` now reads that same `request.id` back onto the error envelope's `requestId` field instead of minting an unrelated `randomUUID()` per error, so one identifier ties the access log line, any 5xx error log, and the client-visible error response together.
+- `req.headers.authorization`/`req.headers.cookie`/`res.headers["set-cookie"]` are redacted before a log line is ever written (design doc 06 §16). Log level follows response status: 5xx → `error`, 4xx → `warn`, else `info`.
+- `LOG_LEVEL` env var (default `info`); pretty-printed colorized output in every `NODE_ENV` except `production`, which ships plain NDJSON to stdout for log aggregation and never depends on the dev-only `pino-pretty` package.
+
+Verified over real HTTP against the dev API: Nest's own startup/route-mapping logs render through Pino; a request carrying `x-request-id: my-custom-trace-id` is echoed on the response and appears as `req.id` on the matching access log line; the identical header value on a request that `401`s appears as both `req.id` in the `WARN`-level access log line and `requestId` in the JSON error envelope; a request with a real `Authorization: Bearer …` header logs `"authorization":"[redacted]"`, never the real token. `bun run format:check`, `bun run lint`, `bun run duplication`, `bun run knip`, `moon run :typecheck`, `moon run api:test`, `moon run :build` — all clean.
+
+## 2026-09-10 — CMS Page Builder Preview API ([#24](https://github.com/tan-tao-university/ttu-platform/pull/24))
+
+### Added
+
+- `POST /api/v1/pages/:id/locales/:locale/preview` — the read-only counterpart to publish design doc 02 §9 / doc 06 §5.2, §10 describe: resolves and validates the exact same draft state `publish()` would snapshot, against the exact same `@ttu/cms-registry` contract, but never creates a revision, moves the published pointer, syncs `public_routes`, or writes an audit record. `PagePublishingService.resolveDraftSnapshot()` is the one resolve-and-validate step `publish()` and `preview()` now share (previously inlined only inside `publish()`). Gated by `page.read`, same as every other draft-visibility route.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: an empty section list previews cleanly; a section missing its locale translation `422`s with `incomplete_translation`, identical to what `publish()` would raise; a successful preview never changes `published_revision_id`/`status`; after publishing, a further draft edit shows up in a subsequent preview while the already-published delivery view keeps serving the untouched old snapshot; anonymous `401`s, an authenticated caller without `page.read` `403`s; an unknown page and an unknown locale translation each `404`. `bun run format:check`, `bun run lint`, `bun run duplication`, `bun run knip`, `moon run :typecheck`, `moon run api:test` (99/99), `moon run :build` — all clean.
+
+With this, the CMS Page Builder domain (`apps/api/src/cms/`) implements every step design doc 02 §9 names — Draft, Preview, Publish, Rollback — remaining Partial only on the component set (19 of ~20 doc 03 §21 components still need a field-level contract), the Admin Page Editor UI, and the Web renderer; see `apps/api/IMPLEMENTATION_STATUS.md` §3.11/§4.1.
+
+## 2026-09-10 — Public Route Resolution API ([#23](https://github.com/tan-tao-university/ttu-platform/pull/23))
+
+### Added
+
+- `apps/api/src/routing/` — `GET /api/v1/routes/resolve?locale=&path=`, public and unauthenticated. Implements design doc 05 §12.1's exact resolve order: a live `public_routes` entry always wins; otherwise fall through to `redirects` (locale-specific before the global `locale IS NULL` fallback tier, reusing `RedirectsRepository.findActiveMatchesForLocale` now exported from `RedirectsModule`); otherwise `404`. Returns a routing pointer only (`{ type: 'page', pageId }` / `{ type: 'content', contentId }` / `{ type: 'redirect', destinationPath, statusCode }`) — never the rendered resource, so it never duplicates `PagesController`'s/`ContentController`'s own delivery-view logic; `apps/web` makes one further by-id call once it knows the type.
+- 8 new unit tests (`apps/api/test/routing/services/route-resolution.service.spec.ts`).
+
+Verified over real HTTP against the dev API and real Postgres: seeded a real `public_routes` row for each target type, a locale-specific redirect, a global redirect, and a same-source locale-vs-global priority pair — every path resolved to the correct pointer/redirect target, the locale-specific redirect correctly won over an active global rule for the identical source, a path with no match anywhere was `404`, a malformed `path` and a missing `locale` were each `422`. `bun run format:check`, `bun run lint`, `bun run duplication`, `bun run knip`, `moon run :typecheck`, `moon run api:test` (99/99), `moon run :build` — all clean.
+
+With this, every public-facing backend domain `apps/web` needs (Content, Pages, Navigation, Settings, and now route resolution) exists — `apps/api` has no more unblocked backend work; see `apps/api/IMPLEMENTATION_STATUS.md` §2.
+
+## 2026-09-10 — Site Settings API ([#22](https://github.com/tan-tao-university/ttu-platform/pull/22))
+
+### Added
+
+- `apps/api/src/settings/settings.catalog.ts` — the Settings Registry design doc 05 §12.2 named four example keys for but gave no field-level shape: `SETTINGS_CATALOG` maps `site.contact`, `site.social_links`, `seo.defaults`, and `features.public` to Zod schemas, every field sourced from reading the live `https://ttu.edu.vn/` site this platform replaces (footer contact block, header/footer social icons, `og:`/`twitter:` meta tags, the homepage "EVENTS" widget) rather than invented. `site_settings` has no `locale` column, so per-locale fields (org name, address, SEO copy) are locale-keyed records nested inside one key's JSONB `value`.
+- `apps/api/src/settings/` — `GET /settings`, `GET /settings/:key` (unauthenticated — every catalog key is public-safe by design, and there is no draft/published split to hide), `PUT /settings/:key` (`settings.manage`, `422` with field-level errors on any schema mismatch including unrecognized extra fields, `404` for a key outside the catalog).
+- `apps/api/src/db/seed.ts` — `seedSiteSettings()` seeds real bootstrap values for all 4 keys (insert-if-missing, so a later re-seed never overwrites a real admin edit made through the API).
+- 10 new unit tests (`apps/api/test/settings/services/site-settings.service.spec.ts`).
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: `db:seed` populated all 4 real settings; anonymous reads returned them without a token; an unknown key was `404` on read and write; a write without a token was `401`; a valid write updated and was reflected in a subsequent anonymous read; a payload missing required fields, an unrecognized extra field, and an invalid email each produced the expected `422` naming the exact field; state restored and the temporary role grant revoked after. `bun run format:check`, `bun run lint`, `bun run duplication`, `bun run knip`, `moon run :typecheck`, `moon run api:test` (91/91), `moon run :build` — all clean.
+
+## 2026-09-10 — Redirect Administration API ([#21](https://github.com/tan-tao-university/ttu-platform/pull/21))
+
+### Added
+
+- `apps/api/src/redirects/` — admin-only manual CRUD (`GET/POST /redirects`, `GET/PATCH/DELETE /redirects/:id`, all gated by `redirect.manage`) over the existing `redirects` table (design doc 05 §12.1). `RedirectsService` enforces the business rules the DB's own constraints can't express: rejects (`409`) a `sourcePath` that is still a live `public_routes` entry or a duplicate active rule for the same `locale`+`sourcePath`; rejects (`422`) a self-redirect, a direct `A -> B -> A` loop, or a `destinationPath` that is itself already an active redirect source (a chain — the caller is told the final destination to point at directly instead). `locale` omitted is the global fallback tier; `locale`/`sourcePath` are immutable after creation.
+- 9 new unit tests (`apps/api/test/redirects/services/redirects.service.spec.ts`) covering every rejection path plus the default-value and global-locale-normalization behavior on create.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: created a locale-specific and a global redirect, listed/filtered by locale, updated and deactivated a rule, deleted a rule; a self-redirect, a duplicate active source, a malformed path, a live-route shadow, a direct loop, and a chain (on both create and an update that would introduce one) each produced the expected `409`/`422` with precise field-level errors. `bun run format:check`, `bun run lint`, `bun run duplication`, `bun run knip`, `moon run :typecheck`, `moon run api:test` (81/81), `moon run :build` — all clean.
+
+## 2026-09-10 — CMS Page Builder API + Component Registry ([#20](https://github.com/tan-tao-university/ttu-platform/pull/20))
+
+### Added
+
+- `packages/cms-registry` — new shared workspace package. `ComponentDefinition` type (Zod `contentSchema`/`configSchema`/`styleSchema`, defaults, `editorMetadata`, `variants`, `lifecycle`), the Level A safe style-token vocabulary (spacing/width/alignment/background/typography/radius/shadow — design doc 03 §9), and `registerComponent`/`getComponentDefinition`/`validateSectionStructure`/`validateSectionContent`/`validateSection`. Only `hero` v1 is registered — the one component design doc 03 §3 gives a complete field-by-field spec for; the other ~19 names in doc 03 §21 are category placeholders that each need their own full contract (doc 03 §22) before they can be registered.
+- `apps/api/src/cms/` — the Page/Section/Publish/Rollback domain, reusing the exact patterns already shipped for Content and Navigation: `PagesController` merges the admin and delivery views into one resource at one URL (`GET /pages`, `GET /pages/:id`, `GET /pages/by-slug/:locale/:slug` branch on `page.read`); `PageSectionsService` validates every `content`/`config`/`style` write against the registry before it reaches the database and `PagePublishingService.publish()` re-validates the full resolved state of every section again at publish time; section structure (create/update/delete/reorder) is protected by `pages.lock_version` optimistic concurrency (design doc 06 §14) — a stale `expectedLockVersion` is `409`.
+- `docs/architecture/cms-page-builder.md`, `docs/architecture/component-registry.md` — updated with the real implementation, the actual `ComponentDefinition` interface, and the doc 03 §21 catalog split into registered vs. planned.
+
+### Notes
+
+- `PagePublishingService.restore()` follows the exact precedent `ContentPublishingService.restore()` already set for its own shared, non-per-locale `events` sub-resource: rollback unconditionally replaces the current shared section structure with the snapshot's, since `page_sections`/`config`/`style` are locale-independent (doc 02 §8). This is a real, currently-unresolved cross-locale tradeoff the design docs never address — documented, not silently worked around.
+- The Admin Page Editor UI and the Next.js Web component renderer are not built; this PR is backend-only.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token: created a page, added a `hero` section using the component's own defaults, translated it, published it, and confirmed the anonymous delivery view matches the admin editorial view's data with hidden sections filtered and internal fields stripped; an unregistered `componentKey`, a stale `expectedLockVersion`, and an invalid style token each produced the expected `422`/`409` with precise field-level errors; reorder and restore-to-an-earlier-revision both verified against real data; all test rows cleaned up after. `bun run format:check`, `bun run lint`, `bun run duplication` (1.91%), `bun run knip`, `moon run :typecheck`, `moon run api:test` (72/72), `moon run :build` (all 3 apps + `cms-registry`) — all clean.
+
+## 2026-09-10 — Audit Log API ([#19](https://github.com/tan-tao-university/ttu-platform/pull/19))
+
+### Added
+
+- `apps/api/src/audit/` — `AuditLogsRepository`, `AuditLogsController` (`GET /api/v1/audit-logs`, `audit.read`), `AuditLogListQueryDto`. Read-only, paginated, newest-first surface over `audit_logs` (design doc 06 §16), which already receives rows from `content.publish`/`content.restore`. Optional `actorUserId`/`action`/`entityType`/`entityId`/`occurredFrom`/`occurredTo` filters, AND-combined.
+- `docs/api/endpoints.md`, `docs/setup.md`, root and `apps/api` `IMPLEMENTATION_STATUS.md` trackers updated.
+
+Verified over real HTTP against the dev API and real Postgres, with a real Keycloak-issued `super_admin` token (`audit.read` is withheld from every other seeded role): an anonymous request 401s, an authenticated request with no grants 403s, publishing a real content item produces a real `content.publish` row visible in the very next list call, `action=`/`entityType=`+`entityId=` filters return exactly the matching row, and an invalid `entityId` 422s with a field-level error. `bun run format:check`, `bun run lint`, `bun run duplication` (0.96%), `bun run knip`, `moon run :typecheck`, `moon run api:test` (72/72), `moon run :build` — all clean.
+
+## 2026-09-09 — Navigation domain, then RBAC-merged Content & Navigation endpoints ([#18](https://github.com/tan-tao-university/ttu-platform/pull/18))
+
+### Added
+
+- `apps/api/src/navigation/` — hierarchical menus (`main-header`, `footer`, `quick-links`), `MenusRepository`, 5 link types (`PAGE`/`CONTENT`/`EXTERNAL`/`CUSTOM_PATH`/`GROUP`).
+- `menu-item-link.util.ts` — `assertValidLinkTarget` (mirrors the DB's `menu_items_link_type_check` discriminated union as a field-level 422 instead of a raw constraint violation) and `resolveMenuItemHref` (per-link-type href resolution, including a `public_routes` join for `CONTENT`/`PAGE`).
+- `docs/architecture/navigation.md` — the model, the 5 link types, and the flat-editor-vs-resolved-delivery-tree split.
+- `apps/api/test/navigation/menu-item-link.util.spec.ts` — the discriminated-union and href-resolution invariants.
+- `OptionalJwtAuthGuard` and `TokenVerificationService` (extracted from `JwtAuthGuard`, now shared by both guards) — verifies a Bearer token when present but never rejects a request for lacking one.
+- `OptionalCurrentUser` decorator — the `@CurrentUser()` counterpart for a route that may or may not have an authenticated caller.
+
+### Changed
+
+Landed on this branch as a single design evolution, not two separate features: Navigation first shipped with the same split-namespace convention Content already had (`admin/*` CRUD controller + no-auth `public/*` controller), then both domains were merged into design doc 06 §5's single-resource, RBAC-branched convention before this PR closed:
+
+- Every controller (`content`, `media`, `categories`, `tags`, `menus`, `me`) dropped its `admin/`/`public/` URL prefix — `apps/api/src/**/controllers/admin-*.controller.ts` and `public-*.controller.ts` are gone, replaced by one controller per resource.
+- `ContentController` and `NavigationController` now branch in application code on `content.read`/`navigation.manage` instead of splitting into separate controllers: the same `GET /content`, `GET /content/:id`, and `GET /menus/:key` URLs serve the full editorial view to a privileged caller and the published-only delivery view to everyone else, including an authenticated-but-unprivileged one. `GET /content/by-slug/:locale/:slug` has no privileged variant — draft slugs are not unique.
+- `PermissionsGuard` now distinguishes `401` (never authenticated) from `403` (authenticated, missing the permission) instead of a single undifferentiated rejection.
+- Navigation's addressing switched from `id` to the immutable `key` throughout (`GET/PATCH/DELETE /menus/:key`, `/menus/:key/items...`).
+- `docs/api/conventions.md`, `docs/api/endpoints.md`, `docs/setup.md`, `docs/architecture/navigation.md`, `docs/identity/authentication.md`, `docs/identity/authorization.md`, `docs/frontend/*.md`, `docs/media/storage-and-pipeline.md`, `docs/assets/identity-auth-flow.mmd`, root and per-app `IMPLEMENTATION_STATUS.md` trackers, and `apps/admin/src/lib/api/me.ts` (renamed from `admin-me.ts`) all updated for the new `/api/v1/me` and prefix-free convention.
+
+### Verification — real infra, not mocked
+
+Directly against the real dev Postgres (`MenusRepository`, bypassing HTTP): a menu with all 5 link types, including a `GROUP`/`CUSTOM_PATH` parent-child pair and a `CONTENT` item pointing at a genuinely published article — hidden-item exclusion, per-type href resolution, tree nesting, and inactive-menu → `undefined` all confirmed.
+
+Over real HTTP against the merged endpoints, with real Keycloak-issued tokens (`admin.test` temporarily granted `super_admin`, `student.test` with no grants, both cleaned up after): the same `GET /api/v1/content` and `GET /api/v1/menus/:key` URLs returned the admin shape for a permission-holder and the public delivery shape otherwise; `POST /api/v1/content` 401s anonymously and 403s for an authenticated caller missing `content.create`; `GET /api/v1/menus` 401s anonymously and 403s without `navigation.manage`; an unknown menu key 404s.
+
+`bun run format:check`, `bun run lint`, `bun run duplication` (0.98%), `bun run knip`, `moon run :typecheck`, `moon run api:test` (72/72), `moon run :build` — all clean.
+
 ## 2026-09-09 — Admin dashboard: browser-side OIDC sign-in ([#17](https://github.com/tan-tao-university/ttu-platform/pull/17))
 
 ### Added

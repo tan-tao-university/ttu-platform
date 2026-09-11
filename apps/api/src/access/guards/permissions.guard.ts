@@ -1,16 +1,22 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { REQUIRE_PERMISSION_KEY } from '../decorators/require-permission.decorator';
 import type { AuthenticatedRequest } from '../access.types';
 
 /**
  * Enforces `@RequirePermission(...)`: the caller must hold the named permission in the flattened
- * set `JwtAuthGuard` attached to `request.user` on this same request — never from the access token,
- * so a grant or revocation takes effect immediately (doc 07 §13). CMS roles are global, not scoped
- * per faculty/department (doc 07 §9), so unlike a multi-tenant RBAC guard this only ever checks set
- * membership.
+ * set `JwtAuthGuard`/`OptionalJwtAuthGuard` attached to `request.user` on this same request — never
+ * from the access token, so a grant or revocation takes effect immediately (doc 07 §13). CMS roles
+ * are global, not scoped per faculty/department (doc 07 §9), so unlike a multi-tenant RBAC guard
+ * this only ever checks set membership.
  *
- * Must run after `JwtAuthGuard`.
+ * Must run after `JwtAuthGuard`/`OptionalJwtAuthGuard`.
  */
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -26,7 +32,15 @@ export class PermissionsGuard implements CanActivate {
     if (!requiredPermission) return true;
 
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    if (!request.user?.permissions.has(requiredPermission)) {
+
+    // No resolved identity at all — genuinely never authenticated (the only way this happens
+    // behind `OptionalJwtAuthGuard`, since it still throws on a *present but invalid* token) — is
+    // 401: the caller needs to authenticate, not merely a different one. An authenticated caller
+    // who simply lacks the permission is 403.
+    if (!request.user) {
+      throw new UnauthorizedException('Authentication required');
+    }
+    if (!request.user.permissions.has(requiredPermission)) {
       throw new ForbiddenException(`Missing permission "${requiredPermission}"`);
     }
 

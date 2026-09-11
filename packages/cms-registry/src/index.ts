@@ -1,24 +1,50 @@
-/**
- * @ttu/cms-registry — public entry point.
- *
- * Importing this module triggers registration of all built-in component
- * definitions (see `./definitions`).
- */
-import "./definitions";
+import { heroV1 } from './components/hero';
+import { registerComponent } from './registry';
 
-export type {
-  ComponentDefinition,
-  ComponentCategory,
-  FieldMetadata,
-} from "./definition";
-export { register, get, list, versions, __resetForTests } from "./registry";
+registerComponent(heroV1);
+
 export {
-  resolveBackground,
-  resolveAlign,
-  resolveTypography,
-  resolveRadius,
-  resolveShadow,
-  resolveSpacing,
-  resolveWidth,
-  sectionStyleProps,
-} from "./resolve-style";
+  ComponentNotRegisteredError,
+  SectionValidationError,
+  type SectionValidationIssue,
+} from './errors';
+export {
+  getComponentDefinition,
+  listComponents,
+  registerComponent,
+  resetRegistry,
+  validateSection,
+  validateSectionContent,
+  validateSectionStructure,
+  type SectionContentInput,
+  type SectionInput,
+  type SectionStructureInput,
+  type ValidatedSection,
+  type ValidatedSectionStructure,
+} from './registry';
+export {
+  ALIGNMENT_TOKENS,
+  BACKGROUND_TOKENS,
+  RADIUS_TOKENS,
+  SHADOW_TOKENS,
+  SPACING_TOKENS,
+  TYPOGRAPHY_TOKENS,
+  WIDTH_TOKENS,
+  alignmentToken,
+  backgroundToken,
+  radiusToken,
+  shadowToken,
+  spacingToken,
+  typographyToken,
+  widthToken,
+} from './style-tokens';
+export {
+  COMPONENT_CATEGORIES,
+  COMPONENT_LIFECYCLE_STATES,
+  FIELD_TYPES,
+  type ComponentCategory,
+  type ComponentDefinition,
+  type ComponentLifecycleState,
+  type EditorFieldMetadata,
+  type FieldType,
+} from './types';

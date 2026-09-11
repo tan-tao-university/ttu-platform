@@ -33,19 +33,23 @@ bun run db:studio                 # optional — browse ttu_main in Drizzle Stud
 
 `bun run db:generate` regenerates a migration after changing `schema.ts`. A handful of constraints Drizzle's schema builder cannot express yet (composite-column `DEFERRABLE`) are hand-written custom migrations — see `apps/api/drizzle/0001_page_sections_deferrable_order.sql` for the pattern before adding another one.
 
+## Logging
+
+`apps/api` logs through [Pino](https://getpino.io/) (`apps/api/src/common/logging/logger.module.ts`) — structured HTTP access logs plus every `@nestjs/common` `Logger` call, pretty-printed in development and plain NDJSON in production. `LOG_LEVEL` (`.env`, default `info`) controls verbosity. See `docs/api/conventions.md` §5 for the request-correlation and redaction behavior.
+
 ## Identity & Authorization
 
 `apps/api` verifies Admin API requests against `ttu-identity`'s Keycloak realm (`ttu`) — signature, issuer, expiry, and the `ttu-web` client the token must have been issued for — then resolves CMS permissions from `ttu_main`'s own `roles`/`permissions` tables, never from the token itself (design doc 07). See `apps/api/src/access/`.
 
 ```bash
 cd apps/api
-bun run db:seed                                            # permission catalog + the 5 named roles
+bun run db:seed                                            # permission catalog + 5 roles + bootstrap site settings
 bun run db:create-super-admin -- --sub <keycloak-sub> --email you@ttu.edu.vn --name "You"
 ```
 
 `--sub` is the target account's Keycloak `sub` claim (Keycloak Admin Console → Users → the account → ID) — the account must already exist in `ttu-identity`; this script only creates the local `ttu_main` mapping and grants `super_admin`. `db:seed` grants every role an explicit permission set (`super_admin` gets everything; `cms_admin`/`editor`/`reviewer`/`publisher` get the scoped grants in `apps/api/src/db/role-permissions.catalog.ts`, justified against design doc 07 §10 — see `docs/identity/authorization.md` §3 for the resulting matrix).
 
-Every other account gets a `users` row automatically (JIT-provisioned, no role) the first time it calls an authenticated route — `GET /api/v1/admin/me` is the one to try first; it returns the caller's identity and effective permission list.
+Every other account gets a `users` row automatically (JIT-provisioned, no role) the first time it calls an authenticated route — `GET /api/v1/me` is the one to try first; it returns the caller's identity and effective permission list.
 
 ## Admin OIDC Sign-In
 
@@ -61,33 +65,33 @@ SESSION_SECRET=<openssl rand -base64 32> # high-entropy; encrypts the session co
 ```
 
 ```bash
-bun run dev:api      # apps/admin's callback calls GET /api/v1/admin/me
+bun run dev:api      # apps/admin's callback calls GET /api/v1/me
 bun run dev:admin
 ```
 
-Visiting any page redirects to Keycloak; sign in with an account that exists in `ttu-identity`'s `ttu` realm. `apps/admin`'s home page renders the authenticated identity, active status, and effective permission list from `GET /api/v1/admin/me` — a freshly JIT-provisioned account with no role assignment will show an empty permission list, which is correct (see Identity & Authorization above).
+Visiting any page redirects to Keycloak; sign in with an account that exists in `ttu-identity`'s `ttu` realm. `apps/admin`'s home page renders the authenticated identity, active status, and effective permission list from `GET /api/v1/me` — a freshly JIT-provisioned account with no role assignment will show an empty permission list, which is correct (see Identity & Authorization above).
 
 ## Content & Taxonomy API
 
-`apps/api/src/content/` and `apps/api/src/taxonomy/` implement the Content domain (news, announcements, press releases, research articles, events) and its categories/tags — design docs 05 §8-9, 06 §5, §10. **Not** the CMS Page Builder domain (`pages`/`page_sections`): that depends on a Component Registry (`packages/cms-registry`) that does not exist yet — see AGENTS.md.
+`apps/api/src/content/` and `apps/api/src/taxonomy/` implement the Content domain (news, announcements, press releases, research articles, events) and its categories/tags — design docs 05 §8-9, 06 §5, §10. See "CMS Page Builder API" below for the separate `pages`/`page_sections` domain.
+
+Content and Navigation are each a single resource at a single URL — there is no `/admin/*` vs `/public/*` split. `content.read`/`navigation.manage` decide, per request, whether the handler returns the full editorial view or the published-only delivery view; see `docs/api/conventions.md` §1 and `docs/api/endpoints.md` §2 for the exact branch behavior per route.
 
 ```plain text
-POST   /api/v1/admin/content                               create (type only; NEWS/ANNOUNCEMENT/PRESS_RELEASE/RESEARCH_ARTICLE/EVENT)
-GET    /api/v1/admin/content?locale=vi                      list drafts (locale required)
-GET    /api/v1/admin/content/:id                            item + every locale's translation + event + assignments
-PATCH  /api/v1/admin/content/:id                             featuredMediaId only — type is immutable after creation
-DELETE /api/v1/admin/content/:id                             soft delete
-POST   /api/v1/admin/content/:id/translations/:locale        upsert draft translation (title/body/seo/...)
-POST   /api/v1/admin/content/:id/event                       upsert event details — only valid when type = EVENT
-POST   /api/v1/admin/content/:id/locales/:locale/publish     validate, snapshot, publish, sync public_routes + redirects — one transaction
-GET    /api/v1/admin/content/:id/locales/:locale/revisions   immutable publish history for this locale
-POST   /api/v1/admin/content/:id/locales/:locale/restore/:revisionId   copy a past revision back onto the draft (doc 06 §11 — never republishes automatically)
-POST/DELETE /api/v1/admin/content/:id/categories, /tags      taxonomy assignment
+POST   /api/v1/content                                       create (type only; NEWS/ANNOUNCEMENT/PRESS_RELEASE/RESEARCH_ARTICLE/EVENT)
+GET    /api/v1/content                                        privileged: admin list; unprivileged: published feed for ?locale= (default vi)
+GET    /api/v1/content/:id                                    privileged: item + every locale's translation + event + assignments; unprivileged: requires ?locale=, published snapshot only
+GET    /api/v1/content/by-slug/:locale/:slug                  always published-only — draft slugs are not unique, so there is no privileged variant
+PATCH  /api/v1/content/:id                                     featuredMediaId only — type is immutable after creation
+DELETE /api/v1/content/:id                                     soft delete
+POST   /api/v1/content/:id/translations/:locale                upsert draft translation (title/body/seo/...)
+POST   /api/v1/content/:id/event                               upsert event details — only valid when type = EVENT
+POST   /api/v1/content/:id/locales/:locale/publish             validate, snapshot, publish, sync public_routes + redirects — one transaction
+GET    /api/v1/content/:id/locales/:locale/revisions           immutable publish history for this locale
+POST   /api/v1/content/:id/locales/:locale/restore/:revisionId copy a past revision back onto the draft (doc 06 §11 — never republishes automatically)
+POST/DELETE /api/v1/content/:id/categories, /tags              taxonomy assignment
 
-GET    /api/v1/public/content?locale=vi                      published only, reads the published revision snapshot — never the live draft
-GET    /api/v1/public/content/:slug?locale=vi                 same; slug is matched against the published snapshot's slug, not the draft's
-
-/api/v1/admin/categories, /api/v1/admin/tags                  full CRUD + per-locale translations
+/api/v1/categories, /api/v1/tags                               full CRUD + per-locale translations — admin-only, no public route
 ```
 
 Gated by `content.read`/`content.create`/`content.edit`/`content.delete`/`content.publish`/ `content.restore` (categories/tags reuse `content.read`/`content.edit` — no dedicated `taxonomy.*` permission exists in the catalog). `bun run db:seed` must have run first (locales, permission catalog) — see Identity & Authorization above.
@@ -110,15 +114,104 @@ S3_SECRET_KEY=ttu_app_dev_secret
 ```
 
 ```plain text
-GET    /api/v1/admin/media                                   list, optional mimeType/search filters
-GET    /api/v1/admin/media/:id                                metadata + resolved delivery URL + translations
-POST   /api/v1/admin/media                                    multipart file upload (field name: file)
-PUT    /api/v1/admin/media/:id/translations/:locale           upsert alt text / caption
-DELETE /api/v1/admin/media/:id                                soft delete — 409 if referenced by published content or an active person/partner
-POST   /api/v1/admin/media/:id/restore                        undo a soft delete
+GET    /api/v1/media                                          list, optional mimeType/search filters
+GET    /api/v1/media/:id                                       metadata + resolved delivery URL + translations
+POST   /api/v1/media                                           multipart file upload (field name: file)
+PUT    /api/v1/media/:id/translations/:locale                  upsert alt text / caption
+DELETE /api/v1/media/:id                                       soft delete — 409 if referenced by published content or an active person/partner
+POST   /api/v1/media/:id/restore                               undo a soft delete
 ```
 
 Gated by `media.read`/`media.upload`/`media.update`/`media.delete`. Allowlist: `image/jpeg`, `image/png`, `image/webp` (≤10 MB), `application/pdf` (≤50 MB) — validated by size, declared MIME type, and magic-byte signature, not by filename extension. `ttu-media` is a public, anonymous-download bucket (`ttu-data-infra`'s `minio/init/create-buckets.sh`), so delivery URLs are plain and unsigned, not presigned.
+
+## Navigation API
+
+`apps/api/src/navigation/` implements menus/menu items (design doc 01 §12; `docs/architecture/navigation.md` has the full model). No extra env vars needed. Addressed by the immutable `key`, never `id` — same identifier for both the privileged and unprivileged view.
+
+```plain text
+GET    /api/v1/menus                                          list every menu, optional isActive filter — always requires navigation.manage
+POST   /api/v1/menus                                           create (key, isActive)
+GET    /api/v1/menus/:key                                      privileged: menu + every item, flat with parentId; unprivileged: resolved, nested, visible-items-only tree for ?locale= (default vi)
+PATCH  /api/v1/menus/:key                                      update isActive
+DELETE /api/v1/menus/:key                                      delete — cascades to items/translations
+POST   /api/v1/menus/:key/items                                create item (linkType + matching target field)
+PATCH  /api/v1/menus/:key/items/:itemId                        reparent/reorder/hide-show — linkType/target immutable
+DELETE /api/v1/menus/:key/items/:itemId                        delete — 409 if it still has children
+PUT    /api/v1/menus/:key/items/:itemId/translations/:locale   upsert label/customPath
+```
+
+Gated by `navigation.manage` on every write route; the single `GET /api/v1/menus/:key` read route branches on it instead of requiring it outright (unlike Content, navigation has no separate read/write/publish permission split in the design docs).
+
+## Audit Log API
+
+`apps/api/src/audit/` implements a read-only surface over `audit_logs` (design doc 06 §16). No extra env vars needed. Rows are already written by other domains' sensitive operations — `content.publish`/`content.restore` today, every future `*.publish`/`*.restore`/role-assignment/media-deletion action per the doc.
+
+```plain text
+GET /api/v1/audit-logs   newest first; optional actorUserId/action/entityType/entityId/occurredFrom/occurredTo filters
+```
+
+Gated by `audit.read`, which `db:seed` grants only to `super_admin` (doc 07 §10 reserves "sensitive system administration" to it) — there is no unprivileged or partial view.
+
+## CMS Page Builder API
+
+`apps/api/src/cms/` implements the Page/Section/Preview/Publish/Rollback domain against `packages/cms-registry` — design docs 02, 03, 06 §5. Only `hero` v1 is registered; see `docs/architecture/cms-page-builder.md` and `docs/architecture/component-registry.md` for the full model and what's still unbuilt (Admin Page Editor UI, Web renderer, every component beyond `hero`).
+
+```plain text
+POST   /api/v1/pages                                          create (pageType only; HOMEPAGE/STANDARD/LANDING/SYSTEM)
+GET    /api/v1/pages                                          privileged: admin list; unprivileged: published feed for ?locale= (default vi)
+GET    /api/v1/pages/:id                                      privileged: page + every locale's translation + every section; unprivileged: requires ?locale=, published snapshot (visible sections only)
+GET    /api/v1/pages/by-slug/:locale/:slug                    always published-only
+DELETE /api/v1/pages/:id                                      soft delete
+POST   /api/v1/pages/:id/translations/:locale                 upsert draft translation (title/slug/path/SEO)
+POST   /api/v1/pages/:id/locales/:locale/preview               resolve + validate the current draft against the exact publish-time registry contract; never creates a revision or moves the published pointer
+POST   /api/v1/pages/:id/locales/:locale/publish               validate every section against the registry, snapshot, publish, sync public_routes + redirects
+GET    /api/v1/pages/:id/locales/:locale/revisions             immutable publish history for this locale
+POST   /api/v1/pages/:id/locales/:locale/restore/:revisionId   restore translation fields + the shared section structure from a revision (doc 02 §9 — never republishes automatically)
+
+POST   /api/v1/pages/:id/sections                              create a section — componentKey/componentVersion/config?/style?/expectedLockVersion
+PATCH  /api/v1/pages/:id/sections/:sectionId                   update sortOrder/isVisible/config/style — componentKey/version immutable, requires expectedLockVersion
+DELETE /api/v1/pages/:id/sections/:sectionId?expectedLockVersion=N   delete a section
+POST   /api/v1/pages/:id/sections/reorder                      reorder — order (full section ID list) + expectedLockVersion
+POST   /api/v1/pages/:id/sections/:sectionId/translations/:locale   upsert a section's per-locale content
+```
+
+Gated by `page.read`/`page.create`/`page.edit`/`page.delete`/`page.publish`/`page.restore` — already seeded per role, same permission codes design doc 07 always defined for Pages. Section structure mutations additionally require `expectedLockVersion` (`pages.lock_version`, doc 06 §14's optimistic-concurrency pattern) — `409` if it's stale. Every `content`/`config`/`style` write is validated against `@ttu/cms-registry`; an unregistered `componentKey`/`componentVersion` or a schema mismatch is `422`.
+
+## Redirect API
+
+`apps/api/src/redirects/` implements admin-only manual CRUD over `redirects` (design doc 05 §12.1). No extra env vars needed. `redirects` has no public-read concept — resolving an incoming request against `public_routes` then `redirects` is the public routing layer's job, not a JSON resource here.
+
+```plain text
+GET    /api/v1/redirects                paginated list; optional locale/isActive/sourcePath filters
+GET    /api/v1/redirects/:id            single rule
+POST   /api/v1/redirects                create (locale?, sourcePath, destinationPath, statusCode? default 301, isActive? default true)
+PATCH  /api/v1/redirects/:id            update destinationPath/statusCode/isActive — locale/sourcePath immutable after creation
+DELETE /api/v1/redirects/:id            hard delete
+```
+
+Gated by `redirect.manage` on every route. `locale` omitted is the global fallback tier. Rejects (`422`) a self-redirect, a direct `A -> B -> A` loop, or a `destinationPath` that already redirects elsewhere (a chain — point at the final destination instead); rejects (`409`) a `sourcePath` that is still a live `public_routes` entry, or a duplicate active rule for the same `locale`+`sourcePath`.
+
+## Site Settings API
+
+`apps/api/src/settings/` implements `SETTINGS_CATALOG` (design doc 05 §12.2) against the existing `site_settings` table. No extra env vars needed. Every catalog key is public-safe, so reads carry no guard; only the write requires `settings.manage`.
+
+```plain text
+GET /api/v1/settings        every currently-set setting
+GET /api/v1/settings/:key   single setting; 404 outside the catalog or never set
+PUT /api/v1/settings/:key   upsert value, validated against that key's Zod schema; 422 on mismatch
+```
+
+`bun run db:seed` seeds real bootstrap values for the 4 current catalog keys (`site.contact`, `site.social_links`, `seo.defaults`, `features.public`), sourced by reading the live `https://ttu.edu.vn/` site this platform replaces — insert-if-missing, so it never overwrites a real admin edit made through the API.
+
+## Public Route Resolution API
+
+`apps/api/src/routing/` implements `GET /api/v1/routes/resolve?locale=&path=` — the single call `apps/web` will make per incoming request once wired (design doc 05 §12.1's resolve order: `public_routes` → `redirects` locale-specific → `redirects` global → `404`). No extra env vars needed.
+
+```plain text
+GET /api/v1/routes/resolve?locale=vi&path=/gioi-thieu
+```
+
+Returns a routing pointer, never the rendered resource: `{ type: "page", pageId }`, `{ type: "content", contentId }`, or `{ type: "redirect", destinationPath, statusCode }`. `404` if nothing matches; `422` for a malformed `path` or a missing `locale`.
 
 ## Checks
 
@@ -157,3 +250,4 @@ Real env files are never committed — only `apps/*/.env.example` is checked in.
 4. ~~Add content modules and DTOs to `apps/api`~~ — done for the Content domain (news, announcements, events, ...) and its taxonomy; see Content & Taxonomy API above.
 5. ~~Media/storage endpoints (doc 08)~~ — done (MinIO wiring, upload validation, delete-reference protection); see Media / MinIO API above.
 6. CMS Page Builder (`pages`/`page_sections`, doc 02-03) — blocked on a Component Registry (`packages/cms-registry`) and a real component set, neither of which exist yet. Do not add `pages`/`page_sections` endpoints or invent components to unblock this speculatively — see AGENTS.md.
+7. ~~Navigation/menu endpoints~~ — done; see Navigation API above.
