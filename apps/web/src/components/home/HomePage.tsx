@@ -327,9 +327,7 @@ function AboutSection({ locale }: { locale: Locale }) {
   );
 }
 
-// ─── Section 4: Why TTU ──────────────────────────────────────────────────────
-
-// Figma node 1275:174036 — 5 feature cards on top of a campus image background.
+/** Figma node 1275:174036 — five TTU differentiators over the campus background. */
 const WHY_TTU_FEATURES = [
   {
     title: 'Tận hưởng không gian Anh ngữ',
@@ -365,61 +363,57 @@ function WhyTTUSection() {
   const f3 = WHY_TTU_FEATURES[3]!;
   const f4 = WHY_TTU_FEATURES[4]!;
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{
-        paddingTop: 'clamp(48px, 8vh, 80px)',
-        paddingBottom: 'clamp(48px, 8vh, 80px)',
-      }}
-    >
-      {/* Background card — Figma node 1275:174036 / 188:13299 (Rectangle 15) */}
-      <div className="absolute inset-x-6 lg:inset-x-8 inset-y-0 mx-auto max-w-[1239px] rounded-[20px] overflow-hidden">
-        <Image
-          src={HOME_IMAGES.whyTtuBackground}
-          alt=""
-          fill
-          className="object-cover"
-          sizes="(max-width: 1239px) 100vw, 1239px"
-        />
-        <div className="absolute inset-0 bg-green-deep/90" />
-      </div>
+    <section className="relative min-h-[940px] overflow-hidden py-12 lg:h-[993px] lg:min-h-0 lg:py-0">
+      <div className="absolute left-1/2 top-0 h-full w-full max-w-[1280px] -translate-x-1/2">
+        <div className="absolute inset-x-4 inset-y-0 overflow-hidden rounded-[20px] lg:bottom-auto lg:left-[-107px] lg:right-auto lg:h-[993px] lg:w-[1239px]">
+          <Image
+            src={HOME_IMAGES.whyTtuBackground}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="(max-width: 1023px) calc(100vw - 32px), 1239px"
+          />
+        </div>
 
-      {/* Inset photo — Figma node 1275:174036 / 189:13316 (right column) */}
-      <div
-        className="absolute right-6 lg:right-8 top-[200px] hidden lg:block overflow-hidden rounded-l-2xl"
-        style={{ width: 'clamp(280px, 38vw, 600px)', aspectRatio: '749/358' }}
-      >
-        <Image
-          src={HOME_IMAGES.whyTtuPhoto}
-          alt="Sinh viên TTU"
-          fill
-          className="object-cover"
-          sizes="50vw"
-        />
-      </div>
-
-      <div className="relative mx-auto w-full px-6 lg:px-8 max-w-7xl">
-        <div className="flex items-start gap-4 max-w-3xl">
-          <div className="flex flex-col items-center shrink-0 mt-1">
-            <div className="w-1 h-12 bg-green-light rounded-sm" />
-            <div className="w-1 h-8 bg-orange rounded-sm mt-1" />
+        <div className="absolute bottom-[13px] right-0 flex w-[760px] flex-col items-end lg:left-[-360px] lg:top-[570px] lg:w-[1640px]">
+          <div className="relative h-[240px] w-[503px] max-w-full lg:h-[358px] lg:w-[749px]">
+            <Image
+              src={HOME_IMAGES.whyTtuPhoto}
+              alt="Cổng chính Trường Đại học Tân Tạo"
+              fill
+              className="object-contain object-bottom"
+              sizes="(max-width: 1023px) 503px, 749px"
+            />
           </div>
-          <h2 className="text-ttu-white font-bold tracking-tight leading-tight font-heading text-section">
-            Tại sao ĐẠI HỌC TÂN TẠO là lựa chọn khác biệt?
+          <div className="flex h-[13px] w-full" aria-hidden="true">
+            <div className="h-full flex-1 bg-orange" />
+            <div className="h-full flex-1 bg-green-light" />
+          </div>
+        </div>
+      </div>
+
+      <div className="relative mx-auto flex w-full max-w-[1280px] flex-col gap-8 px-8 lg:absolute lg:left-1/2 lg:top-[102px] lg:h-[640px] lg:w-[936px] lg:-translate-x-[491px] lg:justify-center lg:gap-[38px] lg:px-0">
+        <div className="flex w-full max-w-[760px] items-start gap-[17px] lg:w-[743px]">
+          <div className="flex shrink-0 self-stretch flex-col items-center justify-center">
+            <div className="min-h-px w-1 flex-1 bg-green-deep" />
+            <div className="min-h-px w-1 flex-1 bg-orange" />
+          </div>
+          <h2 className="text-[30px] font-bold uppercase leading-[38px] text-green-deep sm:text-[36px] sm:leading-[44px] lg:text-[40px] lg:leading-[50px]">
+            Tại sao ĐẠI HỌC TÂN TẠO là
+            <br className="hidden sm:block" /> lựa chọn khác biệt?
           </h2>
         </div>
 
-        {/* 5 feature cards — Figma Frame 90 / 91 / 92 */}
-        <div className="mt-10 grid gap-4 lg:gap-6 max-w-3xl">
-          <div className="grid gap-4 sm:grid-cols-2 lg:gap-6">
+        <div className="flex flex-col gap-3 lg:gap-[6px]">
+          <div className="flex flex-col gap-3 lg:flex-row lg:gap-[34px] lg:py-4">
             <FeatureCard title={f0.title} desc={f0.desc} Icon={f0.Icon} />
             <FeatureCard title={f1.title} desc={f1.desc} Icon={f1.Icon} />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:gap-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:gap-[34px] lg:py-4">
             <FeatureCard title={f2.title} desc={f2.desc} Icon={f2.Icon} />
             <FeatureCard title={f3.title} desc={f3.desc} Icon={f3.Icon} />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:gap-6">
+          <div className="flex lg:w-[434px] lg:py-4">
             <FeatureCard title={f4.title} desc={f4.desc} Icon={f4.Icon} />
           </div>
         </div>
@@ -438,93 +432,93 @@ function FeatureCard({
   Icon: ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="flex items-start gap-4 rounded-xl p-4 bg-green-deep/70 backdrop-blur-sm">
-      <div className="w-16 h-16 shrink-0 rounded-[15px] bg-green-deep flex items-center justify-center">
-        <Icon className="w-10 h-10 text-ttu-white" />
+    <div className="flex w-full items-start lg:w-[434px]">
+      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[15px] bg-green-deep">
+        <Icon className="h-[50px] w-[50px] text-ttu-white" />
       </div>
-      <div>
-        <h3 className="font-bold leading-tight text-ttu-white text-h2">{title}</h3>
-        <p className="mt-1 text-ttu-white/80 text-body-sm leading-relaxed">{desc}</p>
+      <div className="flex w-full flex-col gap-3 px-5 text-green-deep lg:w-[340px]">
+        <h3 className="text-[21px] font-bold leading-[27px] lg:text-[24px] lg:leading-[30px]">
+          {title}
+        </h3>
+        <p className="text-[14px] font-normal leading-normal">{desc}</p>
       </div>
     </div>
   );
 }
-
-// ─── Section 5: Training Systems ──────────────────────────────────────────────
+/** Figma node 190:13321 — four TTU training systems. */
+const TRAINING_SYSTEMS = [
+  {
+    src: HOME_IMAGES.trainingChinhQuy,
+    alt: 'Hệ chính quy',
+    title: 'CHÍNH QUY',
+    description:
+      'Chương trình đào tạo đại học tập trung dành cho học sinh đã tốt nghiệp THPT. Sinh viên học tập toàn thời gian tại trường để nhận bằng Cử nhân hoặc Bác sĩ.',
+  },
+  {
+    src: HOME_IMAGES.trainingSauDaiHoc,
+    alt: 'Hệ sau đại học',
+    title: 'HỆ SAU ĐẠI HỌC',
+    description:
+      'Chương trình đào tạo bậc Thạc sĩ dành cho người đã tốt nghiệp đại học, nhằm cung cấp kiến thức chuyên môn sâu và nâng cao năng lực nghiên cứu.',
+  },
+  {
+    src: HOME_IMAGES.trainingVanBang2,
+    alt: 'Hệ văn bằng 2',
+    title: 'HỆ VĂN BẰNG 2',
+    description:
+      'Chương trình đào tạo cấp bằng đại học thứ hai, dành cho những cá nhân đã sở hữu ít nhất một bằng đại học và muốn học thêm một ngành chuyên môn khác.',
+  },
+  {
+    src: HOME_IMAGES.trainingLienThong,
+    alt: 'Hệ liên thông',
+    title: 'HỆ LIÊN THÔNG',
+    description:
+      'Chương trình đào tạo tiếp nối dành cho người đã tốt nghiệp trình độ Trung cấp hoặc Cao đẳng, nhằm bổ sung kiến thức để nhận bằng tốt nghiệp trình độ Đại học.',
+  },
+];
 
 function TrainingSection() {
   return (
-    <section
-      className="relative bg-muted"
-      style={{
-        paddingTop: 'clamp(48px, 8vh, 80px)',
-        paddingBottom: 'clamp(48px, 8vh, 80px)',
-      }}
-    >
-      <div className="mx-auto w-full px-6 lg:px-8 max-w-7xl">
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-16 items-center">
-          {/* Left: text */}
-          <div>
-            <SectionHeading title="Các hệ đào tạo" eyebrow="HỆ ĐÀO TẠO" />
-            <p className="mt-6 text-body-base leading-relaxed text-foreground/80">
-              TTU cung cấp đa dạng hệ đào tạo từ chính quy đến liên kết quốc tế, đáp ứng mọi nhu cầu
-              học tập của thí sinh và sinh viên.
-            </p>
-            <div className="mt-8">
-              <OrangeButton href="/dao-tao">Khám phá các hệ đào tạo</OrangeButton>
+    <section className="overflow-hidden bg-ttu-white py-12 md:py-14 xl:py-[70px]">
+      <div className="mx-auto w-full max-w-[1280px] px-5 sm:px-8 xl:px-0">
+        <div className="flex flex-col gap-10 xl:ml-[149px] xl:w-[1055px] xl:flex-row xl:items-start xl:gap-6">
+          <div className="flex w-full shrink-0 items-center gap-[17px] xl:w-[287px]">
+            <div className="flex shrink-0 flex-col items-center justify-center">
+              <div className="h-[58px] w-1 bg-green-deep" />
+              <div className="h-[38px] w-1 bg-orange" />
             </div>
+            <h2 className="min-w-0 text-[32px] font-bold uppercase leading-[40px] text-green-deep sm:text-[36px] sm:leading-[44px] xl:w-[329px] xl:text-[40px] xl:leading-[50px]">
+              Các hệ
+              <br />
+              đào tạo
+            </h2>
           </div>
 
-          {/* Right: image grid — Figma node 190:13321 (Frame 98) */}
-          <div className="grid grid-cols-2 gap-4 lg:gap-5">
-            {[
-              {
-                src: HOME_IMAGES.trainingChinhQuy,
-                alt: 'Hệ chính quy',
-                tag: 'CHÍNH QUY',
-                desc: 'Chương trình đào tạo đại học tập trung dành cho học sinh đã tốt nghiệp THPT. Sinh viên học tập toàn thời gian tại trường để nhận bằng Cử nhân hoặc Bác sĩ.',
-              },
-              {
-                src: HOME_IMAGES.trainingSauDaiHoc,
-                alt: 'Hệ sau đại học',
-                tag: 'HỆ SAU ĐẠI HỌC',
-                desc: 'Chương trình đào tạo bậc Thạc sĩ dành cho người đã tốt nghiệp đại học, nhằm cung cấp kiến thức chuyên môn sâu và nâng cao năng lực nghiên cứu.',
-              },
-              {
-                src: HOME_IMAGES.trainingVanBang2,
-                alt: 'Hệ văn bằng 2',
-                tag: 'HỆ VĂN BẰNG 2',
-                desc: 'Chương trình đào tạo cấp bằng đại học thứ hai, dành cho những cá nhân đã sở hữu ít nhất một bằng đại học và muốn học thêm một ngành chuyên môn khác.',
-              },
-              {
-                src: HOME_IMAGES.trainingLienThong,
-                alt: 'Hệ liên thông',
-                tag: 'HỆ LIÊN THÔNG',
-                desc: 'Chương trình đào tạo tiếp nối dành cho người đã tốt nghiệp trình độ Trung cấp hoặc Cao đẳng, nhằm bổ sung kiến thức để nhận bằng tốt nghiệp trình độ Đại học.',
-              },
-            ].map((card) => (
-              <div key={card.alt} className="group">
-                <div
-                  className="relative rounded-[15px] overflow-hidden"
-                  style={{ aspectRatio: '289/168' }}
-                >
+          <div className="grid w-full grid-cols-1 gap-x-5 gap-y-9 sm:grid-cols-2 xl:w-[744px] xl:gap-y-[34px]">
+            {TRAINING_SYSTEMS.map((card) => (
+              <Link
+                key={card.alt}
+                href="/dao-tao"
+                className="group flex min-w-0 w-full flex-col items-start gap-[18px] sm:gap-[22px] xl:w-[362px]"
+              >
+                <div className="relative aspect-[289/168] w-full overflow-hidden rounded-[15px] xl:w-[289px]">
                   <Image
                     src={card.src}
                     alt={card.alt}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    sizes="(max-width: 1024px) 50vw, 25vw"
+                    sizes="(max-width: 639px) calc(100vw - 40px), (max-width: 1023px) calc(50vw - 42px), 289px"
                   />
                 </div>
-                <div className="mt-3 flex flex-col gap-2">
-                  <span className="font-bold leading-tight font-heading text-h2 text-green-light">
-                    {card.tag}
-                  </span>
-                  <p className="text-body-sm leading-relaxed text-green-text max-w-[264px]">
-                    {card.desc}
+                <div className="flex min-w-0 w-full flex-col items-start gap-[10px] text-left xl:w-[264px]">
+                  <h3 className="text-[22px] font-bold leading-[28px] text-green-light sm:text-[24px] sm:leading-[30px]">
+                    {card.title}
+                  </h3>
+                  <p className="text-[14px] font-normal leading-normal text-green-text">
+                    {card.description}
                   </p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -533,10 +527,7 @@ function TrainingSection() {
   );
 }
 
-// ─── Section 6: Programs — 7 khoa đào tạo ──────────────────────────────
-// Figma node 190:13394 (Frame 106) — 7 faculty cards on a #ECECEC background.
-// Each card = 64×64 icon block + khoa name + ngành list.
-
+/** Figma node 190:13394 — seven faculty cards on the regular-program surface. */
 const PROGRAMS = [
   {
     faculty: 'Khoa Y',
@@ -596,65 +587,62 @@ function ProgramsSection() {
   const p5 = PROGRAMS[5]!;
   const p6 = PROGRAMS[6]!;
   return (
-    <section
-      className="relative overflow-hidden bg-ttu-gray-light"
-      style={{
-        paddingTop: 'clamp(48px, 8vh, 70px)',
-        paddingBottom: 'clamp(48px, 8vh, 70px)',
-      }}
-    >
-      <div className="mx-auto w-full px-6 lg:px-[147px] max-w-[1280px]">
-        {/* Heading + intro */}
-        <div className="max-w-[986px]">
-          <div className="flex items-start gap-4">
-            <div className="flex flex-col items-center shrink-0 mt-1">
-              <div className="w-1 h-12 bg-green-deep rounded-sm" />
-              <div className="w-1 h-8 bg-orange rounded-sm mt-1" />
+    <section className="relative min-h-[1469px] overflow-hidden bg-[#ececec]">
+      <div className="mx-auto w-full max-w-[1280px] px-6 py-12 lg:px-[147px] lg:py-[70px]">
+        <div className="flex w-full flex-col items-start gap-5">
+          <div className="flex w-full items-center gap-[17px]">
+            <div className="flex self-stretch shrink-0 flex-col items-center justify-center">
+              <div className="min-h-px w-1 flex-1 bg-green-deep" />
+              <div className="h-[38px] w-1 shrink-0 bg-orange" />
             </div>
-            <h2 className="text-green-deep font-bold tracking-tight leading-tight font-heading text-section uppercase">
+            <h2 className="w-[547px] text-[34px] font-bold uppercase leading-[43px] text-green-deep lg:text-[40px] lg:leading-[50px]">
               Chương trình đào tạo hệ chính quy
             </h2>
           </div>
-          <p className="mt-5 max-w-[965px] text-body-lg leading-relaxed text-green-deep">
-            "Trường Đại học Tân Tạo hiện có 7 Khoa đào tạo với 21 ngành và chuyên ngành khác nhau.
-            Chương trình học tại TTU được thiết kế theo tiêu chuẩn giáo dục Hoa Kỳ, kết hợp mô hình
-            Khai phóng giúp sinh viên phát triển toàn diện cả về kiến thức chuyên môn lẫn tư duy
-            sáng tạo."
+          <p className="max-w-[965px] text-[18px] font-normal leading-normal text-green-deep lg:h-[128px] lg:text-[20px]">
+            &quot;Trường Đại học Tân Tạo hiện có 7 Khoa đào tạo với 21 ngành và chuyên ngành khác
+            nhau. Chương trình học tại TTU được thiết kế theo tiêu chuẩn giáo dục Hoa Kỳ, kết hợp mô
+            hình Khai phóng giúp sinh viên phát triển toàn diện cả về kiến thức chuyên môn lẫn tư
+            duy sáng tạo.&quot;
           </p>
-          <div className="mt-6">
-            <Link
-              href="/dao-tao"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-button text-green-deep border border-green-deep hover:bg-green-deep hover:text-ttu-white transition-colors"
-            >
-              Xem toàn bộ chương trình đào tạo
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
-                <path
-                  d="M3 8h10M9 4l4 4-4 4"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </Link>
-          </div>
+          <Link
+            href="/dao-tao"
+            className="flex w-full max-w-[348px] items-center gap-[10px] rounded-[8px] border border-green-deep px-5 text-[16px] font-medium leading-normal text-green-deep transition-colors hover:bg-green-deep hover:text-ttu-white"
+          >
+            <span className="flex-1 py-[10px]">Xem toàn bộ chương trình đào tạo</span>
+            <Image
+              src={HOME_IMAGES.programsArrow}
+              alt=""
+              width={17}
+              height={19}
+              className="h-[19px] w-[17px] shrink-0"
+            />
+          </Link>
         </div>
 
-        {/* Faculty cards — 3 columns × 2 rows + 1 centered (matches Frame 102/103/104) */}
-        <div className="mt-12 flex flex-col gap-[30px] items-start">
-          <div className="grid gap-x-[93px] gap-y-5 sm:grid-cols-2 lg:grid-cols-3 w-full justify-items-center">
-            {[p0, p1, p2].map((p) => (
-              <FacultyCard key={p.faculty} {...p} />
+        <div className="relative z-10 mt-[60px] flex w-full flex-col items-start gap-[30px]">
+          <div className="grid w-full gap-[30px] sm:grid-cols-2 lg:flex lg:justify-center lg:gap-[93px]">
+            {[p0, p1, p2].map((program) => (
+              <FacultyCard key={program.faculty} {...program} />
             ))}
           </div>
-          <div className="grid gap-x-[93px] gap-y-5 sm:grid-cols-2 lg:grid-cols-3 w-full justify-items-center">
-            {[p3, p4, p5].map((p) => (
-              <FacultyCard key={p.faculty} {...p} />
+          <div className="grid w-full gap-[30px] sm:grid-cols-2 lg:flex lg:justify-center lg:gap-[93px]">
+            {[p3, p4, p5].map((program) => (
+              <FacultyCard key={program.faculty} {...program} />
             ))}
           </div>
-          <div className="grid gap-x-[93px] gap-y-5 sm:grid-cols-2 lg:grid-cols-3 w-full justify-items-center">
-            <FacultyCard {...p6} />
-          </div>
+          <FacultyCard {...p6} />
+        </div>
+      </div>
+
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-[428px] lg:block"
+        aria-hidden="true"
+      >
+        <ScholarshipsVector className="absolute bottom-[13px] right-0 h-[415px] w-[476px]" />
+        <div className="absolute inset-x-0 bottom-0 flex h-[13px]">
+          <div className="flex-1 bg-orange" />
+          <div className="flex-1 bg-green-light" />
         </div>
       </div>
     </section>
@@ -672,39 +660,38 @@ function FacultyCard({
   href?: string;
   Icon: ComponentType<{ className?: string }>;
 }) {
-  const inner = (
+  const content = (
     <>
-      <div className="w-16 h-16 rounded-[15px] bg-green-deep flex items-center justify-center">
-        <Icon className="w-10 h-10 text-ttu-white" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-[15px] bg-green-deep">
+        <Icon className="h-[50px] w-[50px] text-ttu-white" />
       </div>
-      <h3 className="mt-5 font-bold leading-tight text-green-deep text-button">{faculty}</h3>
-      {majors.length > 0 && (
-        <p className="mt-2 text-body-sm leading-relaxed text-green-deep">
-          {majors.map((m, i) => (
-            <span key={m}>
-              {m}
-              {i < majors.length - 1 ? <br /> : null}
-            </span>
-          ))}
-        </p>
-      )}
+      <div className="flex w-full flex-col items-start gap-[5px]">
+        <h3 className="text-[20px] font-bold leading-[25px] text-green-deep">{faculty}</h3>
+        {majors.length > 0 && (
+          <p className="text-[14px] font-normal leading-normal text-green-deep">
+            {majors.map((major, index) => (
+              <span key={major}>
+                {major}
+                {index < majors.length - 1 ? <br /> : null}
+              </span>
+            ))}
+          </p>
+        )}
+      </div>
     </>
   );
 
-  const className = 'flex flex-col items-start w-[265px]';
+  const className = 'flex w-[265px] flex-col items-start gap-[19px]';
   if (href) {
     return (
       <Link href={href} className={`${className} hover:opacity-80`} target="_blank">
-        {inner}
+        {content}
       </Link>
     );
   }
-  return <div className={className}>{inner}</div>;
+  return <div className={className}>{content}</div>;
 }
-
-// ─── Section 7: Admissions ───────────────────────────────────────────────────
-// Figma node 457:49664 (Group 11) — 6 phương thức xét tuyển trên ảnh nền
-// image 9 + dark green overlay. Cards = mã số cam + nội dung trắng.
+/** Figma nodes 341:13622 and 457:49664 — six undergraduate admission methods. */
 const ADMISSIONS_METHODS = [
   {
     code: '301',
@@ -719,17 +706,17 @@ const ADMISSIONS_METHODS = [
   {
     code: '200',
     title: 'Xét tuyển sử dụng kết quả học tập ở cấp THPT (Học bạ)',
-    desc: 'Xét điểm trung bình chung cả năm lớp 10, 11, 12 của tối thiểu 03 môn học; hoặc 02 môn kết hợp quy đổi điểm chứng chỉ ngoại ngữ. Đối với nhóm ngành Sức khỏe và Pháp luật, thí sinh cần đạt điều kiện bổ sung về học lực lớp 12.',
+    desc: 'Xét điểm trung bình chung cả năm lớp 10, 11, 12 của tối thiểu 03 môn học; hoặc 02 môn kết hợp quy đổi điểm chứng chỉ ngoại ngữ. Đối với nhóm ngành Sức khỏe và Pháp luật, thí sinh cần đạt điều kiện bổ sung về học lực lớp 12 (loại Khá hoặc Giỏi tùy ngành) và điểm xét tốt nghiệp THPT.',
   },
   {
     code: '402',
     title: 'Xét kết quả thi Đánh giá năng lực (ĐHQG TP.HCM) năm 2026',
-    desc: 'Sử dụng kết quả kỳ thi đánh giá năng lực do Đại học Quốc gia TP.HCM tổ chức. Cần đáp ứng ngưỡng đảm bảo chất lượng đầu vào.',
+    desc: 'Sử dụng kết quả kỳ thi đánh giá năng lực do Đại học Quốc gia TP.HCM tổ chức. Cần đáp ứng ngưỡng đảm bảo chất lượng đầu vào đối với các chương trình đào tạo thuộc lĩnh vực Sức khỏe và Pháp luật.',
   },
   {
     code: '407',
-    title: 'Kết hợp kết quả thi tốt nghiệp THPT với kết quả học tập cấp THPT',
-    desc: 'Phương thức kết hợp giữa điểm thi tốt nghiệp và điểm học bạ. Thí sinh cần đáp ứng ngưỡng đảm bảo chất lượng đầu vào riêng của Nhà trường.',
+    title: 'Kết hợp kết quả thi tốt nghiệp THPT với kết quả học tập cấp THPT để xét tuyển',
+    desc: 'Phương thức kết hợp giữa điểm thi tốt nghiệp và điểm học bạ. Thí sinh cần đáp ứng ngưỡng đảm bảo chất lượng đầu vào riêng của Nhà trường',
   },
   {
     code: '1411',
@@ -740,15 +727,7 @@ const ADMISSIONS_METHODS = [
 
 function AdmissionsSection() {
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{
-        paddingTop: 'clamp(48px, 8vh, 80px)',
-        paddingBottom: 'clamp(48px, 8vh, 80px)',
-        minHeight: 'clamp(800px, 90vh, 1118px)',
-      }}
-    >
-      {/* Background image — Figma node 457:49664 / 340:13512 (image 9) */}
+    <section className="relative min-h-[1118px] overflow-hidden py-12 lg:h-[1118px] lg:min-h-0 lg:py-0">
       <div className="absolute inset-0">
         <Image
           src={HOME_IMAGES.admissionsBackground}
@@ -760,40 +739,47 @@ function AdmissionsSection() {
         <div className="absolute inset-0 bg-[rgba(0,34,21,0.7)]" />
       </div>
 
-      {/* Decorative vector — Figma 346:13801 */}
-      <div
-        className="absolute pointer-events-none hidden lg:block overflow-hidden"
-        style={{
-          right: '-15%',
-          top: '5%',
-          width: 'clamp(300px, 40vw, 600px)',
-          aspectRatio: '384/335',
-        }}
-      >
-        <AdmissionsVector className="w-full h-full text-ttu-white opacity-50" />
-      </div>
-
-      <div className="relative mx-auto w-full px-6 lg:px-[148px] max-w-[1280px]">
-        {/* Heading — 2 lines, "06" + "PHƯƠNG THỨC XÉT TUYỂN" in orange */}
-        <div className="max-w-[827px]">
-          <div className="flex items-start gap-4">
-            <div className="flex flex-col items-center shrink-0 mt-1">
-              <div className="w-1 h-12 bg-ttu-white rounded-sm" />
-              <div className="w-1 h-8 bg-orange rounded-sm mt-1" />
-            </div>
-            <h2 className="text-ttu-white font-bold tracking-tight leading-tight font-heading text-section uppercase">
-              <span className="text-ttu-white">06 </span>
-              <span className="text-orange">Phương thức xét tuyển </span>
-              <br />
-              để trở thành sinh viên ttu
-            </h2>
-          </div>
+      <div className="relative mx-auto h-full w-full max-w-[1280px] px-6 lg:px-0">
+        <Image
+          src={HOME_IMAGES.admissionsRingOuter}
+          alt=""
+          width={752}
+          height={822}
+          className="pointer-events-none absolute left-[899px] top-[140px] hidden h-[822px] w-[752px] lg:block"
+        />
+        <Image
+          src={HOME_IMAGES.admissionsRingInner}
+          alt=""
+          width={496}
+          height={542}
+          className="pointer-events-none absolute left-[1027px] top-[280px] hidden h-[542px] w-[496px] lg:block"
+        />
+        <div className="pointer-events-none absolute left-[676px] top-[421px] hidden h-[697px] w-[575px] overflow-hidden lg:block">
+          <Image
+            src={HOME_IMAGES.admissionsDecoration}
+            alt="Sinh viên tốt nghiệp Trường Đại học Tân Tạo"
+            fill
+            className="object-cover"
+            sizes="575px"
+          />
         </div>
 
-        {/* 6 method cards in 2-col × 3-row grid — matches Figma Frame 161 */}
-        <div className="mt-12 max-w-[617px] grid grid-cols-1 md:grid-cols-2 gap-4">
-          {ADMISSIONS_METHODS.map((m) => (
-            <MethodRow key={m.code} {...m} />
+        <div className="relative z-10 flex max-w-[827px] items-center gap-[17px] lg:absolute lg:left-[148px] lg:top-[88px] lg:h-[127px]">
+          <div className="flex shrink-0 flex-col items-center justify-center">
+            <div className="h-[58px] w-1 bg-ttu-white" />
+            <div className="h-[38px] w-1 bg-orange" />
+          </div>
+          <h2 className="text-[32px] font-bold uppercase leading-[40px] text-ttu-white lg:w-[827px] lg:text-[40px] lg:leading-[50px]">
+            <span>06 </span>
+            <span className="text-orange">Phương thức xét tuyển </span>
+            <br />
+            để trở thành sinh viên ttu
+          </h2>
+        </div>
+
+        <div className="relative z-10 mt-10 flex w-full max-w-[617px] flex-col gap-[15px] lg:absolute lg:left-[136px] lg:top-[236px] lg:mt-0 lg:h-[860px]">
+          {ADMISSIONS_METHODS.map((method) => (
+            <MethodRow key={method.code} {...method} />
           ))}
         </div>
       </div>
@@ -803,22 +789,21 @@ function AdmissionsSection() {
 
 function MethodRow({ code, title, desc }: { code: string; title: string; desc: string }) {
   return (
-    <div className="flex items-stretch gap-5">
-      <div className="bg-ttu-gradient-cta flex items-center justify-center rounded-[5px] w-[96px] shrink-0 p-2.5">
-        <span className="font-bold leading-[30px] text-h2 text-center text-ttu-white whitespace-nowrap">
+    <div className="flex w-full items-stretch gap-5">
+      <div className="flex w-[76px] shrink-0 items-center justify-center rounded-[5px] bg-ttu-gradient-cta p-[10px] sm:w-[96px]">
+        <span className="whitespace-nowrap text-center text-[24px] font-bold leading-[30px] text-ttu-white">
           {code}
         </span>
       </div>
-      <div className="bg-ttu-white flex flex-col items-start justify-center rounded-[5px] flex-1 p-5">
-        <p className="font-bold leading-snug text-button text-green-deep">{title}</p>
-        <p className="mt-1 font-light leading-snug text-body-xs text-green-deep">{desc}</p>
+      <div className="flex flex-1 flex-col items-start justify-center gap-[3px] rounded-[5px] bg-ttu-white p-5 lg:w-[501px] lg:flex-none">
+        <p className="text-[16px] font-bold leading-normal text-green-deep">{title}</p>
+        <p className="text-[12px] font-light leading-normal text-green-deep">{desc}</p>
       </div>
     </div>
   );
 }
 
-// ─── Section 8: Scholarships ─────────────────────────────────────────────────
-// Figma node 1005:175084 (Frame 652) — 4 white cards on ảnh nền + gradient overlay.
+/** Figma node 1005:175084 — 2026 admission scholarships. */
 const SCHOLARSHIPS = [
   {
     eyebrow: 'Hơn',
@@ -852,55 +837,41 @@ const SCHOLARSHIPS = [
 
 function ScholarshipsSection() {
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{
-        paddingTop: 'clamp(48px, 8vh, 80px)',
-        paddingBottom: 'clamp(48px, 8vh, 80px)',
-        minHeight: 'clamp(420px, 50vh, 597px)',
-      }}
-    >
-      {/* Background image — Figma node 1005:175084 / 475:46778 (Rectangle 8) */}
+    <section className="relative min-h-[597px] overflow-hidden py-[65px]">
       <div className="absolute inset-0">
         <Image src={HOME_IMAGES.scholarship} alt="" fill className="object-cover" sizes="100vw" />
         <div className="absolute inset-0 bg-ttu-gradient-hero-overlay" />
       </div>
 
-      {/* Decorative vector — Figma node 346:13569 */}
-      <div
-        className="absolute pointer-events-none hidden lg:block"
-        style={{ right: '5%', bottom: 0, width: 'clamp(200px, 20vw, 400px)' }}
-      >
-        <ScholarshipsVector className="w-full h-auto text-ttu-white opacity-10" />
-      </div>
-
-      <div className="relative mx-auto w-full px-6 lg:px-[84px] max-w-[1280px]">
-        <div className="flex flex-col gap-[53px] items-center text-center">
-          <div>
-            <h2 className="text-ttu-white font-bold tracking-tight leading-[50px] font-heading uppercase text-section">
+      <div className="relative mx-auto flex w-full max-w-[1280px] items-center justify-center px-6 lg:px-[84px]">
+        <div className="flex w-full flex-col items-center gap-[53px] lg:w-[1112px]">
+          <div className="flex w-full flex-col items-center text-center text-ttu-white">
+            <h2 className="w-full text-[34px] font-bold uppercase leading-[43px] lg:w-[586px] lg:text-[40px] lg:leading-[50px]">
               Học bổng tuyển sinh 2026
             </h2>
-            <p className="mt-2 text-ttu-white text-h2 font-bold leading-[30px]">
-              Chắp cánh tài năng trẻ
-            </p>
+            <p className="mt-[9px] text-[24px] font-bold leading-[30px]">Chắp cánh tài năng trẻ</p>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {SCHOLARSHIPS.map((s) => (
+          <div className="grid w-full gap-[37px] sm:grid-cols-2 lg:flex lg:items-center">
+            {SCHOLARSHIPS.map((scholarship) => (
               <article
-                key={s.headline}
-                className="bg-ttu-white rounded-[15px] p-5 flex flex-col gap-2.5 items-start"
+                key={scholarship.headline}
+                className="flex w-full flex-col items-start gap-[10px] rounded-[15px] bg-ttu-white p-5 lg:w-[216px] lg:shrink-0"
               >
-                <div className="flex flex-col gap-1 text-green-deep">
-                  <p className="text-body-sm leading-snug">{s.eyebrow}</p>
-                  <p className="text-h2 font-bold leading-[30px]">{s.headline}</p>
-                  <p className="text-body-sm leading-snug">{s.tail}</p>
+                <div className="flex w-full flex-col items-start text-green-deep">
+                  <p className="mb-[-3px] text-[14px] font-normal leading-normal">
+                    {scholarship.eyebrow}
+                  </p>
+                  <p className="mb-[-3px] text-[24px] font-bold leading-[30px]">
+                    {scholarship.headline}
+                  </p>
+                  <p className="text-[14px] font-normal leading-normal">{scholarship.tail}</p>
                 </div>
-                <div className="w-16 h-16 rounded-[15px] bg-green-deep flex items-center justify-center">
-                  <s.Icon className="w-10 h-10 text-ttu-white" />
+                <div className="flex h-16 w-16 items-center justify-center rounded-[15px] bg-green-deep">
+                  <scholarship.Icon className="h-[50px] w-[50px] text-ttu-white" />
                 </div>
-                <p className="font-light text-body-xs leading-snug text-green-deep min-h-[82px]">
-                  {s.desc}
+                <p className="min-h-[82px] text-[12px] font-light leading-normal text-green-deep">
+                  {scholarship.desc}
                 </p>
               </article>
             ))}
@@ -910,63 +881,72 @@ function ScholarshipsSection() {
     </section>
   );
 }
-
 // ─── Section 9: Partners ──────────────────────────────────────────────────────
-// Figma node 204:16456 (Frame 131) — heading + horizontal logo strip
-// (Frame 683–686 instances repeated 4× for marquee effect).
+// Figma node 204:16456 (Frame 131) — heading + five-company horizontal logo strip.
 const PARTNERS = [
-  { name: 'Rice University', country: 'Hoa Kỳ', logo: HOME_IMAGES.partner1 },
-  { name: 'NTU Singapore', country: 'Singapore', logo: HOME_IMAGES.partner2 },
-  {
-    name: 'University of Queensland',
-    country: 'Úc',
-    logo: HOME_IMAGES.partner3,
-  },
-  { name: 'University of Leeds', country: 'Anh', logo: HOME_IMAGES.partner4 },
+  { name: 'Công ty Cổ phần Y tế VH Care', logo: HOME_IMAGES.partnerVhCare },
+  { name: 'Công ty TNHH Simpson Strong-Tie Việt Nam', logo: HOME_IMAGES.partnerSimpson },
+  { name: 'Công ty Cổ phần IIG Việt Nam', logo: HOME_IMAGES.partnerIig },
+  { name: 'Arham Ấn Độ', logo: HOME_IMAGES.partnerArham, fit: true },
+  { name: 'Bệnh viện Đa khoa Khu vực Hóc Môn', logo: HOME_IMAGES.partnerHocMon },
 ];
 
 function PartnersSection() {
-  // Duplicate to create seamless marquee illusion (4× per Figma Frame 700)
-  const strip = [...PARTNERS, ...PARTNERS, ...PARTNERS, ...PARTNERS];
-
   return (
-    <section
-      className="relative overflow-hidden bg-ttu-white"
-      style={{
-        paddingTop: 'clamp(48px, 8vh, 80px)',
-        paddingBottom: 'clamp(48px, 8vh, 80px)',
-      }}
-    >
-      {/* Bottom accent bar — Figma 1275:174037 (Rectangle 16/17) */}
-      <div className="absolute bottom-0 left-0 right-0 flex h-[13px] pointer-events-none">
+    <section className="relative overflow-hidden bg-ttu-white py-12 sm:py-16 xl:py-20">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-[13px]">
         <div className="flex-1 bg-orange" />
         <div className="flex-1 bg-green-light" />
       </div>
 
-      <div className="mx-auto w-full px-6 lg:px-8 max-w-7xl">
-        <SectionHeading title="Kết nối mạng lưới toàn cầu" eyebrow="ĐỐI TÁC CHIẾN LƯỢC" />
+      <div className="mx-auto w-full max-w-[1280px] px-5 sm:px-8 xl:px-0">
+        <div className="flex w-full items-center gap-[17px] xl:ml-[149px] xl:w-[526px]">
+          <div className="flex shrink-0 flex-col items-center justify-center">
+            <div className="h-[58px] w-1 bg-green-deep" />
+            <div className="h-[38px] w-1 bg-orange" />
+          </div>
+          <h2 className="min-w-0 text-[32px] font-bold uppercase leading-[40px] text-green-deep sm:text-[36px] sm:leading-[44px] xl:w-[526px] xl:text-[40px] xl:leading-[50px]">
+            Kết nối mạng lưới
+            <br />
+            toàn cầu
+          </h2>
+        </div>
 
-        <div className="mt-10 flex gap-6 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none' }}>
-          {strip.map((p, i) => (
-            <div
-              key={`${p.name}-${i}`}
-              className="shrink-0 w-[264px] flex flex-col items-center justify-center rounded-xl p-6 text-center border border-border hover:border-primary/30 hover:shadow-ttu-500 transition-all bg-ttu-white"
-            >
-              <div className="relative w-14 h-14 mb-3">
-                <Image src={p.logo} alt={p.name} fill className="object-contain" sizes="56px" />
+        <div className="partner-marquee mt-10 overflow-hidden sm:mt-[59px] xl:ml-[149px] xl:w-[1056px]">
+          <div className="partner-marquee-track flex w-max items-start">
+            {[0, 1].map((copy) => (
+              <div
+                key={copy}
+                aria-hidden={copy === 1}
+                className="flex shrink-0 items-start gap-5 pr-5"
+              >
+                {PARTNERS.map((partner) => (
+                  <article
+                    key={copy + '-' + partner.name}
+                    className="flex w-[220px] shrink-0 flex-col items-start gap-[9px] sm:w-[264px]"
+                  >
+                    <div className="relative h-[120px] w-[120px] shrink-0 overflow-hidden">
+                      <Image
+                        src={partner.logo}
+                        alt={copy === 0 ? partner.name : ''}
+                        fill
+                        className={partner.fit ? 'object-contain' : 'object-cover'}
+                        sizes="120px"
+                      />
+                    </div>
+                    <p className="w-[182px] text-[16px] font-normal uppercase leading-normal text-green-light sm:min-h-[57px] sm:text-[18px]">
+                      {partner.name}
+                    </p>
+                  </article>
+                ))}
               </div>
-              <div className="font-semibold text-foreground leading-tight text-body-sm">
-                {p.name}
-              </div>
-              <div className="text-body-xs text-muted-foreground mt-1">{p.country}</div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
   );
 }
-
 // ─── Section 10: Announcements ───────────────────────────────────────────────
 // Figma node 204:16682 (Frame 144) — green→navy gradient background, 1 featured
 // card (240×240 image + 600w text) + 4 thumbnail cards (150×150 + text).
@@ -1199,49 +1179,44 @@ function NewsSection() {
   );
 }
 
-// ─── Section 12: Registration ────────────────────────────────────────────────
-
+/** Figma node 204:16769 — admissions counseling registration section. */
 function RegistrationSection() {
   return (
-    <section
-      className="relative overflow-hidden bg-ttu-gradient-primary-secondary"
-      style={{
-        paddingTop: 'clamp(60px, 10vh, 100px)',
-        paddingBottom: 'clamp(60px, 10vh, 100px)',
-      }}
-    >
-      <div className="mx-auto w-full px-6 lg:px-8 max-w-7xl">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-          {/* Left: form */}
-          <div>
-            <SectionHeading
-              white
-              title="Đăng ký tư vấn nhận tuyển sinh"
-              eyebrow="ĐĂNG KÝ NGAY"
-              description="Chương trình được thực hiện từ Quỹ ITA Vì Tương Lai dành cho sinh viên có hoàn cảnh khó khăn, nhằm giúp các bạn tiếp tục theo học."
-            />
-            <RegistrationForm />
-          </div>
+    <section className="relative min-h-[731px] overflow-hidden">
+      <Image
+        src={HOME_IMAGES.registrationBackground}
+        alt="Cổng chính Trường Đại học Tân Tạo"
+        fill
+        className="object-cover"
+        sizes="100vw"
+      />
 
-          {/* Right: decorative image — reuse hero asset since Figma node 204:16769 has no raster */}
-          <div
-            className="relative rounded-2xl overflow-hidden hidden lg:block"
-            style={{ aspectRatio: '4/3' }}
-          >
-            <Image
-              src={HOME_IMAGES.hero}
-              alt="Tư vấn tuyển sinh TTU"
-              fill
-              className="object-cover"
-              sizes="50vw"
-            />
+      <div className="relative mx-auto min-h-[731px] w-full max-w-[1280px] px-6 py-12 lg:px-0 lg:py-0">
+        <div className="flex flex-col items-start gap-10 lg:absolute lg:left-[148px] lg:top-[75px] lg:flex-row lg:gap-[83px]">
+          <RegistrationForm />
+
+          <div className="flex w-full max-w-[431px] flex-col items-start gap-3 lg:h-[179px]">
+            <div className="flex w-full items-center gap-[27px]">
+              <div className="flex w-2 shrink-0 flex-col items-center justify-center">
+                <div className="h-[39px] w-2 bg-orange" />
+                <div className="h-[58px] w-2 bg-green" />
+              </div>
+              <h2 className="w-[410px] text-[34px] font-bold uppercase leading-[43px] text-green-deep lg:text-[40px] lg:leading-[50px]">
+                Đăng ký tư vấn
+                <br />
+                <span className="text-green">nhận tuyển sinh</span>
+              </h2>
+            </div>
+            <p className="max-w-[374px] text-[14px] font-normal leading-normal text-green-deep">
+              Chương trình được thực hiện từ Quỹ ITA Vì Tương Lai dành cho sinh viên có hoàn cảnh
+              khó khăn, nhằm giúp các bạn tiếp tục theo học.
+            </p>
           </div>
         </div>
       </div>
     </section>
   );
 }
-
 // ─── Main export ─────────────────────────────────────────────────────────────
 
 export function HomePage({ locale }: { locale: Locale }) {

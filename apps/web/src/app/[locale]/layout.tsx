@@ -1,10 +1,10 @@
-import { notFound } from "next/navigation";
-import { NextIntlClientProvider } from "next-intl";
-import { getMessages, setRequestLocale } from "next-intl/server";
-import { Footer, Navbar, type NavItem } from "@ttu/design-system";
-import { DEFAULT_LOCALE, isLocale, LOCALES, type Locale } from "@ttu/shared";
-import { getTranslations } from "next-intl/server";
-import "../../styles/globals.css";
+import { notFound } from 'next/navigation';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, setRequestLocale } from 'next-intl/server';
+import { Footer, Navbar, type NavItem } from '@ttu/design-system';
+import { isLocale, LOCALES, type Locale } from '@ttu/shared';
+import { getTranslations } from 'next-intl/server';
+import '../../styles/globals.css';
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
@@ -15,10 +15,7 @@ export async function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
 }
 
-export default async function LocaleLayout({
-  children,
-  params,
-}: LocaleLayoutProps) {
+export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
   const { locale: rawLocale } = await params;
   if (!isLocale(rawLocale)) notFound();
   const locale = rawLocale as Locale;
@@ -27,166 +24,142 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const messages = await getMessages();
-  const t = await getTranslations({ locale, namespace: "nav" });
-  const tFooter = await getTranslations({ locale, namespace: "footer" });
+  const t = await getTranslations({ locale, namespace: 'nav' });
+  const tFooter = await getTranslations({ locale, namespace: 'footer' });
 
   const navItems: NavItem[] = [
-    { label: t("about"), href: `/${locale}/gioi-thieu` },
+    { label: t('about'), href: `/${locale}/gioi-thieu` },
     {
-      label: t("admissions"),
+      label: t('admissions'),
       href: `/${locale}/tuyen-sinh`,
       children: [
         {
-          label: t("items.admissions.methods"),
+          label: t('items.admissions.methods'),
           href: `/${locale}/tuyen-sinh/phuong-thuc`,
         },
         {
-          label: t("items.admissions.scholarships"),
+          label: t('items.admissions.scholarships'),
           href: `/${locale}/hoc-bong`,
         },
         {
-          label: t("items.admissions.info"),
+          label: t('items.admissions.info'),
           href: `/${locale}/tuyen-sinh/thong-tin`,
         },
         {
-          label: t("items.admissions.counseling"),
+          label: t('items.admissions.counseling'),
           href: `/${locale}/tuyen-sinh/tu-van`,
         },
       ],
     },
     {
-      label: t("academics"),
+      label: t('academics'),
       href: `/${locale}/dao-tao`,
       children: [
         {
-          label: t("items.academics.undergraduate"),
+          label: t('items.academics.undergraduate'),
           href: `/${locale}/dao-tao/chinh-quy`,
         },
         {
-          label: t("items.academics.postgraduate"),
+          label: t('items.academics.postgraduate'),
           href: `/${locale}/dao-tao/sau-dai-hoc`,
         },
         {
-          label: t("items.academics.secondDegree"),
+          label: t('items.academics.secondDegree'),
           href: `/${locale}/dao-tao/van-bang-2`,
         },
         {
-          label: t("items.academics.bridging"),
+          label: t('items.academics.bridging'),
           href: `/${locale}/dao-tao/lien-thong`,
         },
         {
-          label: t("items.academics.programs"),
+          label: t('items.academics.programs'),
           href: `/${locale}/chuong-trinh`,
         },
       ],
     },
-    { label: t("research"), href: `/${locale}/nghien-cuu` },
-    { label: t("news"), href: `/${locale}/tin-tuc` },
+    { label: t('research'), href: `/${locale}/nghien-cuu` },
+    { label: t('news'), href: `/${locale}/tin-tuc` },
     {
-      label: t("studentLife"),
+      label: t('studentLife'),
       href: `/${locale}/doi-song-sinh-vien`,
       children: [
         {
-          label: t("items.studentLife.clubs"),
+          label: t('items.studentLife.clubs'),
           href: `/${locale}/doi-song-sinh-vien/clb`,
         },
         {
-          label: t("items.studentLife.activities"),
+          label: t('items.studentLife.activities'),
           href: `/${locale}/doi-song-sinh-vien/hoat-dong`,
         },
         {
-          label: t("items.studentLife.dorm"),
+          label: t('items.studentLife.dorm'),
           href: `/${locale}/doi-song-sinh-vien/ktx`,
         },
         {
-          label: t("items.studentLife.sports"),
+          label: t('items.studentLife.sports'),
           href: `/${locale}/doi-song-sinh-vien/the-thao`,
         },
       ],
     },
     {
-      label: t("cooperation"),
+      label: t('cooperation'),
       href: `/${locale}/hop-tac`,
       children: [
         {
-          label: t("items.cooperation.international"),
+          label: t('items.cooperation.international'),
           href: `/${locale}/hop-tac/quoc-te`,
         },
         {
-          label: t("items.cooperation.industry"),
+          label: t('items.cooperation.industry'),
           href: `/${locale}/hop-tac/doanh-nghiep`,
         },
         {
-          label: t("items.cooperation.exchange"),
+          label: t('items.cooperation.exchange'),
           href: `/${locale}/hop-tac/trao-doi`,
         },
       ],
     },
-    { label: t("contact"), href: `/${locale}/lien-he` },
+    { label: t('contact'), href: `/${locale}/lien-he` },
   ];
 
   const footerColumns = [
     {
-      title: tFooter("columns.about.title"),
+      title: 'Thông tin liên hệ',
       links: [
+        { label: 'Hotline: (0272) 376 9216', href: 'tel:02723769216' },
         {
-          label: tFooter("columns.about.links.overview"),
-          href: `/${locale}/gioi-thieu`,
-        },
-        {
-          label: tFooter("columns.about.links.leadership"),
-          href: `/${locale}/gioi-thieu/ban-giam-hieu`,
-        },
-        {
-          label: tFooter("columns.about.links.history"),
-          href: `/${locale}/gioi-thieu/lich-su`,
-        },
-        {
-          label: tFooter("columns.about.links.vision"),
-          href: `/${locale}/gioi-thieu/tam-nhin`,
-        },
-      ],
-    },
-    {
-      title: tFooter("columns.academics.title"),
-      links: [
-        {
-          label: tFooter("columns.academics.links.faculties"),
-          href: `/${locale}/khoa`,
-        },
-        {
-          label: tFooter("columns.academics.links.programs"),
-          href: `/${locale}/chuong-trinh`,
-        },
-        {
-          label: tFooter("columns.academics.links.admissions"),
-          href: `/${locale}/tuyen-sinh`,
-        },
-        {
-          label: tFooter("columns.academics.links.scholarships"),
-          href: `/${locale}/hoc-bong`,
-        },
-      ],
-    },
-    {
-      title: tFooter("columns.contact.title"),
-      links: [
-        {
-          label: tFooter("columns.contact.links.address"),
+          label: 'Địa chỉ: Đại lộ Đại học Tân Tạo, Tân Đức E.City, Xã Đức Hòa, Tỉnh Long An',
           href: `/${locale}/lien-he#address`,
         },
-        {
-          label: tFooter("columns.contact.links.phone"),
-          href: `/${locale}/lien-he#phone`,
-        },
-        {
-          label: tFooter("columns.contact.links.email"),
-          href: `/${locale}/lien-he#email`,
-        },
+        { label: 'Email: info@ttu.edu.vn', href: 'mailto:info@ttu.edu.vn' },
+      ],
+    },
+    {
+      title: 'Truy cập nhanh',
+      links: [
+        { label: 'Tin tức & sự kiện', href: `/${locale}/tin-tuc` },
+        { label: 'Tuyển dụng', href: `/${locale}/tuyen-dung` },
+        { label: 'Uniprep', href: `/${locale}/uniprep` },
+        { label: 'Cơ sở vật chất', href: `/${locale}/co-so-vat-chat` },
+        { label: 'Liên hệ', href: `/${locale}/lien-he` },
+        { label: 'Thực tập Hoa Kỳ', href: `/${locale}/thuc-tap-hoa-ky` },
+      ],
+    },
+    {
+      title: 'Hệ sinh thái & Các khoa',
+      links: [
+        { label: 'Khoa Y', href: `/${locale}/khoa/y` },
+        { label: 'Khoa Công nghệ thông tin', href: `/${locale}/khoa/cong-nghe-thong-tin` },
+        { label: 'Khoa Công nghệ sinh học', href: `/${locale}/khoa/cong-nghe-sinh-hoc` },
+        { label: 'Khoa Ngôn ngữ', href: `/${locale}/khoa/ngon-ngu` },
+        { label: 'Khoa Kinh tế và Quản trị KD', href: `/${locale}/khoa/kinh-te` },
+        { label: 'Khoa Điều dưỡng & KTXNYH', href: `/${locale}/khoa/dieu-duong` },
+        { label: 'Khoa Nhân văn và GDKP', href: `/${locale}/khoa/nhan-van` },
+        { label: 'Trường PTNK Tân Tạo', href: `/${locale}/he-sinh-thai/ptnk-tan-tao` },
+        { label: 'Bệnh viện Đại học Y Tân Tạo', href: `/${locale}/he-sinh-thai/benh-vien` },
       ],
     },
   ];
-
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <Navbar
@@ -209,8 +182,8 @@ export default async function LocaleLayout({
         {children}
       </main>
       <Footer
-        description={tFooter("description")}
-        copyright={tFooter("copyright")}
+        description={tFooter('description')}
+        copyright={tFooter('copyright')}
         columns={footerColumns}
       />
     </NextIntlClientProvider>

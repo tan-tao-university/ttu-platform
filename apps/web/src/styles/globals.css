@@ -197,3 +197,37 @@
     padding-inline: 2rem;
   }
 }
+
+@keyframes partner-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.partner-marquee-track {
+  animation: partner-marquee 34s linear infinite;
+  will-change: transform;
+}
+
+.partner-marquee:hover .partner-marquee-track,
+.partner-marquee:focus-within .partner-marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partner-marquee {
+    overflow-x: auto;
+  }
+
+  .partner-marquee-track {
+    animation: none;
+    transform: none;
+  }
+
+  .partner-marquee-track > [aria-hidden='true'] {
+    display: none;
+  }
+}

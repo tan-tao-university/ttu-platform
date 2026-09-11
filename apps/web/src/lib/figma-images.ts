@@ -12,6 +12,9 @@ export const HOME_IMAGES = {
   /** Hero admissions CTA arrow — node I186:13298;5:3024;5:3010. */
   heroArrow: '/figma/home/hero-arrow.svg',
 
+  /** Regular-program CTA arrow — node I1369:174374;5:3024;5:3010. */
+  programsArrow: '/figma/home/programs-arrow.svg',
+
   /** "Tấm vé thông hành" About section image — node 209:16851. */
   about: '/figma/home/stats-bg.png',
 
@@ -42,6 +45,10 @@ export const HOME_IMAGES = {
   /** Decorative overlay inside the admissions section — node 457:49664 / 1375:175162. */
   admissionsDecoration: '/figma/home/admissions-deco.png',
 
+  /** Admissions decorative ellipses — nodes 346:13798 and 346:13799. */
+  admissionsRingOuter: '/figma/home/admissions-ring-outer.svg',
+  admissionsRingInner: '/figma/home/admissions-ring-inner.svg',
+
   /** Featured announcement card — node 204:16682 / 204:13527. */
   announcementFeatured: '/figma/home/announcement-featured.png',
 
@@ -53,11 +60,21 @@ export const HOME_IMAGES = {
   partner2: '/figma/home/partner-2.png',
   partner3: '/figma/home/partner-3.png',
   partner4: '/figma/home/partner-4.png',
+  partnerVhCare: '/figma/home/partner-vh-care.png',
+  partnerSimpson: '/figma/home/partner-simpson.png',
+  partnerIig: '/figma/home/partner-iig.png',
+  partnerArham: '/figma/home/partner-arham.png',
+  partnerHocMon: '/figma/home/partner-hoc-mon.png',
 
   /** News cards (3×) — node 204:16741, 204:16746, 204:16751. */
   news1: '/figma/home/news-1.png',
   news2: '/figma/home/news-2.png',
   news3: '/figma/home/news-3.png',
+
+  /** Admissions counseling form — node 204:16769. */
+  registrationBackground: '/figma/home/registration-bg.png',
+  registrationChevron: '/figma/home/select-chevron.svg',
+  registrationArrow: '/figma/home/registration-arrow.svg',
 } as const;
 
 export type HomeImageKey = keyof typeof HOME_IMAGES;
