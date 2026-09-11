@@ -2,7 +2,6 @@ import {
   Catch,
   HttpException,
   Injectable,
-  Logger,
   type ArgumentsHost,
   type ExceptionFilter,
 } from '@nestjs/common';
@@ -43,25 +42,25 @@ const TYPE_BY_STATUS: Record<number, ApiErrorType> = {
 /**
  * Renders every thrown value into the shared ProblemDetails-style error envelope (design doc 06
  * §15): `{ type, title, status, detail, instance, errors?, requestId }`. Never emits a raw DB
- * error, stack trace, or internal SQL — those are logged server-side only.
+ * error, stack trace, or internal SQL — those are logged server-side only, via the same
+ * request-scoped Pino logger (`request.log`, from the `pino-http` middleware `LoggerModule` wires)
+ * that already logged this request's access-log line, so `requestId` ties both together.
  */
 @Catch()
 @Injectable()
 export class AllExceptionsFilter implements ExceptionFilter {
-  private readonly logger = new Logger(AllExceptionsFilter.name);
-
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
 
     const normalized = normalize(exception);
-    const requestId = randomUUID();
+    const requestId = request.id ?? randomUUID();
 
     if (normalized.status >= 500) {
-      this.logger.error(
-        `${request.method} ${request.url} -> ${normalized.status} [${requestId}]`,
-        exception instanceof Error ? exception.stack : String(exception),
+      request.log.error(
+        { err: exception instanceof Error ? exception : new Error(String(exception)) },
+        `${request.method} ${request.url} -> ${normalized.status}`,
       );
     }
 

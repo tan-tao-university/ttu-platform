@@ -47,6 +47,7 @@ This document tracks the overall architectural progress and cross-application mi
 | 10 | **Public Content Consumption** | Public website fetching news, events, taxonomies, and static routes | ⚪ Backlog | Consumes the unprivileged branch of `/api/v1/content*` and `/api/v1/menus/:key` |
 | 11 | **Production Deployment** | Multi-stage Dockerfiles, Docker Compose joining `ttu-backend` network | ⚪ Backlog | Server deployment with host Nginx reverse proxy |
 | 12 | **Audit Log API** | Read-only, paginated, filterable surface over `audit_logs` | ✅ Complete | `audit.read`, `super_admin`-only; verified against real Postgres + HTTP |
+| 13 | **Structured Logging** | Pino-based HTTP access/application logging, request-ID correlation, credential redaction | ✅ Complete | `apps/api/src/common/logging/`; see `docs/api/conventions.md` §5 |
 
 ---
 
