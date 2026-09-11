@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import Link from "next/link";
-import { cn } from "../lib/cn";
-import type { NavItem } from "./Navbar";
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import Link from 'next/link';
+import { cn } from '../lib/cn';
+import type { NavItem } from './Navbar';
 
 export interface NavDropdownProps {
   /** Section label shown in the top-level nav row. */
@@ -19,17 +19,12 @@ export interface NavDropdownProps {
  * Top-level nav item with a dropdown panel.
  *
  * - The label is a real `<Link>` to the section landing page.
- * - The chevron is a `<button>` that toggles the dropdown panel — useful
- *   on touch devices where `hover` does not fire.
+ * - The chevron is a `<button>` that toggles the dropdown panel — useful on touch devices where
+ *   `hover` does not fire.
  * - On desktop, the panel also opens on hover and `focus-within` (CSS).
  * - Closes on Escape, on outside pointer-down, and after clicking a child link.
  */
-export function NavDropdown({
-  label,
-  href,
-  children,
-  className,
-}: NavDropdownProps) {
+export function NavDropdown({ label, href, children, className }: NavDropdownProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -42,18 +37,18 @@ export function NavDropdown({
       }
     }
     function onKey(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === 'Escape') setOpen(false);
     }
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKey);
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKey);
     };
   }, [open]);
 
   function onTriggerKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
-    if (event.key === "ArrowDown") {
+    if (event.key === 'ArrowDown') {
       event.preventDefault();
       setOpen(true);
     }
@@ -62,16 +57,16 @@ export function NavDropdown({
   return (
     <div
       ref={containerRef}
-      className={cn("group relative", className)}
-      data-open={open ? "true" : "false"}
+      className={cn('group relative h-[43px]', className)}
+      data-open={open ? 'true' : 'false'}
     >
-      <div className="flex items-center gap-1">
+      <div className="flex h-[43px] items-center">
         <Link
           href={href}
           className={cn(
-            "rounded-md px-2 py-2 text-sm font-medium transition-colors whitespace-nowrap",
-            "text-primary hover:text-primary/80",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+            'inline-flex min-h-[43px] items-center rounded-md px-[14px] py-[10px] text-[16px] font-semibold leading-normal whitespace-nowrap transition-colors',
+            'text-[#1F664C] hover:text-[#229A68]',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF794A] focus-visible:ring-offset-2',
           )}
         >
           {label}
@@ -84,27 +79,20 @@ export function NavDropdown({
           onClick={() => setOpen((prev) => !prev)}
           onKeyDown={onTriggerKeyDown}
           className={cn(
-            "inline-flex h-8 w-6 items-center justify-center rounded-md text-primary transition-colors",
-            "hover:bg-muted hover:text-primary/80",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+            'inline-flex h-[43px] w-5 items-center justify-center rounded-md p-0 text-[#1F664C] transition-colors',
+            'hover:text-[#229A68]',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF794A] focus-visible:ring-offset-2',
           )}
         >
-          <svg
+          <img
             aria-hidden="true"
-            width="10"
-            height="10"
-            viewBox="0 0 10 10"
-            fill="none"
-            className={cn("transition-transform", open && "rotate-180")}
-          >
-            <path
-              d="M2 3.5L5 6.5L8 3.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+            src="https://www.figma.com/api/mcp/asset/1200e309-566e-4188-9011-e3ffbe4cd8e4.svg"
+            alt=""
+            className={cn(
+              'h-[10px] w-[10px] rotate-90 object-contain transition-transform',
+              open && 'rotate-[270deg]',
+            )}
+          />
         </button>
       </div>
 
@@ -112,10 +100,10 @@ export function NavDropdown({
         role="menu"
         aria-label={label}
         className={cn(
-          "absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 min-w-[14rem]",
-          "rounded-md border border-border bg-background shadow-ttu-500 p-1",
+          'absolute left-1/2 top-full z-50 mt-0 min-w-[14rem] -translate-x-1/2',
+          'rounded-md border border-[#E2E8F0] bg-white p-1 shadow-ttu-500',
           // Open via JS state OR CSS hover/focus-within for desktop keyboard users.
-          open ? "block" : "hidden group-hover:block group-focus-within:block",
+          open ? 'block' : 'hidden group-hover:block group-focus-within:block',
         )}
       >
         <ul className="flex flex-col">
@@ -126,9 +114,9 @@ export function NavDropdown({
                 href={child.href}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "block rounded-sm px-3 py-2 text-sm",
-                  "text-foreground/80 hover:bg-muted hover:text-primary",
-                  "focus:outline-none focus-visible:bg-muted focus-visible:text-primary",
+                  'block rounded-sm px-3 py-2 text-sm',
+                  'text-[#1F664C]/80 hover:bg-[#F2F2F2] hover:text-[#229A68]',
+                  'focus:outline-none focus-visible:bg-[#F2F2F2] focus-visible:text-[#229A68]',
                 )}
               >
                 {child.label}

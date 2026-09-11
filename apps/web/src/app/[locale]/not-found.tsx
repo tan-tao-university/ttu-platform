@@ -6,7 +6,8 @@ interface NotFoundProps {
 }
 
 export default async function NotFound({ params }: NotFoundProps) {
-  const { locale } = await params;
+  const resolved = await params;
+  const locale = resolved?.locale ?? "en";
   const t = await getTranslations({ locale, namespace: "notFound" });
 
   return (

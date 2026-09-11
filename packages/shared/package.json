@@ -4,9 +4,16 @@
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./column-token-schema": "./src/column-token-schema.ts"
+  },
   "scripts": {
     "lint": "echo 'no lint'",
     "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "typescript": "^5.7.0"

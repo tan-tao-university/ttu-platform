@@ -1,0 +1,508 @@
+## 1. Bối cảnh
+
+`ttu-platform` là project dành riêng cho **website chính của Đại học Tân Tạo** và hệ thống quản trị nội dung tương ứng.
+
+Project này tách biệt với hệ thống website các khoa. Các khoa đã có website và admin riêng; TTU Platform không thay thế faculty platform và không trở thành database trung tâm lưu toàn bộ nội dung của các khoa.
+
+Các hệ thống chính trong phạm vi kiến trúc tổng thể:
+
+```
+ttu.edu.vn           → Public website
+admin.ttu.edu.vn     → CMS / Admin
+api.ttu.edu.vn       → Backend API
+auth.ttu.edu.vn      → Central Identity / SSO
+```
+
+Repository: tan-tao-university/ttu-platform
+
+## 2. Mục tiêu nghiệp vụ
+
+TTU Platform phải đạt các mục tiêu sau:
+
+1. Thay thế nền tảng WordPress hiện tại bằng hệ thống có kiến trúc và dữ liệu dễ kiểm soát hơn.
+2. Cho phép phòng ban phụ trách nội dung tự vận hành website mà không phải yêu cầu developer mỗi khi cần đổi banner, text, section, hình ảnh hoặc thứ tự nội dung.
+3. Giữ frontend hiện đại và nhất quán bằng Next.js + design system do developer kiểm soát.
+4. Hỗ trợ đầy đủ nội dung **Tiếng Việt và Tiếng Anh**.
+5. Quản lý nội dung có cấu trúc thay vì tiếp tục mô hình dữ liệu tổng quát kiểu WordPress `posts + postmeta`.
+6. Hỗ trợ quy trình **Draft → Preview → Review → Publish → Revision/Rollback**.
+7. Tách media khỏi database và quản lý tập trung qua MinIO.
+8. Giữ URL/SEO và redirect hợp lý trong quá trình chuyển từ WordPress sang nền tảng mới.
+9. Cho phép mở rộng hệ thống trong nhiều năm mà không biến CMS thành một page builder tự do khó bảo trì.
+
+## 3. Phạm vi hệ thống
+
+### 3.1. In scope
+
+TTU Platform chịu trách nhiệm cho:
+
+- Website public `ttu.edu.vn`.
+- Admin CMS dành cho website chính.
+- Page và landing page của website chính.
+- Page Builder dạng Controlled Component CMS.
+- Tin tức.
+- Thông báo.
+- Sự kiện.
+- Nội dung giới thiệu trường.
+- Nội dung nghiên cứu và các nhóm nội dung truyền thông của website chính.
+- Liên kết hoặc tích hợp tới website các khoa khi website chính cần điều hướng người dùng; **không lưu dữ liệu nghiệp vụ của khoa trong `ttu_main`**.
+- Chương trình/ngành đào tạo chỉ khi đó là dữ liệu dùng chung cấp trường và được TTU Platform trực tiếp quản lý.
+- Media Library.
+- Navigation/Menu.
+- SEO metadata.
+- Redirect URL.
+- Draft, preview, publish, revision và rollback.
+- Phân quyền CMS.
+- Migration dữ liệu cần thiết từ WordPress.
+
+### 3.2. Out of scope
+
+TTU Platform **không trực tiếp thay thế**:
+
+- Website riêng của từng khoa.
+- Faculty Admin hiện có.
+- Student Portal.
+- LMS.
+- HR system.
+- Hệ thống tài chính/kế toán.
+- Hệ thống quản lý đào tạo chuyên sâu.
+- Hệ thống tuyển sinh độc lập nếu project tuyển sinh vẫn được vận hành riêng.
+- Identity database và password management.
+
+Những hệ thống này có thể được liên kết hoặc tích hợp qua API/SSO trong tương lai nhưng không thuộc core CMS của `ttu-platform`.
+
+## 4. Đối tượng sử dụng
+
+### 4.1. Public Visitor
+
+Người truy cập website không cần đăng nhập.
+
+Nhu cầu chính:
+
+- Đọc thông tin về TTU.
+- Xem tin tức, thông báo và sự kiện.
+- Tìm hiểu khoa, ngành/chương trình đào tạo và nghiên cứu.
+- Điều hướng sang các website/hệ thống liên quan.
+- Chuyển đổi ngôn ngữ Việt/Anh.
+- Truy cập website tốt trên desktop, tablet và mobile.
+
+### 4.2. Content Editor / Author
+
+Người tạo và chỉnh nội dung.
+
+Có thể:
+
+- Tạo và chỉnh bài viết.
+- Tạo/chỉnh page trong phạm vi được cấp quyền.
+- Upload/chọn media.
+- Sửa component content.
+- Lưu draft.
+- Preview nội dung.
+
+Không mặc định có quyền publish nếu workflow yêu cầu reviewer.
+
+### 4.3. Reviewer / Publisher
+
+Người kiểm tra và xuất bản nội dung.
+
+Có thể:
+
+- Review draft.
+- Yêu cầu chỉnh sửa.
+- Publish.
+- Schedule publish nếu tính năng được bật.
+- Khôi phục revision khi cần.
+
+### 4.4. CMS Admin
+
+Quản lý website ở mức vận hành.
+
+Có thể:
+
+- Quản lý page.
+- Quản lý menu.
+- Quản lý category/tag.
+- Quản lý media.
+- Quản lý redirect.
+- Quản lý các thiết lập CMS được expose.
+- Quản lý quyền CMS trong phạm vi cho phép.
+
+### 4.5. System / Super Admin
+
+Quyền cao nhất của CMS nhưng vẫn tuân theo design system và security boundary.
+
+Không có chức năng nhập custom JavaScript/CSS vào public website thông qua CMS.
+
+## 5. Nhóm nội dung chính
+
+Nội dung website được chia thành các domain thay vì gom toàn bộ thành một bảng WordPress-style.
+
+### Pages
+
+Dành cho nội dung dạng trang:
+
+- Trang chủ.
+- Giới thiệu.
+- Tầm nhìn / sứ mệnh.
+- Cơ cấu tổ chức.
+- Nghiên cứu.
+- Hợp tác.
+- Các landing page chiến dịch.
+
+Pages có thể được dựng bằng Controlled Component Page Builder.
+
+### News / Articles
+
+Nội dung tin tức và bài viết có taxonomy, author, publish date, featured media và translation.
+
+### Announcements
+
+Thông báo của trường. Có thể sử dụng chung Content domain nếu không phát sinh business field riêng.
+
+### Events
+
+Ngoài nội dung thông thường, Event cần dữ liệu có cấu trúc như:
+
+- Thời gian bắt đầu/kết thúc.
+- Địa điểm.
+- Link đăng ký.
+- Online/offline khi cần.
+
+### Dữ liệu dùng chung cấp trường
+
+Dữ liệu có cấu trúc được TTU Platform quản lý phải là dữ liệu chung của website chính, không phải dữ liệu thuộc riêng một khoa/đơn vị:
+
+- Program/ngành đào tạo khi được xác định là dữ liệu dùng chung cấp trường.
+- People khi cần hiển thị lãnh đạo, chuyên gia hoặc nhân sự đại diện ở phạm vi toàn trường.
+- Partners và các dữ liệu đối tác chung của TTU.
+
+Dữ liệu riêng của khoa, bao gồm faculty profile, staff, page, bài viết hoặc cấu trúc tổ chức nội bộ, thuộc **TTU Faculty Platform** và không được lưu trong `ttu_main`.
+
+### Media
+
+Ảnh, tài liệu, video metadata và các asset được sử dụng trong CMS.
+
+## 6. Yêu cầu CMS và Page Builder
+
+TTU Platform sử dụng **Controlled Component CMS**, không sử dụng page builder tự do kiểu Elementor.
+
+Admin có thể:
+
+- Thêm component đã được developer định nghĩa.
+- Xóa component khỏi page.
+- Duplicate component.
+- Drag-and-drop thay đổi thứ tự.
+- Ẩn/hiện component.
+- Chỉnh content trực tiếp.
+- Chỉnh media/link/config.
+- Chọn variant được cho phép.
+- Chỉnh một số style an toàn.
+
+Admin không được:
+
+- Viết raw HTML cho page structure.
+- Viết custom CSS.
+- Chèn JavaScript.
+- Nhập Tailwind class.
+- Chỉnh arbitrary pixel/position/z-index.
+
+Chi tiết kiến trúc xem 02 - Kiến trúc CMS và Page Builder.
+
+## 7. Yêu cầu chỉnh Style
+
+Mục tiêu là giúp người vận hành tự sửa các vấn đề trình bày nhỏ mà không phải tạo task cho developer.
+
+Admin được sử dụng các **safe style controls** mà từng component expose, ví dụ:
+
+- Content width.
+- Text alignment.
+- Spacing trên/dưới.
+- Background preset.
+- Typography preset.
+- Border radius.
+- Shadow.
+- Columns/card variant nếu component hỗ trợ.
+
+Các giá trị được lưu dưới dạng semantic design token như `sm`, `md`, `xl`, `primary`, `center`; không lưu CSS implementation trong database.
+
+Chi tiết xem 03 - Component Registry và Design System.
+
+## 8. Yêu cầu song ngữ
+
+Website phải hỗ trợ tối thiểu:
+
+- `vi` — Tiếng Việt.
+- `en` — Tiếng Anh.
+
+Nguyên tắc:
+
+- Một entity/page không được duplicate hoàn toàn chỉ để tạo bản tiếng Anh.
+- Dữ liệu không phụ thuộc ngôn ngữ như media reference, style, component type và phần lớn config được dùng chung.
+- Text, title, description, button label, SEO text và nội dung đọc bởi visitor được lưu theo locale.
+- Slug/URL có thể được localization nếu routing strategy yêu cầu.
+- Admin phải nhìn rõ trạng thái bản dịch nào đang thiếu/chưa hoàn tất.
+- Publish policy đối với translation thiếu phải được validate rõ ràng, không để dữ liệu thiếu làm page crash.
+
+## 9. Quan hệ với website các khoa
+
+<aside>
+🏫
+
+**Business rule:** `ttu_main` chỉ lưu dữ liệu chung của website chính TTU. TTU Platform **không lưu faculty registry và không lưu dữ liệu nghiệp vụ riêng của khoa**. Toàn bộ dữ liệu khoa thuộc TTU Faculty Platform.
+
+</aside>
+
+Khi website chính cần hiển thị hoặc điều hướng tới thông tin khoa:
+
+- Ưu tiên lấy dữ liệu thông qua API/integration từ TTU Faculty Platform nếu cần dữ liệu động.
+- Với liên kết tĩnh đơn giản, URL có thể được cấu hình ở navigation hoặc component config mà không tạo domain `organization_units` trong `ttu_main`.
+- Không copy faculty profile, page, staff, bài viết hoặc cấu trúc tổ chức khoa sang `ttu_main`.
+- Không dùng dữ liệu khoa làm scope cho quyền CMS của TTU Platform.
+
+Nếu tương lai website chính cần hiển thị **Tin mới từ các khoa**, dữ liệu phải được lấy qua integration/API hoặc cơ chế aggregation riêng, không tạo source of truth thứ hai trong `ttu_main`.
+
+## 10. Quy trình biên tập và xuất bản
+
+Workflow mục tiêu:
+
+```mermaid
+graph LR
+    A["Create / Edit"] --> B["Draft"]
+    B --> C["Preview"]
+    C --> D["Review"]
+    D -->|Approved| E["Publish"]
+    D -->|Changes requested| B
+    E --> F["Published Revision"]
+    F --> G["Public Website"]
+    F --> H["Rollback Source"]
+```
+
+Business rules:
+
+1. Draft không ảnh hưởng website public.
+2. Preview phải dùng cùng component contract với frontend thật.
+3. Publish phải validate dữ liệu trước khi commit.
+4. Mỗi lần publish tạo revision bất biến.
+5. Rollback tạo draft mới từ revision cũ; không chỉnh sửa revision lịch sử.
+6. Public website chỉ đọc published state.
+
+## 11. Yêu cầu Media
+
+File binary không lưu trực tiếp trong PostgreSQL.
+
+MinIO chịu trách nhiệm lưu:
+
+- Images.
+- PDFs/documents.
+- Video/file asset phù hợp.
+
+PostgreSQL chỉ lưu metadata và reference như:
+
+- `id`.
+- storage key.
+- file name.
+- MIME type.
+- dimensions.
+- alt text/caption.
+- uploader.
+- created time.
+
+CMS cần Media Library để:
+
+- Upload.
+- Search/filter.
+- Reuse asset đã có.
+- Chọn ảnh cho component/article.
+- Quản lý alt text.
+- Tránh upload duplicate không cần thiết khi có thể phát hiện.
+
+Chi tiết xem 08 - Media, MinIO và quản lý tài nguyên.
+
+## 12. Yêu cầu Navigation
+
+Admin phải có khả năng quản lý menu mà không cần redeploy frontend.
+
+Yêu cầu tối thiểu:
+
+- Menu nhiều cấp.
+- Internal link.
+- External link.
+- Link sang website khoa/hệ thống khác.
+- Thứ tự item.
+- Hide/show item.
+- Label theo locale.
+- Cấu hình mở tab mới khi thực sự cần.
+
+Frontend chịu trách nhiệm render menu theo design system và responsive behavior.
+
+## 13. Yêu cầu SEO
+
+Mỗi content/page phù hợp phải hỗ trợ:
+
+- SEO title.
+- Meta description.
+- Canonical URL khi cần.
+- Open Graph title/description/image.
+- Robots index/follow policy.
+- Structured data ở những content type phù hợp.
+- Sitemap generation.
+- Stable URL strategy.
+
+Khi migration, URL cũ có giá trị SEO không được thay đổi tùy tiện.
+
+## 14. Migration từ WordPress
+
+WordPress hiện tại là **nguồn migration**, không phải schema mẫu cho PostgreSQL mới.
+
+Không thực hiện cách:
+
+```
+wp_posts    → posts
+wp_postmeta → post_meta
+wp_options  → options
+```
+
+Thay vào đó:
+
+- Page → Page/CMS domain.
+- Post/news → Content domain.
+- Event metadata → Event domain.
+- Category/tag → Taxonomy.
+- Attachment → Media + MinIO.
+- WordPress menu → Navigation domain.
+- Relevant SEO metadata → SEO fields.
+- URL cũ → Redirect table nếu URL mới khác.
+
+Các metadata WordPress phải được phân loại theo ý nghĩa nghiệp vụ trước khi migrate.
+
+Chi tiết xem 09 - Migration WordPress sang nền tảng mới.
+
+## 15. Redirect và bảo toàn URL
+
+Migration phải có inventory URL cũ.
+
+Nếu URL mới khác URL WordPress cũ:
+
+```
+old path → HTTP 301 → new path
+```
+
+Redirect phải được lưu và quản lý có cấu trúc để:
+
+- Tránh broken link.
+- Giữ backlink/SEO value.
+- Hỗ trợ các URL đã được chia sẻ trước đây.
+- Có thể audit redirect loop hoặc duplicate rule.
+
+Cutover và redirect strategy chi tiết xem 10 - Deployment, SEO, redirect và cutover.
+
+## 16. Identity và quyền truy cập
+
+TTU Platform không tự quản lý password của người dùng CMS.
+
+Authentication/SSO sử dụng hệ thống identity trung tâm của TTU. CMS chỉ cần ánh xạ identity sang membership/role/permission của hệ thống.
+
+Các quyền nghiệp vụ tối thiểu cần phân biệt:
+
+- View Admin.
+- Create/Edit content.
+- Review.
+- Publish.
+- Manage pages.
+- Manage navigation.
+- Manage media.
+- Manage redirects/settings.
+- Manage CMS users/roles.
+
+Authorization phải được enforce ở backend, không chỉ ẩn button phía frontend.
+
+Chi tiết xem 07 - Identity, SSO và phân quyền.
+
+## 17. Yêu cầu dữ liệu
+
+Các nguyên tắc dữ liệu chính:
+
+1. PostgreSQL là source of truth cho structured data của website chính.
+2. MinIO là source of truth cho binary media được TTU Platform quản lý.
+3. Identity/password không nằm trong `ttu_main`.
+4. Không duplicate dữ liệu chỉ vì một component cần hiển thị nó.
+5. Dynamic component tham chiếu/query domain data.
+6. Translation được tách khỏi dữ liệu không cần dịch.
+7. JSONB chỉ dùng ở những vùng cần tính linh hoạt như component config/style/content shape; không dùng JSONB để thay thế toàn bộ relational model.
+8. Tất cả entity quan trọng cần có timestamp và audit information phù hợp.
+
+Mô hình chi tiết xem 04 - Mô hình dữ liệu và ERD và 05 - Database Schema.
+
+## 18. Yêu cầu phi chức năng
+
+### Maintainability
+
+- Frontend component và CMS schema phải có contract rõ ràng.
+- Không phụ thuộc vào raw content từ database để quyết định module nào được import/render.
+- Component phải version được khi data contract thay đổi.
+
+### Performance
+
+- Public website không phụ thuộc trực tiếp vào draft state.
+- Có khả năng cache/revalidate published content.
+- Media được tối ưu phù hợp với web delivery.
+
+### Security
+
+- Validate mọi input ở API.
+- Sanitize rich text/HTML được hỗ trợ nếu có.
+- Không thực thi JavaScript từ content database.
+- Không cho CMS ghi arbitrary CSS.
+- Authorization enforce ở backend.
+
+### Reliability
+
+- Publish phải atomic ở mức page/revision.
+- Có revision và rollback.
+- Migration phải có kiểm tra dữ liệu trước cutover.
+
+### Accessibility
+
+Component frontend phải được developer xây dựng theo accessibility practice; admin không được chỉnh style theo cách phá cấu trúc semantic hoặc keyboard behavior.
+
+## 19. Business rules cốt lõi
+
+| Rule | Nội dung |
+| --- | --- |
+| BR-01 | `ttu-platform` quản lý website chính; website khoa tiếp tục do faculty platform quản lý. |
+| BR-02 | Admin chỉ sử dụng component đã được đăng ký trong Component Registry. |
+| BR-03 | Admin không được sử dụng custom CSS/JS/raw page HTML. |
+| BR-04 | Nội dung đa ngôn ngữ không duplicate config/style không cần dịch. |
+| BR-05 | Dynamic component không lưu bản sao của domain content. |
+| BR-06 | Draft không ảnh hưởng public website. |
+| BR-07 | Mọi lần publish page tạo revision bất biến. |
+| BR-08 | Binary media nằm trong object storage, không lưu trực tiếp trong PostgreSQL. |
+| BR-09 | User credential/password thuộc central identity, không thuộc CMS database. |
+| BR-10 | WordPress là nguồn dữ liệu migration, không phải schema mục tiêu. |
+
+## 20. Tiêu chí nghiệm thu cấp nghiệp vụ
+
+Giai đoạn core của TTU Platform được xem là đáp ứng yêu cầu khi:
+
+- Website public có thể phục vụ các page/content chính của TTU mà không phụ thuộc WordPress runtime cũ.
+- Admin có thể tự tạo/chỉnh page bằng component đã đăng ký.
+- Admin có thể chỉnh text, ảnh, link, component order và safe style mà không sửa code.
+- Tin tức/thông báo/sự kiện có workflow quản trị rõ ràng.
+- Việt/Anh hoạt động trên cùng entity model.
+- Media được quản lý qua Media Library + MinIO.
+- Menu có thể chỉnh từ Admin.
+- Draft/preview/publish/revision/rollback hoạt động rõ ràng.
+- SEO metadata và redirect có thể quản lý trước khi migration production.
+- Content của website khoa không bị duplicate không kiểm soát vào database main.
+- Authentication CMS tích hợp với identity/SSO của TTU.
+
+## 21. Tài liệu liên quan
+
+- 02 - Kiến trúc CMS và Page Builder
+- 03 - Component Registry và Design System
+- 04 - Mô hình dữ liệu và ERD
+- 05 - Database Schema
+- 06 - API và kiến trúc hệ thống
+- 07 - Identity, SSO và phân quyền
+- 08 - Media, MinIO và quản lý tài nguyên
+- 09 - Migration WordPress sang nền tảng mới
+- 10 - Deployment, SEO, redirect và cutover

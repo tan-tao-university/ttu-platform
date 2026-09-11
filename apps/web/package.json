@@ -13,17 +13,24 @@
   "dependencies": {
     "@hugeicons/core-free-icons": "^4.2.3",
     "@hugeicons/react": "^1.1.4",
+    "@ttu/cms-registry": "workspace:*",
+    "@ttu/design-system": "workspace:*",
+    "@ttu/shared": "workspace:*",
+    "@ttu/types": "workspace:*",
+    "@ttu/ui": "workspace:*",
     "next": "16.2.12",
+    "next-intl": "^4.14.2",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
+    "postcss": "8.5.28",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

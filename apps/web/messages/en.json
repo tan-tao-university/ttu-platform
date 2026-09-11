@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "appName": "Tan Tao University",
     "loading": "Loading...",
@@ -40,6 +40,11 @@
         "exchange": "Student Exchange"
       }
     }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "backHome": "Back to home"
   },
   "footer": {
     "description": "High-quality education, industry partnership, international integration.",

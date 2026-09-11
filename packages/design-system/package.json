@@ -20,10 +20,12 @@
     "tailwind-merge": "^2.3.0"
   },
   "peerDependencies": {
+    "next": "16.2.12",
     "react": "^19.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
+    "next": "16.2.12",
     "react": "^19.0.0",
     "typescript": "^5.7.0"
   }

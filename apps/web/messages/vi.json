@@ -1,83 +1,88 @@
-﻿{
+{
   "common": {
-    "appName": "Tr╞░ß╗¥ng ─Éß║íi hß╗ìc T├ón Tß║ío",
-    "loading": "─Éang tß║úi...",
-    "viewAll": "Xem tß║Ñt cß║ú",
-    "search": "T├¼m kiß║┐m"
+    "appName": "Trường Đại học Tân Tạo",
+    "loading": "Đang tải...",
+    "viewAll": "Xem tất cả",
+    "search": "Tìm kiếm"
   },
   "nav": {
-    "about": "Giß╗¢i thiß╗çu",
-    "admissions": "Tuyß╗ân sinh",
-    "academics": "─É├áo tß║ío",
-    "research": "Nghi├¬n cß╗⌐u",
-    "news": "Tin tß╗⌐c & Sß╗▒ kiß╗çn",
-    "studentLife": "─Éß╗¥i sß╗æng sinh vi├¬n",
-    "cooperation": "Hß╗úp t├íc",
-    "contact": "Li├¬n hß╗ç",
+    "about": "Giới thiệu",
+    "admissions": "Tuyển sinh",
+    "academics": "Đào tạo",
+    "research": "Nghiên cứu",
+    "news": "Tin tức & Sự kiện",
+    "studentLife": "Đời sống sinh viên",
+    "cooperation": "Hợp tác",
+    "contact": "Liên hệ",
     "items": {
       "admissions": {
-        "methods": "Ph╞░╞íng thß╗⌐c x├⌐t tuyß╗ân",
-        "scholarships": "Hß╗ìc bß╗òng tuyß╗ân sinh",
-        "info": "Th├┤ng tin tuyß╗ân sinh",
-        "counseling": "T╞░ vß║Ñn trß╗▒c tuyß║┐n"
+        "methods": "Phương thức xét tuyển",
+        "scholarships": "Học bổng tuyển sinh",
+        "info": "Thông tin tuyển sinh",
+        "counseling": "Tư vấn trực tuyến"
       },
       "academics": {
-        "undergraduate": "─Éß║íi hß╗ìc ch├¡nh quy",
-        "postgraduate": "Sau ─æß║íi hß╗ìc",
-        "secondDegree": "V─ân bß║▒ng 2",
-        "bridging": "Li├¬n th├┤ng",
-        "programs": "Ch╞░╞íng tr├¼nh ─æ├áo tß║ío"
+        "undergraduate": "Đại học chính quy",
+        "postgraduate": "Sau đại học",
+        "secondDegree": "Văn bằng 2",
+        "bridging": "Liên thông",
+        "programs": "Chương trình đào tạo"
       },
       "studentLife": {
-        "clubs": "C├óu lß║íc bß╗Ö",
-        "activities": "Hoß║ít ─æß╗Öng sinh vi├¬n",
-        "dorm": "K├╜ t├║c x├í",
-        "sports": "Thß╗â thao"
+        "clubs": "Câu lạc bộ",
+        "activities": "Hoạt động sinh viên",
+        "dorm": "Ký túc xá",
+        "sports": "Thể thao"
       },
       "cooperation": {
-        "international": "─Éß╗æi t├íc quß╗æc tß║┐",
-        "industry": "─Éß╗æi t├íc doanh nghiß╗çp",
-        "exchange": "Trao ─æß╗òi sinh vi├¬n"
+        "international": "Đối tác quốc tế",
+        "industry": "Đối tác doanh nghiệp",
+        "exchange": "Trao đổi sinh viên"
       }
     }
   },
+  "notFound": {
+    "title": "Trang không tìm thấy",
+    "description": "Trang bạn đang tìm không tồn tại hoặc đã được di chuyển.",
+    "backHome": "Quay về trang chủ"
+  },
   "footer": {
-    "description": "─É├áo tß║ío chß║Ñt l╞░ß╗úng cao, gß║»n kß║┐t doanh nghiß╗çp, hß╗Öi nhß║¡p quß╗æc tß║┐.",
-    "copyright": "┬⌐ 2026 Tr╞░ß╗¥ng ─Éß║íi hß╗ìc T├ón Tß║ío. Mß╗ìi quyß╗ün ─æ╞░ß╗úc bß║úo l╞░u.",
+    "description": "Đào tạo chất lượng cao, gắn kết doanh nghiệp, hội nhập quốc tế.",
+    "copyright": "© 2026 Trường Đại học Tân Tạo. Mọi quyền được bảo lưu.",
     "columns": {
       "about": {
-        "title": "Vß╗ü TTU",
+        "title": "Về TTU",
         "links": {
-          "overview": "Tß╗òng quan",
-          "leadership": "Ban Gi├ím hiß╗çu",
-          "history": "Lß╗ïch sß╗¡",
-          "vision": "Tß║ºm nh├¼n - Sß╗⌐ mß╗çnh"
+          "overview": "Tổng quan",
+          "leadership": "Ban Giám hiệu",
+          "history": "Lịch sử",
+          "vision": "Tầm nhìn - Sứ mệnh"
         }
       },
       "academics": {
-        "title": "─É├áo tß║ío",
+        "title": "Đào tạo",
         "links": {
           "faculties": "7 Khoa",
-          "programs": "Ch╞░╞íng tr├¼nh",
-          "admissions": "Tuyß╗ân sinh",
-          "scholarships": "Hß╗ìc bß╗òng"
+          "programs": "Chương trình",
+          "admissions": "Tuyển sinh",
+          "scholarships": "Học bổng"
         }
       },
       "research": {
-        "title": "Nghi├¬n cß╗⌐u",
+        "title": "Nghiên cứu",
         "links": {
-          "centers": "Trung t├óm",
-          "publications": "C├┤ng bß╗æ",
-          "partners": "─Éß╗æi t├íc"
+          "centers": "Trung tâm",
+          "publications": "Công bố",
+          "partners": "Đối tác"
         }
       },
       "contact": {
-        "title": "Li├¬n hß╗ç",
+        "title": "Liên hệ",
         "links": {
-          "address": "─Éß╗ïa chß╗ë",
-          "phone": "─Éiß╗çn thoß║íi",
+          "address": "Địa chỉ",
+          "phone": "Điện thoại",
           "email": "Email",
-          "social": "Mß║íng x├ú hß╗Öi"
+          "social": "Mạng xã hội"
         }
       }
     }

@@ -1,52 +1,45 @@
 /**
  * TTU Homepage — built to match Figma design exactly.
  *
- * Sections (top to bottom):
- *  1. Hero        — full-width campus image + gradient + title + CTA
- *  2. Statistics  — "Những con số ấn tượng"
- *  3. About       — "Tấm vé thông hành trở thành công dân toàn cầu"
- *  4. Why TTU     — "Tại sao ĐẠI HỌC TÂN TẠO là lựa chọn khác biệt?"
- *  5. Training    — "Các hệ đào tạo"
- *  6. Programs    — "Chương trình đào tạo hệ chính quy"
- *  7. Admissions  — "06 PHƯƠNG THỨC XÉT TUYỂN ĐỂ TRỞ THÀNH SINH VIÊN TTU"
- *  8. Scholarships— "HỌC BỔNG TUYỂN SINH 2026"
- *  9. Partners    — "Kết nối mạng lưới toàn cầu"
- * 10. Announcements — "THÔNG BÁO CHUNG MỚI NHẤT"
- * 11. News        — "TIN TỨC VÀ SỰ KIỆN MỚI NHẤT"
- * 12. Registration — "Đăng ký tư vấn nhận tuyển sinh"
- * 13. Footer      — in [locale]/layout.tsx via @ttu/design-system
+ * Sections (top to bottom): 1. Hero — full-width campus image + gradient + title + CTA 2. About —
+ * "Tấm vé thông hành trở thành công dân toàn cầu" 3. Statistics — "Những con số ấn tượng" 4. Why
+ * TTU — "Tại sao ĐẠI HỌC TÂN TẠO là lựa chọn khác biệt?" 5. Training — "Các hệ đào tạo" 6. Programs
+ * — "Chương trình đào tạo hệ chính quy" 7. Admissions — "06 PHƯƠNG THỨC XÉT TUYỂN ĐỂ TRỞ THÀNH SINH
+ * VIÊN TTU" 8. Scholarships— "HỌC BỔNG TUYỂN SINH 2026" 9. Partners — "Kết nối mạng lưới toàn cầu"
+ * 10. Announcements — "THÔNG BÁO CHUNG MỚI NHẤT" 11. News — "TIN TỨC VÀ SỰ KIỆN MỚI NHẤT" 12.
+ * Registration — "Đăng ký tư vấn nhận tuyển sinh" 13. Footer — in [locale]/layout.tsx via
+ *
+ * Shared layout components come from `@ttu/design-system`.
  *
  * Design tokens (color, gradient, shadow, typography) are defined in
- *   apps/web/src/styles/globals.css
- * and mapped into Tailwind utilities in
- *   apps/web/tailwind.config.ts
+ * apps/web/src/styles/globals.css and mapped into Tailwind utilities in apps/web/tailwind.config.ts
  * Source of truth: Figma Variables panel of `Fekw3aQtCfQbHq2aoho859`.
  */
-import type { ComponentType } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import type { Locale } from "@ttu/shared";
-import { HOME_IMAGES } from "@/lib/figma-images";
-import { RegistrationForm } from "./RegistrationForm";
-import StatsVector from "@/components/home/decorations/stats-vector";
-import AdmissionsVector from "@/components/home/decorations/admissions-vector";
-import ScholarshipsVector from "@/components/home/decorations/scholarships-vector";
-import WhyTtuIcon1 from "@/components/home/icons/why-ttu-1";
-import WhyTtuIcon2 from "@/components/home/icons/why-ttu-2";
-import WhyTtuIcon3 from "@/components/home/icons/why-ttu-3";
-import WhyTtuIcon4 from "@/components/home/icons/why-ttu-4";
-import WhyTtuIcon5 from "@/components/home/icons/why-ttu-5";
-import ScholarshipIcon1 from "@/components/home/icons/scholarship-1";
-import ScholarshipIcon2 from "@/components/home/icons/scholarship-2";
-import ScholarshipIcon3 from "@/components/home/icons/scholarship-3";
-import ScholarshipIcon4 from "@/components/home/icons/scholarship-4";
-import FacultyIcon1 from "@/components/home/icons/faculty-1";
-import FacultyIcon2 from "@/components/home/icons/faculty-2";
-import FacultyIcon3 from "@/components/home/icons/faculty-3";
-import FacultyIcon4 from "@/components/home/icons/faculty-4";
-import FacultyIcon5 from "@/components/home/icons/faculty-5";
-import FacultyIcon6 from "@/components/home/icons/faculty-6";
-import FacultyIcon7 from "@/components/home/icons/faculty-7";
+import type { ComponentType } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import type { Locale } from '@ttu/shared';
+import { HOME_IMAGES } from '@/lib/figma-images';
+import { RegistrationForm } from './RegistrationForm';
+import StatsVector from '@/components/home/decorations/stats-vector';
+import AdmissionsVector from '@/components/home/decorations/admissions-vector';
+import ScholarshipsVector from '@/components/home/decorations/scholarships-vector';
+import WhyTtuIcon1 from '@/components/home/icons/why-ttu-1';
+import WhyTtuIcon2 from '@/components/home/icons/why-ttu-2';
+import WhyTtuIcon3 from '@/components/home/icons/why-ttu-3';
+import WhyTtuIcon4 from '@/components/home/icons/why-ttu-4';
+import WhyTtuIcon5 from '@/components/home/icons/why-ttu-5';
+import ScholarshipIcon1 from '@/components/home/icons/scholarship-1';
+import ScholarshipIcon2 from '@/components/home/icons/scholarship-2';
+import ScholarshipIcon3 from '@/components/home/icons/scholarship-3';
+import ScholarshipIcon4 from '@/components/home/icons/scholarship-4';
+import FacultyIcon1 from '@/components/home/icons/faculty-1';
+import FacultyIcon2 from '@/components/home/icons/faculty-2';
+import FacultyIcon3 from '@/components/home/icons/faculty-3';
+import FacultyIcon4 from '@/components/home/icons/faculty-4';
+import FacultyIcon5 from '@/components/home/icons/faculty-5';
+import FacultyIcon6 from '@/components/home/icons/faculty-6';
+import FacultyIcon7 from '@/components/home/icons/faculty-7';
 
 // ─── Section heading with accent bar (matches Figma "Frame 16" pattern) ─────────
 
@@ -61,12 +54,12 @@ function SectionHeading({
   description?: string;
   white?: boolean;
 }) {
-  const descColor = white ? "text-ttu-white/70" : "text-muted-foreground";
+  const descColor = white ? 'text-ttu-white/70' : 'text-muted-foreground';
   return (
     <div className="text-left">
       {eyebrow && (
         <p
-          className={`mb-2 text-sm font-medium uppercase tracking-wider ${white ? "text-ttu-white/80" : "text-primary"}`}
+          className={`mb-2 text-sm font-medium uppercase tracking-wider ${white ? 'text-ttu-white/80' : 'text-primary'}`}
         >
           {eyebrow}
         </p>
@@ -78,15 +71,13 @@ function SectionHeading({
           <div className="w-1 h-5 bg-orange rounded-sm mt-0.5" />
         </div>
         <h2
-          className={`font-bold tracking-tight leading-tight font-heading ${white ? "text-ttu-white" : "text-foreground"} text-section`}
+          className={`font-bold tracking-tight leading-tight font-heading ${white ? 'text-ttu-white' : 'text-foreground'} text-section`}
         >
           {title}
         </h2>
       </div>
       {description && (
-        <p
-          className={`mt-4 max-w-2xl text-body-base leading-relaxed ${descColor}`}
-        >
+        <p className={`mt-4 max-w-2xl text-body-base leading-relaxed ${descColor}`}>
           {description}
         </p>
       )}
@@ -98,8 +89,8 @@ function SectionHeading({
 
 function OrangeButton({
   children,
-  href = "#",
-  className = "",
+  href = '#',
+  className = '',
 }: {
   children: React.ReactNode;
   href?: string;
@@ -124,10 +115,7 @@ function OrangeButton({
 
 function HeroSection({ locale }: { locale: Locale }) {
   return (
-    <section
-      className="relative w-full"
-      style={{ minHeight: "clamp(560px, 75vh, 700px)" }}
-    >
+    <section className="relative h-[597px] w-full overflow-hidden max-md:h-auto max-md:min-h-[560px]">
       {/* Background image — Figma node 1387:181554 */}
       <div className="absolute inset-0">
         <Image
@@ -137,63 +125,61 @@ function HeroSection({ locale }: { locale: Locale }) {
           className="object-cover object-center"
           priority
           sizes="100vw"
+          unoptimized
         />
         {/* Gradient overlay — Figma node 1387:181554 (Frame 732)
             -43.4deg, rgba(45,46,131,0.8) 22.9% → rgba(0,141,54,0.72) 78.7% */}
         <div className="absolute inset-0 bg-ttu-gradient-hero-overlay" />
       </div>
 
+      <div className="pointer-events-none absolute inset-0 mx-auto hidden h-full w-full max-w-[1280px] overflow-hidden lg:block">
+        <AdmissionsVector className="absolute left-[940px] top-[262px] h-[335px] w-[384px]" />
+      </div>
+
       {/* Hero content */}
-      <div className="relative z-10 mx-auto w-full px-6 lg:px-8 max-w-7xl">
-        <div
-          className="flex flex-col justify-center"
-          style={{
-            paddingTop: "clamp(80px, 12vh, 140px)",
-            paddingBottom: "clamp(48px, 8vh, 80px)",
-          }}
-        >
+      <div className="relative z-10 mx-auto flex h-full w-full max-w-[1280px] flex-col px-6 pb-12 pt-14 max-md:h-auto max-md:px-6 max-md:py-20 lg:px-[140px] lg:pb-[61px] lg:pt-[58px]">
+        <div className="flex w-full flex-col gap-[258px] max-md:gap-24 lg:w-[675px]">
           {/* Title — "From Knowledge to the Stars" — Figma node 1387:181554 */}
-          <div className="max-w-2xl">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="flex flex-col items-center shrink-0 mt-1">
-                <div className="w-[4px] h-[58px] bg-white rounded-sm" />
-                <div className="w-[4px] h-[38px] bg-orange rounded-sm mt-0.5" />
+          <div className="flex w-full flex-col gap-[5px]">
+            <div className="w-full p-[10px]">
+              <div className="flex w-full items-center gap-[17px]">
+                <div className="flex shrink-0 flex-col items-center justify-center">
+                  <div className="h-[58px] w-[4px] bg-white" />
+                  <div className="h-[38px] w-[4px] bg-orange" />
+                </div>
+                <h1 className="w-full text-[40px] font-bold uppercase leading-[50px] text-ttu-white max-md:text-[32px] max-md:leading-[40px]">
+                  From Knowledge to
+                  <br />
+                  the Stars
+                </h1>
               </div>
-              <h1 className="text-ttu-white font-bold leading-[50px] tracking-tight font-heading text-[40px] uppercase">
-                From Knowledge
-                <br />
-                to the Stars
-              </h1>
             </div>
 
             {/* Subtitle */}
-            <p className="ml-6 w-[435px] text-ttu-white/90 text-body-lg leading-relaxed">
+            <p className="w-[435px] text-[18px] leading-normal text-ttu-white max-md:w-full">
               Tiên phong Giáo dục Khai phóng: Nơi tài năng Việt vươn tầm quốc tế
             </p>
-
-            {/* CTA Button */}
-            <div className="mt-8 ml-6">
-              <OrangeButton href={`/${locale}/tuyen-sinh/dang-ky`} className="gap-[10px] w-[262px]">
-                Đăng ký xét tuyển ngay
-                {/* Arrow icon */}
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  className="shrink-0"
-                >
-                  <path
-                    d="M3 8h10M9 4l4 4-4 4"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </OrangeButton>
-            </div>
           </div>
+
+          {/* CTA Button */}
+          <OrangeButton
+            href={`/${locale}/tuyen-sinh/dang-ky`}
+            className="h-[43px] w-[262px] gap-[10px] px-5"
+          >
+            <span className="flex-1">Đăng ký xét tuyển ngay</span>
+            <span
+              aria-hidden="true"
+              className="flex h-6 w-5 shrink-0 items-center justify-end py-0.5"
+            >
+              <Image
+                src={HOME_IMAGES.heroArrow}
+                alt=""
+                width={17}
+                height={19}
+                className="h-[19px] w-[17px]"
+              />
+            </span>
+          </OrangeButton>
         </div>
       </div>
     </section>
@@ -204,50 +190,41 @@ function HeroSection({ locale }: { locale: Locale }) {
 // Figma node 189:13315 (Frame 81) - 4 stats inside a green-to-navy gradient card.
 // Heading column on the left + 809px gradient card on the right.
 const STATS = [
-  { value: "15", suffix: "+", lines: ["Năm kinh nghiệm", "đào tạo"] },
+  { value: '15', suffix: '+', lines: ['Năm kinh nghiệm', 'đào tạo'] },
   {
-    value: "10K",
-    suffix: "+",
-    lines: ["Sinh viên & Cựu", "sinh viên thành đạt"],
+    value: '10K',
+    suffix: '+',
+    lines: ['Sinh viên & Cựu', 'sinh viên thành đạt'],
   },
   {
-    value: "100",
-    suffix: "%",
-    lines: ["Tỷ lệ sinh viên có việc làm sau tốt nghiệp"],
+    value: '100',
+    suffix: '%',
+    lines: ['Tỷ lệ sinh viên có việc làm sau tốt nghiệp'],
   },
   {
-    value: "80",
-    suffix: "%",
-    lines: ["Giảng viên tốt nghiệp từ các ĐH quốc tế"],
+    value: '80',
+    suffix: '%',
+    lines: ['Giảng viên tốt nghiệp từ các ĐH quốc tế'],
   },
 ];
 
 function StatisticsSection() {
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{
-        paddingTop: "clamp(40px, 6vh, 72px)",
-        paddingBottom: "clamp(40px, 6vh, 72px)",
-      }}
-    >
+    <section className="relative overflow-hidden py-12 lg:pb-[88px] lg:pt-[61px]">
       {/* Decorative vector - bottom right (Figma node 188:13224) */}
-      <div
-        className="absolute right-0 bottom-0 opacity-20 pointer-events-none"
-        style={{ width: "clamp(200px, 25vw, 400px)" }}
-      >
-        <StatsVector className="w-full h-auto" />
+      <div className="pointer-events-none absolute left-1/2 top-0 hidden h-full w-[1280px] -translate-x-1/2 lg:block">
+        <StatsVector className="absolute left-[1040px] top-[268px] h-[248px] w-[284px]" />
       </div>
 
-      <div className="mx-auto w-full px-6 lg:px-8 max-w-7xl">
-        <div className="flex flex-col lg:flex-row items-start gap-[57px]">
+      <div className="mx-auto w-full max-w-[1280px] px-6 lg:px-0">
+        <div className="flex flex-col items-start gap-8 lg:ml-[149px] lg:h-[455px] lg:w-[1216px] lg:flex-row lg:gap-[57px]">
           {/* Left: heading column - Figma node 188:13310 */}
-          <div className="flex items-center gap-[17px] shrink-0">
+          <div className="flex shrink-0 items-center gap-[17px] lg:h-[100px] lg:w-[350px]">
             <div className="flex flex-col items-center justify-center shrink-0">
-              <div className="bg-green-deep w-1 h-[58px] rounded-sm" />
-              <div className="bg-orange w-1 h-[38px] rounded-sm mt-0.5" />
+              <div className="h-[58px] w-[4px] bg-green-deep" />
+              <div className="h-[38px] w-[4px] bg-orange" />
             </div>
-            <h2 className="font-bold uppercase leading-[50px] tracking-tight text-[40px] text-green-deep w-[329px]">
+            <h2 className="w-[329px] text-[40px] font-bold uppercase leading-[50px] text-green-deep">
               Những con số
               <br />
               ấn tượng
@@ -255,7 +232,7 @@ function StatisticsSection() {
           </div>
 
           {/* Right: gradient card - Figma node 188:13223 */}
-          <div className="bg-ttu-gradient-stat-card rounded-[20px] p-[30px] flex flex-col gap-[29px] items-start justify-center w-full lg:w-[809px] lg:max-w-[809px]">
+          <div className="flex w-full flex-col items-start justify-center gap-[29px] rounded-[20px] bg-ttu-gradient-stat-card p-[30px] lg:h-[455px] lg:w-[809px] lg:shrink-0">
             {STATS.map((stat) => (
               <div
                 key={stat.value}
@@ -263,7 +240,7 @@ function StatisticsSection() {
               >
                 {/* Number block - 150px wide, number 64px + suffix 32px */}
                 <div className="flex items-start justify-end w-[150px] shrink-0 text-right whitespace-nowrap">
-                  <span className="font-bold leading-normal text-[64px] text-ttu-white">
+                  <span className="text-[64px] font-bold leading-[normal] text-ttu-white">
                     {stat.value}
                   </span>
                   <span className="leading-[40px] text-[32px] text-orange font-bold">
@@ -271,7 +248,7 @@ function StatisticsSection() {
                   </span>
                 </div>
                 {/* Label - 176px wide, 16px SemiBold white, multi-line */}
-                <div className="font-semibold leading-normal text-[16px] text-ttu-white w-[176px] shrink-0 whitespace-pre-wrap">
+                <div className="w-[176px] shrink-0 whitespace-pre-wrap text-[16px] font-semibold leading-[normal] text-ttu-white">
                   {stat.lines.map((line, i) => (
                     <p key={i} className="mb-0">
                       {line}
@@ -289,59 +266,62 @@ function StatisticsSection() {
 
 // ─── Section 3: About — "Tấm vé thông hành" ────────────────────────────────
 
-function AboutSection() {
+function AboutSection({ locale }: { locale: Locale }) {
   return (
-    <section
-      className="relative bg-ttu-white"
-      style={{
-        paddingTop: "clamp(48px, 8vh, 80px)",
-        paddingBottom: "clamp(48px, 8vh, 80px)",
-      }}
-    >
-      <div className="mx-auto w-full px-6 lg:px-8 max-w-7xl">
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-16 items-start">
-          {/* Left: text content */}
-          <div>
-            <SectionHeading
-              title="Tấm vé thông hành trở thành công dân toàn cầu"
-              eyebrow="VỀ TTU"
-            />
-            <p className="mt-6 text-body-base leading-relaxed text-foreground/80">
-              Trường Đại học Tân Tạo là trường đại học tư thục phi lợi nhuận
-              theo mô hình của Mỹ tọa lạc trên diện tích 503 ha tại thành phố
-              Tân Đức E.City, xã Đức Hòa, tỉnh Tây Ninh do Bà Đặng Thị Hoàng Yến
-              (a.k.a Maya Dangelas) là người sáng lập và nhà tài trợ chính của
-              Đại học Tân Tạo.
-            </p>
-            <p className="mt-3 text-body-base leading-relaxed text-foreground/80">
-              Tại TTU, việc học tập suốt đời và phát huy năng lực tự thân luôn
-              được đề cao và coi trọng. Sau khi tốt nghiệp, sinh viên sẽ có khả
-              năng tự trang bị và không ngừng được nâng cao kiến thức để phù hợp
-              với sự phát triển trong định hướng nghề nghiệp và yêu cầu chung
-              của xã hội.
-            </p>
-            <div className="mt-8">
-              <OrangeButton href="/gioi-thieu">
-                Tìm hiểu thêm về chúng tôi
-              </OrangeButton>
+    <section className="relative bg-ttu-white pt-12 lg:pt-[62px]">
+      <div className="mx-auto w-full max-w-[1280px]">
+        <div className="px-6 lg:ml-[149px] lg:w-[981px] lg:px-0">
+          <div className="flex w-full flex-col gap-8 lg:h-[363px] lg:gap-[45px]">
+            <div className="flex items-center gap-[17px] lg:h-[100px] lg:w-[731px]">
+              <div className="flex shrink-0 flex-col items-center justify-center">
+                <div className="h-[58px] w-[4px] bg-green-deep" />
+                <div className="h-[38px] w-[4px] bg-orange" />
+              </div>
+              <h2 className="text-[32px] font-bold uppercase leading-[40px] text-green-deep lg:w-[710px] lg:text-[40px] lg:leading-[50px]">
+                Tấm vé thông hành trở thành công dân toàn cầu
+              </h2>
+            </div>
+
+            <div className="flex w-full items-start lg:h-[218px]">
+              <div className="flex items-center justify-end p-[10px] lg:w-[701px]">
+                <p className="text-[18px] font-normal leading-normal text-green-deep lg:w-[681px]">
+                  Trường Đại học Tân Tạo là trường đại học tư thục phi lợi nhuận theo mô hình của Mỹ
+                  tọa lạc trên diện tích 503 ha tại thành phố Tân Đức E.City, xã Đức Hòa, tỉnh Tây
+                  Ninh do Bà Đặng Thị Hoàng Yến (a.k.a Maya Dangelas) là người sáng lập và nhà tài
+                  trợ chính của Đại học Tân Tạo. Tại TTU, việc học tập suốt đời và phát huy năng lực
+                  tự thân luôn được đề cao và coi trọng. Sau khi tốt nghiệp, sinh viên sẽ có khả
+                  năng tự trang bị và không ngừng được nâng cao kiến thức để phù hợp với sự phát
+                  triển trong định hướng nghề nghiệp và yêu cầu chung của xã hội.
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Right: image — Figma node 209:16851 (decorative) */}
-          <div
-            className="relative rounded-2xl overflow-hidden"
-            style={{ aspectRatio: "4/3", minHeight: "320px" }}
+          <Link
+            href={`/${locale}/gioi-thieu`}
+            className="mt-[39px] inline-flex h-[43px] w-[247px] items-center justify-center rounded-[8px] bg-ttu-gradient-about-cta px-5 py-[10px] text-[16px] font-medium leading-normal text-white transition-transform active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-deep focus-visible:ring-offset-2"
           >
-            <Image
-              src={HOME_IMAGES.about}
-              alt="Sinh viên TTU"
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-            <div className="absolute inset-0 bg-ttu-gradient-primary-secondary opacity-60" />
-          </div>
+            Tìm hiểu thêm về chúng tôi
+          </Link>
         </div>
+      </div>
+
+      <div className="relative mt-[50px] aspect-[1281/597] w-full overflow-hidden lg:left-1/2 lg:h-[597px] lg:w-[1281px] lg:-translate-x-1/2 lg:aspect-auto">
+        <Image
+          src={HOME_IMAGES.about}
+          alt="Khuôn viên Trường Đại học Tân Tạo"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          unoptimized
+        />
+        <Image
+          src={HOME_IMAGES.aboutPlay}
+          alt=""
+          width={117}
+          height={117}
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[117px] w-[117px] -translate-x-1/2 -translate-y-1/2"
+        />
       </div>
     </section>
   );
@@ -352,28 +332,28 @@ function AboutSection() {
 // Figma node 1275:174036 — 5 feature cards on top of a campus image background.
 const WHY_TTU_FEATURES = [
   {
-    title: "Tận hưởng không gian Anh ngữ",
+    title: 'Tận hưởng không gian Anh ngữ',
     desc: '"Tắm mình trong Tiếng Anh" từ năm nhất. Đạt chuẩn IELTS 5.5+, TOEIC 620+ chỉ sau 1.5 năm học tập.',
     Icon: WhyTtuIcon1,
   },
   {
-    title: "Môi trường học tập chuẩn Mỹ",
-    desc: "Campus 103ha thuộc top rộng nhất phía Nam. Nằm trong hệ sinh thái Thành phố Tri thức E.City.",
+    title: 'Môi trường học tập chuẩn Mỹ',
+    desc: 'Campus 103ha thuộc top rộng nhất phía Nam. Nằm trong hệ sinh thái Thành phố Tri thức E.City.',
     Icon: WhyTtuIcon2,
   },
   {
-    title: "Tiếp cận triết lý Giáo dục Khai phóng",
-    desc: "Đào tạo con người toàn diện, tôn trọng sự khác biệt và xây dựng tinh thần học tập suốt đời.",
+    title: 'Tiếp cận triết lý Giáo dục Khai phóng',
+    desc: 'Đào tạo con người toàn diện, tôn trọng sự khác biệt và xây dựng tinh thần học tập suốt đời.',
     Icon: WhyTtuIcon3,
   },
   {
-    title: "Quy mô lớp học lý tưởng",
-    desc: "Chỉ 25 – 35 sinh viên/lớp, tối ưu tương tác giữa giảng viên và sinh viên.",
+    title: 'Quy mô lớp học lý tưởng',
+    desc: 'Chỉ 25 – 35 sinh viên/lớp, tối ưu tương tác giữa giảng viên và sinh viên.',
     Icon: WhyTtuIcon4,
   },
   {
-    title: "Đặc quyền Khoa Y",
-    desc: "Tiên phong thực tập tại Hoa Kỳ. Sinh viên trúng tuyển Bác sĩ Nội trú tại Việt Nam và Hoa Kỳ.",
+    title: 'Đặc quyền Khoa Y',
+    desc: 'Tiên phong thực tập tại Hoa Kỳ. Sinh viên trúng tuyển Bác sĩ Nội trú tại Việt Nam và Hoa Kỳ.',
     Icon: WhyTtuIcon5,
   },
 ];
@@ -388,8 +368,8 @@ function WhyTTUSection() {
     <section
       className="relative overflow-hidden"
       style={{
-        paddingTop: "clamp(48px, 8vh, 80px)",
-        paddingBottom: "clamp(48px, 8vh, 80px)",
+        paddingTop: 'clamp(48px, 8vh, 80px)',
+        paddingBottom: 'clamp(48px, 8vh, 80px)',
       }}
     >
       {/* Background card — Figma node 1275:174036 / 188:13299 (Rectangle 15) */}
@@ -407,7 +387,7 @@ function WhyTTUSection() {
       {/* Inset photo — Figma node 1275:174036 / 189:13316 (right column) */}
       <div
         className="absolute right-6 lg:right-8 top-[200px] hidden lg:block overflow-hidden rounded-l-2xl"
-        style={{ width: "clamp(280px, 38vw, 600px)", aspectRatio: "749/358" }}
+        style={{ width: 'clamp(280px, 38vw, 600px)', aspectRatio: '749/358' }}
       >
         <Image
           src={HOME_IMAGES.whyTtuPhoto}
@@ -463,12 +443,8 @@ function FeatureCard({
         <Icon className="w-10 h-10 text-ttu-white" />
       </div>
       <div>
-        <h3 className="font-bold leading-tight text-ttu-white text-h2">
-          {title}
-        </h3>
-        <p className="mt-1 text-ttu-white/80 text-body-sm leading-relaxed">
-          {desc}
-        </p>
+        <h3 className="font-bold leading-tight text-ttu-white text-h2">{title}</h3>
+        <p className="mt-1 text-ttu-white/80 text-body-sm leading-relaxed">{desc}</p>
       </div>
     </div>
   );
@@ -481,8 +457,8 @@ function TrainingSection() {
     <section
       className="relative bg-muted"
       style={{
-        paddingTop: "clamp(48px, 8vh, 80px)",
-        paddingBottom: "clamp(48px, 8vh, 80px)",
+        paddingTop: 'clamp(48px, 8vh, 80px)',
+        paddingBottom: 'clamp(48px, 8vh, 80px)',
       }}
     >
       <div className="mx-auto w-full px-6 lg:px-8 max-w-7xl">
@@ -491,13 +467,11 @@ function TrainingSection() {
           <div>
             <SectionHeading title="Các hệ đào tạo" eyebrow="HỆ ĐÀO TẠO" />
             <p className="mt-6 text-body-base leading-relaxed text-foreground/80">
-              TTU cung cấp đa dạng hệ đào tạo từ chính quy đến liên kết quốc tế,
-              đáp ứng mọi nhu cầu học tập của thí sinh và sinh viên.
+              TTU cung cấp đa dạng hệ đào tạo từ chính quy đến liên kết quốc tế, đáp ứng mọi nhu cầu
+              học tập của thí sinh và sinh viên.
             </p>
             <div className="mt-8">
-              <OrangeButton href="/dao-tao">
-                Khám phá các hệ đào tạo
-              </OrangeButton>
+              <OrangeButton href="/dao-tao">Khám phá các hệ đào tạo</OrangeButton>
             </div>
           </div>
 
@@ -506,33 +480,33 @@ function TrainingSection() {
             {[
               {
                 src: HOME_IMAGES.trainingChinhQuy,
-                alt: "Hệ chính quy",
-                tag: "CHÍNH QUY",
-                desc: "Chương trình đào tạo đại học tập trung dành cho học sinh đã tốt nghiệp THPT. Sinh viên học tập toàn thời gian tại trường để nhận bằng Cử nhân hoặc Bác sĩ.",
+                alt: 'Hệ chính quy',
+                tag: 'CHÍNH QUY',
+                desc: 'Chương trình đào tạo đại học tập trung dành cho học sinh đã tốt nghiệp THPT. Sinh viên học tập toàn thời gian tại trường để nhận bằng Cử nhân hoặc Bác sĩ.',
               },
               {
                 src: HOME_IMAGES.trainingSauDaiHoc,
-                alt: "Hệ sau đại học",
-                tag: "HỆ SAU ĐẠI HỌC",
-                desc: "Chương trình đào tạo bậc Thạc sĩ dành cho người đã tốt nghiệp đại học, nhằm cung cấp kiến thức chuyên môn sâu và nâng cao năng lực nghiên cứu.",
+                alt: 'Hệ sau đại học',
+                tag: 'HỆ SAU ĐẠI HỌC',
+                desc: 'Chương trình đào tạo bậc Thạc sĩ dành cho người đã tốt nghiệp đại học, nhằm cung cấp kiến thức chuyên môn sâu và nâng cao năng lực nghiên cứu.',
               },
               {
                 src: HOME_IMAGES.trainingVanBang2,
-                alt: "Hệ văn bằng 2",
-                tag: "HỆ VĂN BẰNG 2",
-                desc: "Chương trình đào tạo cấp bằng đại học thứ hai, dành cho những cá nhân đã sở hữu ít nhất một bằng đại học và muốn học thêm một ngành chuyên môn khác.",
+                alt: 'Hệ văn bằng 2',
+                tag: 'HỆ VĂN BẰNG 2',
+                desc: 'Chương trình đào tạo cấp bằng đại học thứ hai, dành cho những cá nhân đã sở hữu ít nhất một bằng đại học và muốn học thêm một ngành chuyên môn khác.',
               },
               {
                 src: HOME_IMAGES.trainingLienThong,
-                alt: "Hệ liên thông",
-                tag: "HỆ LIÊN THÔNG",
-                desc: "Chương trình đào tạo tiếp nối dành cho người đã tốt nghiệp trình độ Trung cấp hoặc Cao đẳng, nhằm bổ sung kiến thức để nhận bằng tốt nghiệp trình độ Đại học.",
+                alt: 'Hệ liên thông',
+                tag: 'HỆ LIÊN THÔNG',
+                desc: 'Chương trình đào tạo tiếp nối dành cho người đã tốt nghiệp trình độ Trung cấp hoặc Cao đẳng, nhằm bổ sung kiến thức để nhận bằng tốt nghiệp trình độ Đại học.',
               },
             ].map((card) => (
               <div key={card.alt} className="group">
                 <div
                   className="relative rounded-[15px] overflow-hidden"
-                  style={{ aspectRatio: "289/168" }}
+                  style={{ aspectRatio: '289/168' }}
                 >
                   <Image
                     src={card.src}
@@ -565,55 +539,50 @@ function TrainingSection() {
 
 const PROGRAMS = [
   {
-    faculty: "Khoa Y",
-    majors: ["Y đa khoa"],
-    href: "https://tuyensinh.ttu.edu.vn/y-khoa",
+    faculty: 'Khoa Y',
+    majors: ['Y đa khoa'],
+    href: 'https://tuyensinh.ttu.edu.vn/y-khoa',
     Icon: FacultyIcon1,
   },
   {
-    faculty: "Khoa Công nghệ thông tin",
-    majors: [
-      "Khoa học máy tính",
-      "Khoa học dữ liệu",
-      "Trí tuệ nhân tạo",
-      "Công nghệ thông tin",
-    ],
+    faculty: 'Khoa Công nghệ thông tin',
+    majors: ['Khoa học máy tính', 'Khoa học dữ liệu', 'Trí tuệ nhân tạo', 'Công nghệ thông tin'],
     Icon: FacultyIcon2,
   },
   {
-    faculty: "Khoa Công nghệ sinh học",
-    majors: ["Công nghệ sinh học", "Nông nghiệp công nghệ cao"],
+    faculty: 'Khoa Công nghệ sinh học',
+    majors: ['Công nghệ sinh học', 'Nông nghiệp công nghệ cao'],
     Icon: FacultyIcon3,
   },
   {
-    faculty: "Khoa Ngôn ngữ",
-    majors: ["Ngôn ngữ Anh", "Ngôn ngữ Trung Quốc", "Ngôn ngữ Hàn Quốc"],
+    faculty: 'Khoa Ngôn ngữ',
+    majors: ['Ngôn ngữ Anh', 'Ngôn ngữ Trung Quốc', 'Ngôn ngữ Hàn Quốc'],
     Icon: FacultyIcon4,
   },
   {
-    faculty: "Khoa Kinh tế và Quản trị Kinh doanh",
+    faculty: 'Khoa Kinh tế và Quản trị Kinh doanh',
     majors: [
-      "Kinh doanh quốc tế",
-      "Quản trị kinh doanh",
-      "Kế toán",
-      "Tài chính – Ngân hàng",
-      "Digital Marketing",
-      "Logistic và Quản lý chuỗi cung ứng",
-      "Truyền thông đa phương tiện",
-      "Luật Kinh tế",
-      "Luật",
+      'Kinh doanh quốc tế',
+      'Quản trị kinh doanh',
+      'Kế toán',
+      'Tài chính – Ngân hàng',
+      'Digital Marketing',
+      'Logistic và Quản lý chuỗi cung ứng',
+      'Truyền thông đa phương tiện',
+      'Luật Kinh tế',
+      'Luật',
     ],
     Icon: FacultyIcon5,
   },
   {
-    faculty: "Khoa Nhân văn và Giáo dục Khai phóng",
+    faculty: 'Khoa Nhân văn và Giáo dục Khai phóng',
     majors: [],
-    href: "https://ttu.edu.vn/khoa-nhan-van-va-giao-duc-khai-phong/",
+    href: 'https://ttu.edu.vn/khoa-nhan-van-va-giao-duc-khai-phong/',
     Icon: FacultyIcon6,
   },
   {
-    faculty: "Khoa Điều dưỡng & Kỹ thuật Xét nghiệm Y học",
-    majors: ["Điều dưỡng", "Kỹ thuật xét nghiệm"],
+    faculty: 'Khoa Điều dưỡng & Kỹ thuật Xét nghiệm Y học',
+    majors: ['Điều dưỡng', 'Kỹ thuật xét nghiệm'],
     Icon: FacultyIcon7,
   },
 ];
@@ -630,8 +599,8 @@ function ProgramsSection() {
     <section
       className="relative overflow-hidden bg-ttu-gray-light"
       style={{
-        paddingTop: "clamp(48px, 8vh, 70px)",
-        paddingBottom: "clamp(48px, 8vh, 70px)",
+        paddingTop: 'clamp(48px, 8vh, 70px)',
+        paddingBottom: 'clamp(48px, 8vh, 70px)',
       }}
     >
       <div className="mx-auto w-full px-6 lg:px-[147px] max-w-[1280px]">
@@ -647,11 +616,10 @@ function ProgramsSection() {
             </h2>
           </div>
           <p className="mt-5 max-w-[965px] text-body-lg leading-relaxed text-green-deep">
-            "Trường Đại học Tân Tạo hiện có 7 Khoa đào tạo với 21 ngành và
-            chuyên ngành khác nhau. Chương trình học tại TTU được thiết kế theo
-            tiêu chuẩn giáo dục Hoa Kỳ, kết hợp mô hình Khai phóng giúp sinh
-            viên phát triển toàn diện cả về kiến thức chuyên môn lẫn tư duy sáng
-            tạo."
+            "Trường Đại học Tân Tạo hiện có 7 Khoa đào tạo với 21 ngành và chuyên ngành khác nhau.
+            Chương trình học tại TTU được thiết kế theo tiêu chuẩn giáo dục Hoa Kỳ, kết hợp mô hình
+            Khai phóng giúp sinh viên phát triển toàn diện cả về kiến thức chuyên môn lẫn tư duy
+            sáng tạo."
           </p>
           <div className="mt-6">
             <Link
@@ -659,13 +627,7 @@ function ProgramsSection() {
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-button text-green-deep border border-green-deep hover:bg-green-deep hover:text-ttu-white transition-colors"
             >
               Xem toàn bộ chương trình đào tạo
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                className="shrink-0"
-              >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
                 <path
                   d="M3 8h10M9 4l4 4-4 4"
                   stroke="currentColor"
@@ -715,9 +677,7 @@ function FacultyCard({
       <div className="w-16 h-16 rounded-[15px] bg-green-deep flex items-center justify-center">
         <Icon className="w-10 h-10 text-ttu-white" />
       </div>
-      <h3 className="mt-5 font-bold leading-tight text-green-deep text-button">
-        {faculty}
-      </h3>
+      <h3 className="mt-5 font-bold leading-tight text-green-deep text-button">{faculty}</h3>
       {majors.length > 0 && (
         <p className="mt-2 text-body-sm leading-relaxed text-green-deep">
           {majors.map((m, i) => (
@@ -731,14 +691,10 @@ function FacultyCard({
     </>
   );
 
-  const className = "flex flex-col items-start w-[265px]";
+  const className = 'flex flex-col items-start w-[265px]';
   if (href) {
     return (
-      <Link
-        href={href}
-        className={`${className} hover:opacity-80`}
-        target="_blank"
-      >
+      <Link href={href} className={`${className} hover:opacity-80`} target="_blank">
         {inner}
       </Link>
     );
@@ -751,34 +707,34 @@ function FacultyCard({
 // image 9 + dark green overlay. Cards = mã số cam + nội dung trắng.
 const ADMISSIONS_METHODS = [
   {
-    code: "301",
-    title: "Xét tuyển thẳng theo quy định của Quy chế tuyển sinh",
-    desc: "Áp dụng xét tuyển thẳng theo quy định (Điều 8) của Bộ Giáo dục và Đào tạo.",
+    code: '301',
+    title: 'Xét tuyển thẳng theo quy định của Quy chế tuyển sinh',
+    desc: 'Áp dụng xét tuyển thẳng theo quy định (Điều 8) của Bộ Giáo dục và Đào tạo.',
   },
   {
-    code: "100",
-    title: "Xét kết quả thi tốt nghiệp THPT",
-    desc: "Tổng điểm 03 môn thi theo tổ hợp xét tuyển đạt tối thiểu 15,00 điểm (trên thang điểm 30). Riêng chương trình đào tạo lĩnh vực Sức khỏe và lĩnh vực Pháp luật sẽ căn cứ theo ngưỡng đảm bảo chất lượng quy định bởi Bộ GD&ĐT.",
+    code: '100',
+    title: 'Xét kết quả thi tốt nghiệp THPT',
+    desc: 'Tổng điểm 03 môn thi theo tổ hợp xét tuyển đạt tối thiểu 15,00 điểm (trên thang điểm 30). Riêng chương trình đào tạo lĩnh vực Sức khỏe và lĩnh vực Pháp luật sẽ căn cứ theo ngưỡng đảm bảo chất lượng quy định bởi Bộ GD&ĐT.',
   },
   {
-    code: "200",
-    title: "Xét tuyển sử dụng kết quả học tập ở cấp THPT (Học bạ)",
-    desc: "Xét điểm trung bình chung cả năm lớp 10, 11, 12 của tối thiểu 03 môn học; hoặc 02 môn kết hợp quy đổi điểm chứng chỉ ngoại ngữ. Đối với nhóm ngành Sức khỏe và Pháp luật, thí sinh cần đạt điều kiện bổ sung về học lực lớp 12.",
+    code: '200',
+    title: 'Xét tuyển sử dụng kết quả học tập ở cấp THPT (Học bạ)',
+    desc: 'Xét điểm trung bình chung cả năm lớp 10, 11, 12 của tối thiểu 03 môn học; hoặc 02 môn kết hợp quy đổi điểm chứng chỉ ngoại ngữ. Đối với nhóm ngành Sức khỏe và Pháp luật, thí sinh cần đạt điều kiện bổ sung về học lực lớp 12.',
   },
   {
-    code: "402",
-    title: "Xét kết quả thi Đánh giá năng lực (ĐHQG TP.HCM) năm 2026",
-    desc: "Sử dụng kết quả kỳ thi đánh giá năng lực do Đại học Quốc gia TP.HCM tổ chức. Cần đáp ứng ngưỡng đảm bảo chất lượng đầu vào.",
+    code: '402',
+    title: 'Xét kết quả thi Đánh giá năng lực (ĐHQG TP.HCM) năm 2026',
+    desc: 'Sử dụng kết quả kỳ thi đánh giá năng lực do Đại học Quốc gia TP.HCM tổ chức. Cần đáp ứng ngưỡng đảm bảo chất lượng đầu vào.',
   },
   {
-    code: "407",
-    title: "Kết hợp kết quả thi tốt nghiệp THPT với kết quả học tập cấp THPT",
-    desc: "Phương thức kết hợp giữa điểm thi tốt nghiệp và điểm học bạ. Thí sinh cần đáp ứng ngưỡng đảm bảo chất lượng đầu vào riêng của Nhà trường.",
+    code: '407',
+    title: 'Kết hợp kết quả thi tốt nghiệp THPT với kết quả học tập cấp THPT',
+    desc: 'Phương thức kết hợp giữa điểm thi tốt nghiệp và điểm học bạ. Thí sinh cần đáp ứng ngưỡng đảm bảo chất lượng đầu vào riêng của Nhà trường.',
   },
   {
-    code: "1411",
-    title: "Xét tuyển thí sinh tốt nghiệp THPT nước ngoài",
-    desc: "Phương thức dành riêng để xét tuyển các thí sinh đã tốt nghiệp chương trình THPT ở nước ngoài.",
+    code: '1411',
+    title: 'Xét tuyển thí sinh tốt nghiệp THPT nước ngoài',
+    desc: 'Phương thức dành riêng để xét tuyển các thí sinh đã tốt nghiệp chương trình THPT ở nước ngoài.',
   },
 ];
 
@@ -787,9 +743,9 @@ function AdmissionsSection() {
     <section
       className="relative overflow-hidden"
       style={{
-        paddingTop: "clamp(48px, 8vh, 80px)",
-        paddingBottom: "clamp(48px, 8vh, 80px)",
-        minHeight: "clamp(800px, 90vh, 1118px)",
+        paddingTop: 'clamp(48px, 8vh, 80px)',
+        paddingBottom: 'clamp(48px, 8vh, 80px)',
+        minHeight: 'clamp(800px, 90vh, 1118px)',
       }}
     >
       {/* Background image — Figma node 457:49664 / 340:13512 (image 9) */}
@@ -808,10 +764,10 @@ function AdmissionsSection() {
       <div
         className="absolute pointer-events-none hidden lg:block overflow-hidden"
         style={{
-          right: "-15%",
-          top: "5%",
-          width: "clamp(300px, 40vw, 600px)",
-          aspectRatio: "384/335",
+          right: '-15%',
+          top: '5%',
+          width: 'clamp(300px, 40vw, 600px)',
+          aspectRatio: '384/335',
         }}
       >
         <AdmissionsVector className="w-full h-full text-ttu-white opacity-50" />
@@ -845,15 +801,7 @@ function AdmissionsSection() {
   );
 }
 
-function MethodRow({
-  code,
-  title,
-  desc,
-}: {
-  code: string;
-  title: string;
-  desc: string;
-}) {
+function MethodRow({ code, title, desc }: { code: string; title: string; desc: string }) {
   return (
     <div className="flex items-stretch gap-5">
       <div className="bg-ttu-gradient-cta flex items-center justify-center rounded-[5px] w-[96px] shrink-0 p-2.5">
@@ -862,12 +810,8 @@ function MethodRow({
         </span>
       </div>
       <div className="bg-ttu-white flex flex-col items-start justify-center rounded-[5px] flex-1 p-5">
-        <p className="font-bold leading-snug text-button text-green-deep">
-          {title}
-        </p>
-        <p className="mt-1 font-light leading-snug text-body-xs text-green-deep">
-          {desc}
-        </p>
+        <p className="font-bold leading-snug text-button text-green-deep">{title}</p>
+        <p className="mt-1 font-light leading-snug text-body-xs text-green-deep">{desc}</p>
       </div>
     </div>
   );
@@ -877,31 +821,31 @@ function MethodRow({
 // Figma node 1005:175084 (Frame 652) — 4 white cards on ảnh nền + gradient overlay.
 const SCHOLARSHIPS = [
   {
-    eyebrow: "Hơn",
-    headline: "38 TỶ",
-    tail: "từ Quỹ học bổng ITA",
-    desc: "Trao 100 suất học bổng toàn phần cho học sinh có thành tích học tập tốt, khó khăn về tài chính.",
+    eyebrow: 'Hơn',
+    headline: '38 TỶ',
+    tail: 'từ Quỹ học bổng ITA',
+    desc: 'Trao 100 suất học bổng toàn phần cho học sinh có thành tích học tập tốt, khó khăn về tài chính.',
     Icon: ScholarshipIcon1,
   },
   {
-    eyebrow: "Ưu đãi học phí",
-    headline: "30-100%",
-    tail: "năm đầu tiên",
-    desc: "Áp dụng tất cả phương thức xét tuyển với ưu đãi từ 30%, 50%, 75% và 100% học phí (dựa trên điểm số đầu vào).",
+    eyebrow: 'Ưu đãi học phí',
+    headline: '30-100%',
+    tail: 'năm đầu tiên',
+    desc: 'Áp dụng tất cả phương thức xét tuyển với ưu đãi từ 30%, 50%, 75% và 100% học phí (dựa trên điểm số đầu vào).',
     Icon: ScholarshipIcon2,
   },
   {
-    eyebrow: "Hỗ trợ vay học phí",
-    headline: "0%",
-    tail: "lãi suất",
-    desc: "Sinh viên từ năm thứ hai có cơ hội vay học phí 0% lãi suất, tối đa 50% học phí mỗi học kỳ.",
+    eyebrow: 'Hỗ trợ vay học phí',
+    headline: '0%',
+    tail: 'lãi suất',
+    desc: 'Sinh viên từ năm thứ hai có cơ hội vay học phí 0% lãi suất, tối đa 50% học phí mỗi học kỳ.',
     Icon: ScholarshipIcon3,
   },
   {
-    eyebrow: "Cam kết",
-    headline: "HỌC PHÍ",
-    tail: "học phí toàn khóa không tăng",
-    desc: "Trao 100 suất học bổng toàn phần cho học sinh có thành tích học tập tốt, khó khăn về tài chính.",
+    eyebrow: 'Cam kết',
+    headline: 'HỌC PHÍ',
+    tail: 'học phí toàn khóa không tăng',
+    desc: 'Trao 100 suất học bổng toàn phần cho học sinh có thành tích học tập tốt, khó khăn về tài chính.',
     Icon: ScholarshipIcon4,
   },
 ];
@@ -911,27 +855,21 @@ function ScholarshipsSection() {
     <section
       className="relative overflow-hidden"
       style={{
-        paddingTop: "clamp(48px, 8vh, 80px)",
-        paddingBottom: "clamp(48px, 8vh, 80px)",
-        minHeight: "clamp(420px, 50vh, 597px)",
+        paddingTop: 'clamp(48px, 8vh, 80px)',
+        paddingBottom: 'clamp(48px, 8vh, 80px)',
+        minHeight: 'clamp(420px, 50vh, 597px)',
       }}
     >
       {/* Background image — Figma node 1005:175084 / 475:46778 (Rectangle 8) */}
       <div className="absolute inset-0">
-        <Image
-          src={HOME_IMAGES.scholarship}
-          alt=""
-          fill
-          className="object-cover"
-          sizes="100vw"
-        />
+        <Image src={HOME_IMAGES.scholarship} alt="" fill className="object-cover" sizes="100vw" />
         <div className="absolute inset-0 bg-ttu-gradient-hero-overlay" />
       </div>
 
       {/* Decorative vector — Figma node 346:13569 */}
       <div
         className="absolute pointer-events-none hidden lg:block"
-        style={{ right: "5%", bottom: 0, width: "clamp(200px, 20vw, 400px)" }}
+        style={{ right: '5%', bottom: 0, width: 'clamp(200px, 20vw, 400px)' }}
       >
         <ScholarshipsVector className="w-full h-auto text-ttu-white opacity-10" />
       </div>
@@ -955,9 +893,7 @@ function ScholarshipsSection() {
               >
                 <div className="flex flex-col gap-1 text-green-deep">
                   <p className="text-body-sm leading-snug">{s.eyebrow}</p>
-                  <p className="text-h2 font-bold leading-[30px]">
-                    {s.headline}
-                  </p>
+                  <p className="text-h2 font-bold leading-[30px]">{s.headline}</p>
                   <p className="text-body-sm leading-snug">{s.tail}</p>
                 </div>
                 <div className="w-16 h-16 rounded-[15px] bg-green-deep flex items-center justify-center">
@@ -979,14 +915,14 @@ function ScholarshipsSection() {
 // Figma node 204:16456 (Frame 131) — heading + horizontal logo strip
 // (Frame 683–686 instances repeated 4× for marquee effect).
 const PARTNERS = [
-  { name: "Rice University", country: "Hoa Kỳ", logo: HOME_IMAGES.partner1 },
-  { name: "NTU Singapore", country: "Singapore", logo: HOME_IMAGES.partner2 },
+  { name: 'Rice University', country: 'Hoa Kỳ', logo: HOME_IMAGES.partner1 },
+  { name: 'NTU Singapore', country: 'Singapore', logo: HOME_IMAGES.partner2 },
   {
-    name: "University of Queensland",
-    country: "Úc",
+    name: 'University of Queensland',
+    country: 'Úc',
     logo: HOME_IMAGES.partner3,
   },
-  { name: "University of Leeds", country: "Anh", logo: HOME_IMAGES.partner4 },
+  { name: 'University of Leeds', country: 'Anh', logo: HOME_IMAGES.partner4 },
 ];
 
 function PartnersSection() {
@@ -997,8 +933,8 @@ function PartnersSection() {
     <section
       className="relative overflow-hidden bg-ttu-white"
       style={{
-        paddingTop: "clamp(48px, 8vh, 80px)",
-        paddingBottom: "clamp(48px, 8vh, 80px)",
+        paddingTop: 'clamp(48px, 8vh, 80px)',
+        paddingBottom: 'clamp(48px, 8vh, 80px)',
       }}
     >
       {/* Bottom accent bar — Figma 1275:174037 (Rectangle 16/17) */}
@@ -1008,35 +944,21 @@ function PartnersSection() {
       </div>
 
       <div className="mx-auto w-full px-6 lg:px-8 max-w-7xl">
-        <SectionHeading
-          title="Kết nối mạng lưới toàn cầu"
-          eyebrow="ĐỐI TÁC CHIẾN LƯỢC"
-        />
+        <SectionHeading title="Kết nối mạng lưới toàn cầu" eyebrow="ĐỐI TÁC CHIẾN LƯỢC" />
 
-        <div
-          className="mt-10 flex gap-6 overflow-x-auto pb-4"
-          style={{ scrollbarWidth: "none" }}
-        >
+        <div className="mt-10 flex gap-6 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none' }}>
           {strip.map((p, i) => (
             <div
               key={`${p.name}-${i}`}
               className="shrink-0 w-[264px] flex flex-col items-center justify-center rounded-xl p-6 text-center border border-border hover:border-primary/30 hover:shadow-ttu-500 transition-all bg-ttu-white"
             >
               <div className="relative w-14 h-14 mb-3">
-                <Image
-                  src={p.logo}
-                  alt={p.name}
-                  fill
-                  className="object-contain"
-                  sizes="56px"
-                />
+                <Image src={p.logo} alt={p.name} fill className="object-contain" sizes="56px" />
               </div>
               <div className="font-semibold text-foreground leading-tight text-body-sm">
                 {p.name}
               </div>
-              <div className="text-body-xs text-muted-foreground mt-1">
-                {p.country}
-              </div>
+              <div className="text-body-xs text-muted-foreground mt-1">{p.country}</div>
             </div>
           ))}
         </div>
@@ -1052,28 +974,28 @@ const ANNOUNCEMENTS = [
   {
     img: HOME_IMAGES.announcementFeatured,
     title: 'NGÀNH HỌC "TRIỆU ĐÔ" CHO 2k8 MÊ GREEN-TECH: NÔNG NGHIỆP',
-    desc: "Mục đích: Hỗ trợ vay cho sinh viên TTU có hoàn cảnh gia đình khó khăn.",
+    desc: 'Mục đích: Hỗ trợ vay cho sinh viên TTU có hoàn cảnh gia đình khó khăn.',
     featured: true,
   },
   {
     img: HOME_IMAGES.announcementThumb,
     title: 'NGÀNH HỌC "TRIỆU ĐÔ" CHO 2k8 MÊ GREEN-TECH: NÔNG NGHIỆP',
-    desc: "Mục đích: Hỗ trợ vay cho sinh viên TTU có hoàn cảnh gia đình khó khăn.",
+    desc: 'Mục đích: Hỗ trợ vay cho sinh viên TTU có hoàn cảnh gia đình khó khăn.',
   },
   {
     img: HOME_IMAGES.announcementThumb,
     title: 'NGÀNH HỌC "TRIỆU ĐÔ" CHO 2k8 MÊ GREEN-TECH: NÔNG NGHIỆP',
-    desc: "Mục đích: Hỗ trợ vay cho sinh viên TTU có hoàn cảnh gia đình khó khăn.",
+    desc: 'Mục đích: Hỗ trợ vay cho sinh viên TTU có hoàn cảnh gia đình khó khăn.',
   },
   {
     img: HOME_IMAGES.announcementThumb,
     title: 'NGÀNH HỌC "TRIỆU ĐÔ" CHO 2k8 MÊ GREEN-TECH: NÔNG NGHIỆP',
-    desc: "Mục đích: Hỗ trợ vay cho sinh viên TTU có hoàn cảnh gia đình khó khăn.",
+    desc: 'Mục đích: Hỗ trợ vay cho sinh viên TTU có hoàn cảnh gia đình khó khăn.',
   },
   {
     img: HOME_IMAGES.announcementThumb,
     title: 'NGÀNH HỌC "TRIỆU ĐÔ" CHO 2k8 MÊ GREEN-TECH: NÔNG NGHIỆP',
-    desc: "Mục đích: Hỗ trợ vay cho sinh viên TTU có hoàn cảnh gia đình khó khăn.",
+    desc: 'Mục đích: Hỗ trợ vay cho sinh viên TTU có hoàn cảnh gia đình khó khăn.',
   },
 ];
 
@@ -1087,8 +1009,8 @@ function AnnouncementsSection() {
     <section
       className="relative overflow-hidden bg-ttu-gradient-primary-secondary-tb"
       style={{
-        paddingTop: "clamp(48px, 8vh, 74px)",
-        paddingBottom: "clamp(48px, 8vh, 74px)",
+        paddingTop: 'clamp(48px, 8vh, 74px)',
+        paddingBottom: 'clamp(48px, 8vh, 74px)',
       }}
     >
       <div className="mx-auto w-full px-6 lg:px-[148px] max-w-[1280px]">
@@ -1126,11 +1048,7 @@ function AnnouncementsSection() {
   );
 }
 
-function FeaturedAnnouncement({
-  announcement,
-}: {
-  announcement: (typeof ANNOUNCEMENTS)[number];
-}) {
+function FeaturedAnnouncement({ announcement }: { announcement: (typeof ANNOUNCEMENTS)[number] }) {
   return (
     <Link
       href="/thong-bao"
@@ -1138,7 +1056,7 @@ function FeaturedAnnouncement({
     >
       <div
         className="relative shrink-0 rounded-[15px] overflow-hidden"
-        style={{ width: "240px", aspectRatio: "1" }}
+        style={{ width: '240px', aspectRatio: '1' }}
       >
         <Image
           src={announcement.img}
@@ -1165,11 +1083,7 @@ function FeaturedAnnouncement({
   );
 }
 
-function SmallAnnouncement({
-  announcement,
-}: {
-  announcement: (typeof ANNOUNCEMENTS)[number];
-}) {
+function SmallAnnouncement({ announcement }: { announcement: (typeof ANNOUNCEMENTS)[number] }) {
   return (
     <Link
       href="/thong-bao"
@@ -1177,7 +1091,7 @@ function SmallAnnouncement({
     >
       <div
         className="relative shrink-0 rounded-[10px] overflow-hidden"
-        style={{ width: "150px", height: "150px" }}
+        style={{ width: '150px', height: '150px' }}
       >
         <Image
           src={announcement.img}
@@ -1191,9 +1105,7 @@ function SmallAnnouncement({
         <h3 className="font-semibold leading-snug text-button text-green-light">
           {announcement.title}
         </h3>
-        <p className="font-light leading-snug text-body-xs text-ttu-white">
-          {announcement.desc}
-        </p>
+        <p className="font-light leading-snug text-body-xs text-ttu-white">{announcement.desc}</p>
         <span className="text-[8px] font-light bg-clip-text text-transparent bg-ttu-gradient-cta">
           Xem chi tiết &gt;&gt;
         </span>
@@ -1207,27 +1119,26 @@ function SmallAnnouncement({
 const NEWS = [
   {
     img: HOME_IMAGES.news1,
-    category: "Hợp tác quốc tế",
-    title: "TTU ký kết hợp tác với Đại học Rice (Hoa Kỳ)",
-    date: "2026-09-06",
+    category: 'Hợp tác quốc tế',
+    title: 'TTU ký kết hợp tác với Đại học Rice (Hoa Kỳ)',
+    date: '2026-09-06',
     excerpt:
-      "Chương trình liên kết đào tạo quốc tế chính thức được công bố với nhiều học bổng cho sinh viên TTU.",
+      'Chương trình liên kết đào tạo quốc tế chính thức được công bố với nhiều học bổng cho sinh viên TTU.',
   },
   {
     img: HOME_IMAGES.news2,
-    category: "Cơ sở vật chất",
-    title: "Khánh thành Trung tâm Mô phỏng Y khoa thế hệ mới",
-    date: "2026-09-04",
+    category: 'Cơ sở vật chất',
+    title: 'Khánh thành Trung tâm Mô phỏng Y khoa thế hệ mới',
+    date: '2026-09-04',
     excerpt:
-      "Trung tâm đầu tiên tại Việt Nam đạt chuẩn quốc tế phục vụ đào tạo Bác sĩ và Điều dưỡng.",
+      'Trung tâm đầu tiên tại Việt Nam đạt chuẩn quốc tế phục vụ đào tạo Bác sĩ và Điều dưỡng.',
   },
   {
     img: HOME_IMAGES.news3,
-    category: "Thành tích sinh viên",
-    title: "Sinh viên TTU đạt giải Nhất cuộc thi AI quốc gia 2026",
-    date: "2026-08-30",
-    excerpt:
-      "Đội tuyển Khoa Công nghệ vượt qua hơn 200 đội từ 30 trường đại học trên cả nước.",
+    category: 'Thành tích sinh viên',
+    title: 'Sinh viên TTU đạt giải Nhất cuộc thi AI quốc gia 2026',
+    date: '2026-08-30',
+    excerpt: 'Đội tuyển Khoa Công nghệ vượt qua hơn 200 đội từ 30 trường đại học trên cả nước.',
   },
 ];
 
@@ -1236,8 +1147,8 @@ function NewsSection() {
     <section
       className="relative bg-ttu-white"
       style={{
-        paddingTop: "clamp(48px, 8vh, 70px)",
-        paddingBottom: "clamp(48px, 8vh, 70px)",
+        paddingTop: 'clamp(48px, 8vh, 70px)',
+        paddingBottom: 'clamp(48px, 8vh, 70px)',
       }}
     >
       <div className="mx-auto w-full px-6 lg:px-8 max-w-7xl">
@@ -1250,7 +1161,7 @@ function NewsSection() {
               href="/tin-tuc"
               className="group rounded-2xl overflow-hidden border border-border hover:shadow-ttu-500 transition-shadow"
             >
-              <div className="relative" style={{ aspectRatio: "362/310" }}>
+              <div className="relative" style={{ aspectRatio: '362/310' }}>
                 <Image
                   src={n.img}
                   alt={n.title}
@@ -1264,7 +1175,7 @@ function NewsSection() {
               </div>
               <div className="p-5">
                 <time className="text-body-xs text-muted-foreground">
-                  {new Date(n.date).toLocaleDateString("vi-VN")}
+                  {new Date(n.date).toLocaleDateString('vi-VN')}
                 </time>
                 <h3 className="mt-2 font-bold text-foreground leading-tight line-clamp-2 font-heading text-button">
                   {n.title}
@@ -1295,8 +1206,8 @@ function RegistrationSection() {
     <section
       className="relative overflow-hidden bg-ttu-gradient-primary-secondary"
       style={{
-        paddingTop: "clamp(60px, 10vh, 100px)",
-        paddingBottom: "clamp(60px, 10vh, 100px)",
+        paddingTop: 'clamp(60px, 10vh, 100px)',
+        paddingBottom: 'clamp(60px, 10vh, 100px)',
       }}
     >
       <div className="mx-auto w-full px-6 lg:px-8 max-w-7xl">
@@ -1315,7 +1226,7 @@ function RegistrationSection() {
           {/* Right: decorative image — reuse hero asset since Figma node 204:16769 has no raster */}
           <div
             className="relative rounded-2xl overflow-hidden hidden lg:block"
-            style={{ aspectRatio: "4/3" }}
+            style={{ aspectRatio: '4/3' }}
           >
             <Image
               src={HOME_IMAGES.hero}
@@ -1337,8 +1248,8 @@ export function HomePage({ locale }: { locale: Locale }) {
   return (
     <>
       <HeroSection locale={locale} />
+      <AboutSection locale={locale} />
       <StatisticsSection />
-      <AboutSection />
       <WhyTTUSection />
       <TrainingSection />
       <ProgramsSection />

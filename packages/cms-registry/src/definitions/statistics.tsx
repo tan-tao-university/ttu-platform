@@ -5,7 +5,7 @@
  */
 import { z } from "zod";
 import { Container, Grid, Section, SectionHeading } from "@ttu/design-system";
-import { ColumnTokenSchema } from "@ttu/shared";
+import { ColumnTokenSchema } from "@ttu/shared/column-token-schema";
 import type { ComponentDefinition } from "../definition";
 import { register } from "../registry";
 import { sectionStyleProps } from "../resolve-style";

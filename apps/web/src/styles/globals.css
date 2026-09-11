@@ -1,96 +1,172 @@
-@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam:wght@300;400;500;600;700&display=swap");
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+@source "../../../../packages/design-system/src";
 
 /*
- * TTU Design Tokens
+ * TTU Design Tokens — Tailwind v4 theme tokens.
  *
  * Single source of truth for color, gradient, shadow and typography.
  * Values verified against the Figma Variables panel of Fekw3aQtCfQbHq2aoho859
  * (Trang chu - Desktop 1280). Any future Figma update MUST be reflected here
  * first; do not hard-code these values in components.
  *
- * Reference: docs/todo-figma-match.md - Tokens
+ * Tailwind v4 reads design tokens directly from this file via the `@theme`
+ * block. There is no `tailwind.config.ts` — v4 ignores that file. All
+ * utility classes used in apps/web/src/components/** and packages/** must be
+ * declared here as `--color-*`, `--font-*`, `--text-*`, `--shadow-*`, etc.
  *
  * NOTE: Comments are ASCII-only on purpose. Turbopack (Next.js 16) panics
  * when source code frames contain non-ASCII characters in certain error
  * highlight contexts; keep this file UTF-8 safe.
+ *
+ * Content scanning: Tailwind v4 with `@import "tailwindcss"` auto-scans files
+ * referenced in the Next.js app graph. Workspace packages linked via
+ * `@ttu/design-system` etc. are NOT scanned unless explicitly registered.
+ * Use `@source` with paths relative to this file.
  */
 
-:root {
+@theme {
   /* Brand colors - from Figma Variables */
-  /* Greens */
-  --ttu-green-text: #103925;    /* Figma "Xanh Den" - body text on green surfaces */
-  --ttu-green-light: #3db97d;   /* Figma "Xanh Sang" - accent green, news/CTA */
-  --ttu-green-mid: #229a68;     /* Figma "Xanh" - mid green */
-  --ttu-green-deep: #1f664c;    /* Figma "Xanh Dam" - Why-TTU cards, scholarship bg */
+  --color-primary: #008d36;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #008d36;
+  --color-secondary-foreground: #ffffff;
 
-  /* Oranges / CTA */
-  --ttu-orange: #ff794a;        /* Figma "Cam" - CTA gradient start, accent bars */
-  --ttu-orange-end: #ff9500;    /* CTA gradient end (literal, used in Figma nodes) */
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-surface: #ffffff;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-border: #e2e8f0;
+
+  /* Extended brand palette */
+  --color-orange: #ff794a;
+  --color-orange-end: #ff9500;
+  --color-green-light: #3db97d;
+  --color-green: #229a68;
+  --color-green-deep: #1f664c;
+  --color-green-text: #103925;
+  --color-red: #e53d38;
 
   /* Surfaces (neutral) */
-  --ttu-white: #ffffff;         /* Figma "Trang" */
-  --ttu-gray-light: #f2f2f2;    /* Figma "Xam" */
-  --ttu-gray-dark: #d2d2d2;     /* Figma "Xam Dam" */
-  --ttu-gray-bg: #d9d9d9;       /* Figma "#D9D9D9" - neutral background */
+  --color-ttu-white: #ffffff;
+  --color-ttu-gray-light: #f2f2f2;
+  --color-ttu-gray: #d9d9d9;
+  --color-ttu-gray-dark: #d2d2d2;
 
-  /* Status */
-  --ttu-red: #e53d38;           /* Figma "Do" - error / warning accent */
+  /* Typography families */
+  --font-sans: 'Be Vietnam', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Be Vietnam', system-ui, sans-serif;
 
-  /* Brand primaries (literal values used in Figma gradients; not in Variables) */
-  --ttu-primary: #2d2e83;       /* TTU dark blue - primary brand */
+  /* Type scale from Figma Variables (D1, D2, H1, H2, B1, B2, B3, Text, BUTTON) */
+  --text-display: 64px;
+  --text-display--line-height: 100%;
+  --text-display--font-weight: 700;
+
+  --text-hero: clamp(32px, 5vw, 56px);
+  --text-hero--line-height: 1.05;
+  --text-hero--font-weight: 700;
+
+  --text-section: clamp(24px, 4vw, 40px);
+  --text-section--line-height: 1.25;
+  --text-section--font-weight: 700;
+
+  --text-h2: 24px;
+  --text-h2--line-height: 30px;
+  --text-h2--font-weight: 700;
+
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 100%;
+  --text-body-lg--font-weight: 400;
+
+  --text-body-base: 16px;
+  --text-body-base--line-height: 100%;
+  --text-body-base--font-weight: 600;
+
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 100%;
+  --text-body-sm--font-weight: 400;
+
+  --text-body-xs: 12px;
+  --text-body-xs--line-height: 100%;
+  --text-body-xs--font-weight: 300;
+
+  --text-button: 16px;
+  --text-button--line-height: 100%;
+  --text-button--font-weight: 500;
+
+  /* Gradients from Figma nodes — use via `bg-ttu-gradient-*` utilities */
+  --background-image-ttu-gradient-hero-overlay: linear-gradient(
+    -43.395deg,
+    rgba(45, 46, 131, 0.8) 22.869%,
+    rgba(0, 141, 54, 0.72) 78.716%
+  );
+  --background-image-ttu-gradient-cta: linear-gradient(180deg, #ff794a 0%, #ff9500 100%);
+  --background-image-ttu-gradient-about-cta: linear-gradient(180deg, #008d36 0%, #2d2e83 100%);
+  --background-image-ttu-gradient-primary-secondary: linear-gradient(
+    135deg,
+    #2d2e83 0%,
+    #008d36 100%
+  );
+  --background-image-ttu-gradient-primary-secondary-tb: linear-gradient(
+    180deg,
+    #2d2e83 0%,
+    #008d36 100%
+  );
+  --background-image-ttu-gradient-stat-card: linear-gradient(180deg, #008d36 0%, #2d2e83 100%);
+
+  /* Shadow (Figma "Drop Shadow/500") */
+  --shadow-ttu-500: 0 4px 4px -4px rgba(12, 12, 13, 0.05), 0 16px 16px -8px rgba(12, 12, 13, 0.1);
+
+  /* Container max width used by 8xl */
+  --breakpoint-8xl: 1536px;
+}
+
+/*
+ * Raw CSS custom properties still consumed by component-level inline styles
+ * (e.g. `style={{ background: 'var(--ttu-gradient-hero-overlay)' }}`). Kept
+ * here so we have a single source for both Tailwind utilities and direct CSS.
+ */
+:root {
+  --ttu-green-text: #103925;
+  --ttu-green-light: #3db97d;
+  --ttu-green-mid: #229a68;
+  --ttu-green-deep: #1f664c;
+
+  --ttu-orange: #ff794a;
+  --ttu-orange-end: #ff9500;
+
+  --ttu-white: #ffffff;
+  --ttu-gray-light: #f2f2f2;
+  --ttu-gray-dark: #d2d2d2;
+  --ttu-gray-bg: #d9d9d9;
+
+  --ttu-red: #e53d38;
+
+  --ttu-primary: #008d36;
   --ttu-primary-foreground: #ffffff;
-  --ttu-secondary: #008d36;     /* TTU green - secondary brand */
+  --ttu-secondary: #008d36;
   --ttu-secondary-foreground: #ffffff;
 
-  /* Surfaces (semantic) */
   --ttu-background: #ffffff;
   --ttu-foreground: #0f172a;
   --ttu-surface: #ffffff;
-  --ttu-muted: #f1f5f9;         /* Tailwind slate-100, used in Training/Scholarships */
+  --ttu-muted: #f1f5f9;
   --ttu-muted-foreground: #64748b;
   --ttu-border: #e2e8f0;
 
-  /* Gradients (verified from Figma nodes) */
-  /* Hero overlay - node 1387:181554, Frame 732:
-     linear-gradient(-43.395deg, rgba(45,46,131,0.8) 22.869%, rgba(0,141,54,0.72) 78.716%) */
   --ttu-gradient-hero-overlay: linear-gradient(
     -43.395deg,
     rgba(45, 46, 131, 0.8) 22.869%,
     rgba(0, 141, 54, 0.72) 78.716%
   );
-
-  /* CTA button - orange gradient used by OrangeButton */
   --ttu-gradient-cta: linear-gradient(180deg, #ff794a 0%, #ff9500 100%);
+  --ttu-gradient-about-cta: linear-gradient(180deg, #008d36 0%, #2d2e83 100%);
+  --ttu-gradient-primary-secondary: linear-gradient(135deg, #2d2e83 0%, #008d36 100%);
+  --ttu-gradient-primary-secondary-tb: linear-gradient(180deg, #2d2e83 0%, #008d36 100%);
+  --ttu-gradient-stat-card: linear-gradient(180deg, #008d36 0%, #2d2e83 100%);
 
-  /* Primary to secondary (used by Admissions + Registration sections) */
-  --ttu-gradient-primary-secondary: linear-gradient(
-    135deg,
-    #2d2e83 0%,
-    #008d36 100%
-  );
-
-  /* Stats-style primary to secondary (top to bottom) */
-  --ttu-gradient-primary-secondary-tb: linear-gradient(
-    180deg,
-    #2d2e83 0%,
-    #008d36 100%
-  );
-
-  /* Shadow (Figma "Drop Shadow/500")
-     Effect(type: DROP_SHADOW, color: #0c0c0d0d, offset: (0,4), radius: 4, spread: -4)
-     + Effect(type: DROP_SHADOW, color: #0c0c0d1a, offset: (0,16), radius: 16, spread: -8) */
-  --ttu-shadow-500:
-    0 4px 4px -4px rgba(12, 12, 13, 0.05),
-    0 16px 16px -8px rgba(12, 12, 13, 0.1);
-
-  /* Typography */
-  --font-sans: "Be Vietnam", system-ui, -apple-system, BlinkMacSystemFont,
-    sans-serif;
-  --font-heading: "Be Vietnam", system-ui, sans-serif;
+  --ttu-shadow-500: 0 4px 4px -4px rgba(12, 12, 13, 0.05), 0 16px 16px -8px rgba(12, 12, 13, 0.1);
 }
 
 @layer base {
@@ -108,8 +184,16 @@
   }
 }
 
-@layer utilities {
-  .container-page {
-    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-inline: 1rem;
+
+  @media (min-width: 640px) {
+    padding-inline: 1.5rem;
+  }
+  @media (min-width: 1024px) {
+    padding-inline: 2rem;
   }
 }

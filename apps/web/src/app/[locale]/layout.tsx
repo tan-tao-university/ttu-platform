@@ -187,22 +187,10 @@ export default async function LocaleLayout({
     },
   ];
 
-  const buildLocaleHref = (target: Locale) => {
-    // Naive: keep same path. Real strategy depends on routing.
-    if (typeof window === "undefined") {
-      return `/${target}`;
-    }
-    const stripped = window.location.pathname.replace(/^\/(vi|en)/, "");
-    return `/${target}${stripped || ""}`;
-  };
-
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <Navbar
         items={navItems}
-        locale={locale}
-        locales={LOCALES}
-        buildLocaleHref={buildLocaleHref}
         logo={
           <span className="flex items-center">
             {/* TTU shield + wordmark — exported from Figma node 185:6802. */}

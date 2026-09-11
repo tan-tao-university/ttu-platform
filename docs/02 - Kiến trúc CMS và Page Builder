@@ -1,0 +1,403 @@
+<aside>
+
+**Quyết định kiến trúc:** TTU Platform sử dụng **Controlled Component CMS**. Giao diện và cấu trúc component do đội phát triển kiểm soát trong Next.js; quản trị viên được phép xây dựng page từ các component có sẵn, chỉnh nội dung, dữ liệu và một tập style an toàn. Hệ thống **không cho phép raw HTML, JavaScript hoặc custom CSS**.
+
+</aside>
+
+## 1. Mục tiêu
+
+CMS phải giải quyết đồng thời bốn yêu cầu:
+
+- Người quản trị nội dung có thể thay đổi website hằng ngày mà không phụ thuộc vào developer cho các thay đổi nhỏ.
+- Frontend vẫn được xây dựng bằng Next.js và tuân thủ design system thống nhất của TTU.
+- Nội dung tiếng Việt và tiếng Anh được quản lý độc lập nhưng dùng chung cấu trúc, media, link và style khi phù hợp.
+- Việc chỉnh sửa phải an toàn, có preview, revision và rollback trước khi nội dung xuất hiện trên website chính.
+
+## 2. Phạm vi trách nhiệm
+
+### Developer kiểm soát
+
+- Cấu trúc HTML và React component.
+- Responsive behavior.
+- Accessibility.
+- Design tokens và các giá trị style hợp lệ.
+- Component variants.
+- Validation schema.
+- Component version và migration.
+
+### Admin kiểm soát
+
+- Thêm component được phép vào page.
+- Sắp xếp thứ tự component.
+- Ẩn/hiện component.
+- Sửa text, rich text, ảnh, video, link và CTA.
+- Chọn nguồn dữ liệu cho component động như News, Events hoặc Programs.
+- Chọn variant và các style preset được component cho phép.
+- Preview, lưu draft và publish.
+
+### Admin không được phép
+
+- Nhập custom CSS.
+- Nhập JavaScript.
+- Thay đổi raw HTML của component.
+- Nhập class Tailwind trực tiếp.
+- Sử dụng các giá trị pixel tùy ý làm phá vỡ design system.
+
+## 3. Kiến trúc tổng thể
+
+```mermaid
+graph TD
+    A["TTU Admin"] --> B["Page Editor"]
+    B --> C["Content Editor"]
+    B --> D["Data / Config Editor"]
+    B --> E["Safe Style Editor"]
+    C --> F["NestJS API"]
+    D --> F
+    E --> F
+    F --> G["PostgreSQL"]
+    F --> H["MinIO"]
+    G --> I["Draft"]
+    I --> J["Preview"]
+    I --> K["Publish"]
+    K --> L["Published Revision"]
+    L --> M["Next.js"]
+    M --> N["Component Renderer"]
+    N --> O["TTU Website"]
+```
+
+Hệ thống được chia thành bốn lớp chính:
+
+1. **Admin** — nơi quản trị viên chỉnh page và component.
+2. **NestJS API** — validate, lưu draft, xử lý publish và quyền truy cập.
+3. **PostgreSQL / MinIO** — PostgreSQL lưu metadata và structured content; MinIO lưu tài nguyên file.
+4. **Next.js Web** — đọc published revision và render component từ Component Registry.
+
+## 4. Mô hình Page → Section → Component
+
+Mỗi page được xem như một danh sách các section có thứ tự.
+
+Ví dụ homepage:
+
+1. Hero
+2. Announcement List
+3. News Grid
+4. Statistics
+5. Faculty Grid
+6. Research Highlight
+7. Event List
+8. Partner Logos
+
+Mỗi section tương ứng với một **component instance**. Section không chứa HTML đã render; nó chỉ tham chiếu tới một `component_key`, một `component_version` và dữ liệu mà component đó cho phép.
+
+```mermaid
+graph LR
+    P["Page"] --> S1["Hero"]
+    P --> S2["NewsGrid"]
+    P --> S3["Statistics"]
+    P --> S4["FacultyGrid"]
+    P --> S5["EventList"]
+```
+
+Cấu trúc dữ liệu logic của một section:
+
+```json
+{
+  "componentKey": "hero",
+  "componentVersion": 1,
+  "config": {},
+  "style": {},
+  "translations": {
+    "vi": { "content": {} },
+    "en": { "content": {} }
+  }
+}
+```
+
+## 5. Ba vùng dữ liệu của Component
+
+Mỗi component phải tách dữ liệu thành ba nhóm rõ ràng.
+
+### 5.1. Content
+
+Là nội dung mà người dùng đọc và thường cần dịch.
+
+Ví dụ Hero:
+
+```json
+{
+  "eyebrow": "Đại học Tân Tạo",
+  "title": "Kiến tạo tương lai từ tri thức",
+  "subtitle": "Môi trường giáo dục khai phóng...",
+  "primaryButtonLabel": "Khám phá TTU"
+}
+```
+
+Content được lưu theo locale trong `page_section_translations`.
+
+### 5.2. Config
+
+Là cấu hình có ý nghĩa chức năng và thường không phụ thuộc ngôn ngữ.
+
+Ví dụ:
+
+```json
+{
+  "backgroundImageId": "media_123",
+  "primaryButtonUrl": "/gioi-thieu",
+  "sourceCategoryId": "cat_news",
+  "limit": 6
+}
+```
+
+Config có thể chứa media reference, URL, query source, số lượng item hoặc các flag chức năng.
+
+### 5.3. Style
+
+Là các tùy chọn trình bày an toàn được map vào design tokens.
+
+Ví dụ:
+
+```json
+{
+  "contentWidth": "xl",
+  "textAlign": "center",
+  "paddingTop": "xl",
+  "paddingBottom": "xl",
+  "background": "primary"
+}
+```
+
+Database chỉ lưu semantic token như `xl`, `center`, `primary`; việc chuyển token thành CSS thực tế thuộc trách nhiệm của frontend.
+
+## 6. Page Builder trong Admin
+
+Page Editor gồm ba vùng chính:
+
+### Component Library
+
+Hiển thị các component mà admin được phép thêm, nhóm theo loại như Content, University, Media và Marketing.
+
+### Live Preview
+
+Hiển thị page gần với giao diện thật. Khi người dùng thay đổi content hoặc style, preview được cập nhật để kiểm tra trước khi publish.
+
+### Inspector
+
+Khi chọn một component, Inspector hiển thị các tab:
+
+- **Content** — text, rich text, label.
+- **Data** — media, URL, category, source, số lượng item.
+- **Style** — spacing, width, alignment, background và các preset an toàn.
+- **Settings** — visibility, variant và các cấu hình riêng của component.
+
+Admin có thể drag-and-drop để thay đổi `sort_order`, duplicate section hoặc tạm ẩn section mà không xóa dữ liệu.
+
+## 7. Component tĩnh và Component động
+
+### Component tĩnh
+
+Dữ liệu được lưu trực tiếp trong section.
+
+Ví dụ:
+
+- Hero
+- RichText
+- ImageText
+- CTA
+- Statistics
+- Gallery
+
+### Component động
+
+Section chỉ lưu cấu hình truy vấn; dữ liệu nghiệp vụ vẫn nằm trong domain riêng.
+
+Ví dụ `NewsGrid`:
+
+```json
+{
+  "config": {
+    "categoryId": "cat_research",
+    "limit": 6,
+    "showExcerpt": true
+  }
+}
+```
+
+Bài viết **không được copy vào page section**. Khi render, Content Service lấy dữ liệu từ `content_items` theo cấu hình của component.
+
+Nguyên tắc này cũng áp dụng cho:
+
+- Announcements
+- Events
+- Programs
+- Dữ liệu khoa thông qua API/integration từ TTU Faculty Platform khi cần hiển thị trên website chính
+- People
+- Research content
+
+## 8. Đa ngôn ngữ
+
+Các phần không phụ thuộc ngôn ngữ được dùng chung:
+
+- Component type và version.
+- Thứ tự section.
+- Media.
+- Style.
+- Variant.
+- Data source.
+- Internal URL khi URL dùng chung cho các locale.
+
+Nội dung cần dịch được tách theo locale:
+
+- Title.
+- Subtitle.
+- Description.
+- Button label.
+- Rich text.
+- Alt text hoặc caption khi cần localization.
+
+Ví dụ:
+
+```
+page_sections
+└── hero
+    ├── config
+    ├── style
+    └── translations
+        ├── vi
+        └── en
+```
+
+Việc dịch thiếu không được làm page lỗi. API phải biết locale mặc định và chính sách fallback; quyết định fallback cụ thể sẽ được chốt trong phần API và nghiệp vụ.
+
+## 9. Draft, Preview và Publish
+
+Website public không đọc trực tiếp state mà admin đang chỉnh.
+
+```mermaid
+graph LR
+    A["Edit"] --> B["Draft"]
+    B --> C["Preview"]
+    B --> D["Publish"]
+    D --> E["Immutable Revision"]
+    E --> F["Public Website"]
+    E --> G["Rollback Source"]
+```
+
+### Draft
+
+Là trạng thái làm việc hiện tại của page. Admin có thể thay đổi nhiều lần mà không ảnh hưởng website public.
+
+### Preview
+
+Render draft bằng chính Component Registry của frontend để tránh khác biệt giữa editor và website thật.
+
+### Publish
+
+Khi publish:
+
+1. API validate toàn bộ page.
+2. Kiểm tra component key/version có hợp lệ.
+3. Kiểm tra config, translations và style theo schema.
+4. Tạo một immutable page revision.
+5. Cập nhật `published_revision_id` theo transaction.
+6. Trigger cache invalidation/revalidation cho Next.js.
+
+### Rollback
+
+Rollback không sửa revision cũ. Hệ thống tạo draft mới từ snapshot của revision được chọn; admin preview rồi publish lại.
+
+## 10. Revision model
+
+Một revision phải chứa snapshot đủ để tái tạo page tại thời điểm publish, gồm:
+
+- Page metadata.
+- Page translations.
+- Tất cả sections.
+- Component key/version.
+- Config.
+- Style.
+- Section translations.
+
+Revision nên được coi là immutable sau khi tạo. Cách này giúp publish atomic, rollback đơn giản và public site không rơi vào trạng thái một nửa dữ liệu cũ, một nửa dữ liệu mới.
+
+## 11. Validation và bảo vệ dữ liệu
+
+Validation không chỉ thực hiện ở Admin UI. NestJS API luôn là lớp kiểm tra cuối cùng.
+
+API phải từ chối:
+
+- Component không tồn tại trong registry.
+- Component version không được hỗ trợ.
+- Field không thuộc schema.
+- Style token không hợp lệ.
+- URL hoặc media reference không hợp lệ.
+- Số lượng item vượt giới hạn component.
+- Nội dung thiếu field bắt buộc.
+
+Frontend public không render raw HTML lấy trực tiếp từ `style` hoặc `config`.
+
+## 12. Style Editor an toàn
+
+Theo quyết định hiện tại, TTU Platform dùng **Safe Style Controls — Level A**.
+
+Admin có thể chỉnh các nhóm sau khi component hỗ trợ:
+
+- Content width.
+- Text alignment.
+- Spacing trên/dưới.
+- Background preset.
+- Typography preset.
+- Border radius.
+- Shadow.
+- Columns hoặc card variant đối với component dạng grid.
+
+Không hỗ trợ custom CSS. Responsive được xác định bởi component và design system; admin không phải tự sửa breakpoint Desktop/Tablet/Mobile.
+
+Chi tiết registry và token xem tại 03 - Component Registry và Design System.
+
+## 13. Ranh giới với dữ liệu nghiệp vụ
+
+Page Builder chỉ chịu trách nhiệm **composition và presentation**. Dữ liệu nghiệp vụ phải nằm trong domain tương ứng.
+
+Ví dụ:
+
+- News/Announcement → Content domain.
+- Event → Event domain.
+- Faculty → dữ liệu tích hợp từ TTU Faculty Platform; không lưu source of truth trong `ttu_main`.
+- Academic Program → Academic domain.
+- Media metadata → Media domain.
+
+Điều này tránh biến `page_sections.props` thành một bảng JSON khổng lồ thay thế toàn bộ PostgreSQL relational schema.
+
+Mô hình dữ liệu chi tiết sẽ được mô tả tại 04 - Mô hình dữ liệu và ERD và 05 - Database Schema.
+
+## 14. Nguyên tắc vận hành
+
+1. Component structure thuộc về code, không thuộc database.
+2. Database chỉ lưu component instance và dữ liệu hợp lệ của instance đó.
+3. Admin được quyền thay đổi content và style trong giới hạn registry.
+4. Dynamic component chỉ tham chiếu nguồn dữ liệu; không duplicate content.
+5. Mọi publish tạo revision bất biến.
+6. Public website chỉ đọc published state.
+7. Design system quyết định CSS thực tế và responsive.
+
+## 15. Tiêu chí hoàn thành
+
+Kiến trúc CMS được xem là đáp ứng yêu cầu khi:
+
+- Admin có thể xây dựng page từ component mà không chỉnh code.
+- Admin có thể sửa text, media, CTA, thứ tự và style cơ bản.
+- Developer có thể thêm component mới mà không phải viết lại Page Editor.
+- Database không chứa HTML/CSS tùy ý.
+- Preview và public render dùng cùng schema/component logic.
+- Có draft, revision, publish và rollback rõ ràng.
+- Dữ liệu đa ngôn ngữ không duplicate các phần config/style không cần dịch.
+
+## Tài liệu liên quan
+
+- 03 - Component Registry và Design System
+- 04 - Mô hình dữ liệu và ERD
+- 05 - Database Schema
+- 06 - API và kiến trúc hệ thống
+- 07 - Identity, SSO và phân quyền
+- 08 - Media, MinIO và quản lý tài nguyên

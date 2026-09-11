@@ -1,9 +1,6 @@
-import { cn } from "../lib/cn";
-import { Container } from "../primitives/Container";
-import { LanguageSwitcher } from "./LanguageSwitcher";
-import { NavDropdown } from "./NavDropdown";
-import Link from "next/link";
-import type { Locale } from "@ttu/shared";
+import { cn } from '../lib/cn';
+import { NavDropdown } from './NavDropdown';
+import Link from 'next/link';
 
 export interface NavItem {
   label: string;
@@ -17,132 +14,81 @@ export interface NavbarProps {
   logo?: React.ReactNode;
   /** Main nav items. Items with `children` render as a NavDropdown. */
   items: NavItem[];
-  /** Current locale — used by LanguageSwitcher. */
-  locale: Locale;
-  /** Available locales for switcher. */
-  locales: readonly Locale[];
-  /** Build href for language switcher. */
-  buildLocaleHref: (locale: Locale) => string;
   /** Path for the search page (omit to disable the search button). */
   searchHref?: string;
   className?: string;
 }
 
 /**
- * Top navigation bar matching the Figma `Heading` frame
- * (file `Fekw3aQtCfQbHq2aoho859`, node 185:6802).
+ * Top navigation bar matching the Figma `Heading` frame (file `Fekw3aQtCfQbHq2aoho859`, node
+ * 185:6802).
  *
- * Layout:
- *   - Centered logo on the top row.
- *   - Horizontal nav row below: items, then search button on the right.
- *   - Bottom border tinted with the brand green.
+ * Pixel-perfect values pulled from `get_metadata`:
  *
- * Sticky to top of viewport. Mobile drawer is a follow-up.
- * Server Component — the dropdown interactivity lives in `NavDropdown`.
+ * - Header height: 174px.
+ * - Logo: 285x51px at y=26px.
+ * - Menu row: y=79px, item height 43px.
+ * - Bottom border: 2px in `#229A68`.
+ *
+ * Dropdown interactivity lives in `NavDropdown`.
  */
-export function Navbar({
-  logo,
-  items,
-  locale,
-  locales,
-  buildLocaleHref,
-  searchHref = "/search",
-  className,
-}: NavbarProps) {
+export function Navbar({ logo, items, searchHref = '/search', className }: NavbarProps) {
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-40 border-b border-green/30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80",
-        className,
-      )}
-    >
-      <Container width="xl">
-        {/* Top row — centered brand mark. */}
-        <div className="flex h-[88px] items-center justify-center">
+    <header className={cn('relative z-40 w-full border-b-2 border-[#229A68] bg-white', className)}>
+      <div className="relative mx-auto h-[172px] w-full max-w-[1280px] px-5 pt-[26px]">
+        <div className="flex h-[51px] items-start justify-center">
           <Link
             href="/"
             aria-label="TTU home"
-            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
+            className="inline-flex h-[51px] w-[285px] items-start rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF794A] focus-visible:ring-offset-2"
           >
-            {logo ?? (
-              <span className="text-xl font-bold text-primary">TTU</span>
-            )}
+            {logo ?? <span className="text-xl font-bold text-[#1F664C]">TTU</span>}
           </Link>
         </div>
 
-        {/* Nav row — items + right cluster. */}
         <nav
-          className="flex items-center justify-between gap-4 pb-3"
+          className="absolute inset-x-5 top-[79px] flex h-[44px] items-start justify-center"
           aria-label="Main navigation"
         >
-          <ul className="hidden md:flex items-center gap-1">
-            {items.map((item) =>
-              item.children && item.children.length > 0 ? (
-                <NavDropdown
-                  key={item.href}
-                  label={item.label}
-                  href={item.href}
-                  children={item.children}
-                />
-              ) : (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "rounded-md px-2 py-2 text-sm font-medium transition-colors",
-                      "text-foreground/80 hover:text-primary",
-                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ),
-            )}
-          </ul>
+          <div className="relative flex h-[44px] w-full max-w-[1165px] items-start justify-center">
+            <ul className="flex h-[43px] min-w-0 items-start justify-center max-[1150px]:pr-[44px]">
+              {items.map((item) =>
+                item.children && item.children.length > 0 ? (
+                  <li className="mr-[-2px] shrink-0" key={item.href}>
+                    <NavDropdown label={item.label} href={item.href} children={item.children} />
+                  </li>
+                ) : (
+                  <li className="mr-[-2px] shrink-0" key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        'inline-flex min-h-[43px] items-center rounded-md px-[14px] py-[10px] text-[16px] font-semibold leading-normal whitespace-nowrap transition-colors',
+                        'text-[#1F664C] hover:text-[#229A68]',
+                        'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF794A] focus-visible:ring-offset-2',
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ),
+              )}
+            </ul>
 
-          <div className="flex items-center gap-3">
             {searchHref ? (
               <Link
                 href={searchHref}
                 aria-label="Search"
-                className={cn(
-                  "inline-flex h-9 w-9 items-center justify-center rounded-md",
-                  "text-foreground/80 hover:bg-muted hover:text-primary transition-colors",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-                )}
+                className="inline-flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-md p-[10px] text-[#1F664C] transition-colors hover:text-[#229A68] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF794A] focus-visible:ring-offset-2 max-[1150px]:absolute max-[1150px]:right-0"
               >
-                <svg
-                  aria-hidden="true"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 18 18"
-                  fill="none"
-                >
-                  <circle
-                    cx="8"
-                    cy="8"
-                    r="5.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                  <path
-                    d="M12.5 12.5L16 16"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
+                <span aria-hidden="true" className="relative block h-5 w-5">
+                  <span className="absolute left-0 top-0 block h-[13px] w-[13px] rounded-full border-2 border-current" />
+                  <span className="absolute left-[12px] top-[12px] block h-2 w-0.5 rotate-[-45deg] rounded-full bg-current" />
+                </span>
               </Link>
             ) : null}
-            <LanguageSwitcher
-              current={locale}
-              locales={locales}
-              buildHref={buildLocaleHref}
-            />
           </div>
         </nav>
-      </Container>
+      </div>
     </header>
   );
 }

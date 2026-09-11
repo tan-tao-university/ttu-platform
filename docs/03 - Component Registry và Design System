@@ -1,0 +1,719 @@
+<aside>
+🧱
+
+**Vai trò của Registry:** Component Registry là hợp đồng dùng chung giữa **Web, Admin và API**. Nó định nghĩa component nào tồn tại, dữ liệu nào được phép chỉnh, style nào được expose và version nào đang được hỗ trợ.
+
+</aside>
+
+## 1. Mục tiêu
+
+Component Registry phải đảm bảo ba ứng dụng không bị lệch nhau:
+
+- Admin biết phải render field editor nào.
+- API biết phải validate dữ liệu theo schema nào.
+- Next.js biết phải render component nào với props nào.
+
+Registry nằm trong codebase, không nằm trong PostgreSQL.
+
+## 2. Vị trí trong monorepo
+
+Đề xuất package dùng chung:
+
+```
+ttu-platform/
+├── apps/
+│   ├── web/
+│   ├── admin/
+│   └── api/
+└── packages/
+    ├── cms-registry/
+    ├── design-system/
+    └── shared/
+```
+
+Luồng sử dụng:
+
+```mermaid
+graph TD
+    R["cms-registry"] --> A["Admin"]
+    R --> B["NestJS API"]
+    R --> C["Next.js Web"]
+    D["design-system"] --> A
+    D --> C
+```
+
+## 3. Cấu trúc một Component Definition
+
+Mỗi component definition tối thiểu có:
+
+- `key`
+- `version`
+- `name`
+- `category`
+- `description`
+- `contentSchema`
+- `configSchema`
+- `styleSchema`
+- `defaultContent`
+- `defaultConfig`
+- `defaultStyle`
+- `variants`
+- `allowedPages` nếu cần giới hạn phạm vi
+- `editorMetadata` để Admin tạo UI dễ hiểu
+
+Ví dụ logic của Hero:
+
+```
+key: hero
+version: 1
+name: Hero
+category: Marketing
+
+Content
+- eyebrow
+- title
+- subtitle
+- primaryButtonLabel
+- secondaryButtonLabel
+
+Config
+- backgroundImageId
+- primaryButtonUrl
+- secondaryButtonUrl
+
+Style
+- contentWidth
+- textAlign
+- titleSize
+- paddingTop
+- paddingBottom
+- background
+
+Variants
+- default
+- centered
+- split
+- minimal
+```
+
+## 4. Quy ước `component_key`
+
+Key phải ổn định và machine-readable.
+
+Ví dụ tốt:
+
+- `hero`
+- `news-grid`
+- `event-list`
+- `faculty-grid`
+- `image-text`
+
+Không dùng tên theo implementation tạm thời như:
+
+- `HeroComponentNew`
+- `NewsGridV2Final`
+- `Component123`
+
+Khi thay đổi implementation mà schema vẫn tương thích, giữ nguyên key/version. Chỉ tăng version khi contract dữ liệu thay đổi theo cách cần migration hoặc compatibility handling.
+
+## 5. Field types cho Content/Config
+
+Registry nên cung cấp một tập field type chuẩn để Admin có thể generate editor tự động.
+
+### Textual
+
+- `text`
+- `textarea`
+- `rich-text`
+
+### Media
+
+- `image`
+- `video`
+- `file`
+- `icon`
+
+### Navigation
+
+- `url`
+- `internal-link`
+- `cta`
+
+### Choice
+
+- `select`
+- `segmented-control`
+- `checkbox`
+- `switch`
+
+### Numeric
+
+- `number`
+- `range`
+
+### Structured
+
+- `repeater`
+- `group`
+- `reference`
+
+Ví dụ `Statistics` dùng repeater:
+
+```json
+{
+  "items": [
+    {
+      "value": "50+",
+      "label": "Đối tác quốc tế"
+    },
+    {
+      "value": "15+",
+      "label": "Ngành đào tạo"
+    }
+  ]
+}
+```
+
+## 6. Editor metadata
+
+Validation schema không đủ để tạo UX tốt cho Admin. Registry cần metadata dành cho editor.
+
+Ví dụ một field:
+
+```json
+{
+  "name": "title",
+  "label": "Tiêu đề",
+  "type": "text",
+  "required": true,
+  "placeholder": "Nhập tiêu đề...",
+  "helpText": "Nên giữ dưới 80 ký tự"
+}
+```
+
+Với select:
+
+```json
+{
+  "name": "textAlign",
+  "label": "Căn chỉnh",
+  "type": "segmented-control",
+  "options": ["left", "center", "right"]
+}
+```
+
+Admin không cần biết tên technical như `paddingBottom` nếu UI có thể hiển thị là `Khoảng cách phía dưới`.
+
+## 7. Component categories
+
+Component Library nên nhóm theo ý nghĩa nghiệp vụ.
+
+### Layout
+
+- Rich Text
+- Image + Text
+- Columns
+- Spacer
+
+### Marketing
+
+- Hero
+- CTA
+- Image Banner
+- Statistics
+
+### Content
+
+- News Grid
+- Announcement List
+- Event List
+- Featured Article
+
+### University
+
+- Faculty Grid
+- Program Grid
+- People Grid
+- Research Highlight
+
+### Media
+
+- Gallery
+- Video
+
+### Others
+
+- Partner Logos
+- Quick Links
+
+Version đầu không nên có quá nhiều component. Mục tiêu ban đầu khoảng **15–20 component chất lượng cao** đủ dùng cho phần lớn website.
+
+## 8. Variant và Style khác nhau như thế nào
+
+### Variant
+
+Thay đổi cấu trúc hoặc cách bố trí chính của component.
+
+Ví dụ Hero:
+
+- `default`
+- `centered`
+- `split`
+- `minimal`
+
+### Style controls
+
+Tinh chỉnh presentation trong cùng một cấu trúc hợp lệ:
+
+- content width
+- spacing
+- alignment
+- background
+- typography preset
+- radius
+- shadow
+
+Không dùng style controls để mô phỏng toàn bộ layout engine. Nếu hai layout khác nhau đáng kể, tạo variant rõ ràng.
+
+## 9. Safe Style Controls — Level A
+
+TTU Platform chốt mức style **A — an toàn**, không custom CSS và không cho admin cấu hình responsive theo breakpoint riêng.
+
+### Spacing tokens
+
+```
+none
+xs
+sm
+md
+lg
+xl
+2xl
+```
+
+Database lưu token, ví dụ:
+
+```json
+{
+  "paddingTop": "xl",
+  "paddingBottom": "lg"
+}
+```
+
+Không lưu `64px`, `4rem` hay Tailwind class.
+
+### Width tokens
+
+```
+sm
+md
+lg
+xl
+2xl
+full
+```
+
+### Alignment
+
+```
+left
+center
+right
+```
+
+### Background
+
+Đề xuất các semantic tokens:
+
+```
+default
+surface
+muted
+primary
+secondary
+dark
+```
+
+### Typography presets
+
+Ví dụ title:
+
+```
+sm
+md
+lg
+xl
+display
+```
+
+### Radius
+
+```
+none
+sm
+md
+lg
+xl
+```
+
+### Shadow
+
+```
+none
+sm
+md
+lg
+```
+
+Các giá trị CSS thực tế nằm trong design system, không nằm trong database.
+
+## 10. Component-specific style controls
+
+Không có một style panel toàn năng cho mọi component. Mỗi component expose đúng những gì nó cần.
+
+### Hero
+
+- contentWidth
+- textAlign
+- titleSize
+- paddingTop
+- paddingBottom
+- background
+
+### RichText
+
+- contentWidth
+- textAlign
+- paddingTop
+- paddingBottom
+- background
+
+### NewsGrid
+
+- contentWidth
+- columns
+- cardVariant
+- paddingTop
+- paddingBottom
+- background
+
+### PartnerLogos
+
+- contentWidth
+- logoSize
+- columns
+- paddingTop
+- paddingBottom
+
+Nhờ vậy admin không nhìn thấy hàng chục tùy chọn không liên quan và component vẫn có design boundary rõ ràng.
+
+## 11. Design Tokens
+
+`packages/design-system` là source of truth cho token thực tế.
+
+Ví dụ semantic mapping:
+
+```
+spacing.xs   -> 8px
+spacing.sm   -> 16px
+spacing.md   -> 32px
+spacing.lg   -> 48px
+spacing.xl   -> 64px
+spacing.2xl  -> 96px
+```
+
+Registry chỉ tham chiếu tên token. Web quyết định cách map token vào CSS/Tailwind/CSS variables.
+
+Lợi ích:
+
+- Có thể thay đổi design toàn site mà không migrate database.
+- Không khóa dữ liệu vào Tailwind.
+- Giữ consistency giữa các page.
+- Có thể thay implementation CSS trong tương lai mà dữ liệu CMS vẫn hợp lệ.
+
+## 12. Responsive
+
+Responsive thuộc trách nhiệm của component và design system.
+
+Ví dụ admin chọn:
+
+```
+columns = 4
+```
+
+Frontend có thể tự quyết định:
+
+```
+Desktop: 4
+Tablet: 2
+Mobile: 1
+```
+
+Admin không chỉnh từng breakpoint ở version hiện tại. Điều này giảm đáng kể khả năng phá layout trên thiết bị khác.
+
+## 13. Validation Schema
+
+Mỗi component cần schema runtime dùng chung ở Admin và API.
+
+Ví dụ về mặt logic:
+
+```
+HeroStyleSchema
+- contentWidth: enum(sm, md, lg, xl, 2xl, full)
+- textAlign: enum(left, center, right)
+- titleSize: enum(sm, md, lg, xl, display)
+- paddingTop: spacingToken
+- paddingBottom: spacingToken
+- background: backgroundToken
+```
+
+NestJS không tin dữ liệu gửi từ Admin. Mọi create/update/publish đều phải validate lại bằng registry schema.
+
+Unknown fields nên bị reject hoặc strip theo policy thống nhất; với CMS contract, ưu tiên **reject khi publish** để phát hiện data drift sớm.
+
+## 14. Default values
+
+Mỗi component có default rõ ràng để khi Admin bấm `Add component`, section đã ở trạng thái hợp lệ.
+
+Ví dụ Hero:
+
+```json
+{
+  "defaultStyle": {
+    "contentWidth": "xl",
+    "textAlign": "left",
+    "titleSize": "xl",
+    "paddingTop": "2xl",
+    "paddingBottom": "2xl",
+    "background": "default"
+  }
+}
+```
+
+Default không nên được copy từ một page cụ thể; nó là cấu hình mặc định chuẩn của component.
+
+## 15. Dynamic component và data-source config
+
+Các component như NewsGrid không chứa bản sao dữ liệu article.
+
+Registry định nghĩa config hợp lệ:
+
+```
+categoryId: reference(category)
+limit: integer 1..12
+showExcerpt: boolean
+sort: predefined option
+```
+
+Runtime:
+
+```mermaid
+graph LR
+    S["NewsGrid Section"] --> C["Config"]
+    C --> API["Content Service"]
+    API --> DATA["content_items"]
+    DATA --> WEB["NewsGrid UI"]
+```
+
+Điều này giữ source of truth của nội dung trong Content domain.
+
+## 16. Component versioning
+
+Mỗi section lưu cả:
+
+```
+component_key
+component_version
+```
+
+Ví dụ:
+
+```
+hero / 1
+```
+
+### Không tăng version khi
+
+- Chỉ đổi CSS implementation.
+- Sửa bug responsive.
+- Tối ưu accessibility mà không đổi data contract.
+- Thêm logic nội bộ tương thích ngược.
+
+### Tăng version khi
+
+- Rename/remove field bắt buộc.
+- Thay shape của content/config/style.
+- Thay semantic của một field theo cách data cũ không còn đúng.
+
+## 17. Backward compatibility và migration
+
+Không được update component schema rồi kỳ vọng data cũ tự hoạt động.
+
+Ví dụ Hero v1:
+
+```json
+{
+  "title": "...",
+  "imageId": "..."
+}
+```
+
+Hero v2:
+
+```json
+{
+  "eyebrow": "...",
+  "title": "...",
+  "backgroundImageId": "..."
+}
+```
+
+Registry cần có migration hoặc adapter rõ ràng:
+
+```
+hero v1 -> hero v2
+```
+
+Nguyên tắc:
+
+- Published revision cũ phải vẫn có khả năng render hoặc được migrate có kiểm soát.
+- Migration phải deterministic.
+- Không mutate lịch sử revision bất biến.
+- Khi migrate draft/page hiện tại, nên tạo revision mới sau khi publish.
+
+## 18. Deprecation
+
+Component có thể trải qua lifecycle:
+
+```
+active -> deprecated -> unsupported
+```
+
+`deprecated` nghĩa là:
+
+- Page cũ vẫn render được.
+- Admin không được thêm instance mới.
+- UI cảnh báo nên migrate sang component mới.
+
+Chỉ chuyển sang `unsupported` sau khi đã xử lý tất cả instance đang sử dụng.
+
+## 19. Rendering contract
+
+Next.js renderer nhận section và tìm definition/component tương ứng từ registry.
+
+Logic:
+
+```
+section.component_key
+        +
+section.component_version
+        ↓
+Component Registry
+        ↓
+Validate / normalize props
+        ↓
+React component
+```
+
+Nếu không tìm thấy component/version:
+
+- Public site không được crash toàn page.
+- Log lỗi có đủ page/section/key/version.
+- Có fallback an toàn cho section lỗi.
+- Admin phải nhìn thấy cảnh báo rõ ràng trước publish.
+
+## 20. Security boundary
+
+Registry là whitelist. Database không được phép ra lệnh frontend render component tùy ý bằng path/module name.
+
+Không lưu:
+
+```
+component: "../../some-module"
+```
+
+Chỉ lưu key hợp lệ đã đăng ký như:
+
+```
+hero
+news-grid
+```
+
+Tương tự, style chỉ được resolve từ token map đã định nghĩa; không concatenate dữ liệu DB thành CSS expression tùy ý.
+
+## 21. Bộ component khởi đầu đề xuất
+
+Version đầu:
+
+### Layout
+
+- RichText
+- ImageText
+- Columns
+- Spacer
+
+### Marketing
+
+- Hero
+- CTA
+- ImageBanner
+- Statistics
+
+### Content
+
+- NewsGrid
+- AnnouncementList
+- EventList
+- FeaturedArticle
+
+### University
+
+- FacultyGrid
+- ProgramGrid
+- PeopleGrid
+- ResearchHighlight
+
+### Media / Other
+
+- Gallery
+- Video
+- PartnerLogos
+- QuickLinks
+
+Sau khi migrate nội dung WordPress, chỉ thêm component mới khi có use case thực sự không thể biểu diễn sạch bằng bộ hiện tại.
+
+## 22. Nguyên tắc phát triển component mới
+
+Một component mới chỉ được đưa vào Registry khi có:
+
+1. Use case rõ ràng.
+2. React component hoàn chỉnh.
+3. Content/config/style schemas.
+4. Default values.
+5. Editor metadata.
+6. Responsive behavior.
+7. Accessibility behavior.
+8. Validation tests.
+9. Preview/demo state.
+10. Version policy.
+
+Không tạo component chỉ để giải quyết một khoảng cách/màu sắc riêng lẻ; các khác biệt nhỏ nên được xử lý qua token/variant nếu hợp lý.
+
+## 23. Tiêu chí hoàn thành
+
+Component Registry đạt yêu cầu khi:
+
+- Web, Admin và API import cùng một contract.
+- Admin thêm component mới mà Page Editor không cần hardcode form mới cho từng field thông thường.
+- API reject dữ liệu không hợp lệ.
+- DB không lưu CSS implementation detail.
+- Component versioning hỗ trợ migration rõ ràng.
+- Deprecated component không làm hỏng page cũ.
+- Style options luôn nằm trong design system của TTU.
+
+## Tài liệu liên quan
+
+- 02 - Kiến trúc CMS và Page Builder
+- 04 - Mô hình dữ liệu và ERD
+- 05 - Database Schema
+- 06 - API và kiến trúc hệ thống
