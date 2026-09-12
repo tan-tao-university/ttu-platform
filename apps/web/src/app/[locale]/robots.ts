@@ -1,5 +1,4 @@
 import type { MetadataRoute } from "next";
-import { DEFAULT_LOCALE } from "@ttu/shared";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? `https://tan-tao.edu.vn`;
 

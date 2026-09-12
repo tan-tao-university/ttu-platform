@@ -16,7 +16,7 @@ This document tracks the overall architectural progress and cross-application mi
 | :-- | :-- | :-- | :-- | :-- |
 | **Backend API** (`@ttu/api`) | `apps/api` | Centralized REST API, business logic & persistence | 🔵 Active Build-out | NestJS 11, Drizzle ORM, PostgreSQL, Keycloak |
 | **Admin Dashboard** (`@ttu/admin`) | `apps/admin` | Editorial and administrative portal | ⚪ Scaffolded | Next.js 16, React 19, Tailwind CSS 4 |
-| **Public Website** (`@ttu/web`) | `apps/web` | Public university portal (ttu.edu.vn) | ⚪ Scaffolded | Next.js 16, React 19, Tailwind CSS 4 |
+| **Public Website** (`@ttu/web`) | `apps/web` | Public university portal (ttu.edu.vn) | 🔵 Active Build-out | Next.js 16, React 19, Tailwind CSS 4 |
 | **CMS Registry** (`@ttu/cms-registry`) | `packages/cms-registry` | Shared CMS Component Registry & schemas | 🔴 Blocked / Scoping | TypeScript, Zod, React 19 component definitions |
 
 ### Status legend

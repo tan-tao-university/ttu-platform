@@ -1,4 +1,4 @@
-﻿/** @type {import('next').NextConfig} */
+/** @type {import('next').NextConfig} */
 const createNextIntlPlugin = require('next-intl/plugin');
 
 const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
@@ -10,21 +10,7 @@ const nextConfig = {
     },
   },
 
-  webpack(config) {
-    config.module.rules.push({
-      test: /\.svg$/i,
-      use: ['@svgr/webpack'],
-    });
-    return config;
-  },
-
-  transpilePackages: [
-    '@ttu/design-system',
-    '@ttu/cms-registry',
-    '@ttu/shared',
-    '@ttu/ui',
-    '@ttu/types',
-  ],
+  transpilePackages: ['@ttu/design-system', '@ttu/shared'],
 
   images: {
     remotePatterns: [

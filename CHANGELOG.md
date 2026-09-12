@@ -4,6 +4,13 @@ Major, project-wide changes to `ttu-platform` — new domains, schema changes, n
 
 Entries are newest first, grouped by date. Each entry links the PR that shipped it.
 
+## 2026-09-13 — Figma-Aligned Homepage (PR pending)
+
+### Added
+
+- `apps/web` — localized Vietnamese/English homepage with Figma-aligned hero, university overview, training systems, scholarships, admissions, news, registration form, footer and partner marquee sections.
+- Homepage assets and responsive behavior for 375–1440px, including keyboard-accessible controls, reduced-motion support and marquee pause on hover/focus.
+
 ## 2026-09-10 — Structured Logging with Pino ([#25](https://github.com/tan-tao-university/ttu-platform/pull/25))
 
 ### Added

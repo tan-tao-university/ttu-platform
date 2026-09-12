@@ -13,13 +13,14 @@
       "project": ["src/**/*.ts", "test/**/*.ts"],
       // Loaded by pino as a worker-thread transport via the string target
       // `common/logging/logger.module.ts` passes it, never a static import — knip can't see that.
-      "ignoreDependencies": ["pino-pretty"],
+      "ignoreDependencies": ["pino", "pino-http", "pino-pretty"],
     },
     "apps/admin": {
       "next": true,
       "project": ["src/**/*.{ts,tsx,css}"],
     },
     "apps/web": {
+      "entry": ["src/i18n.ts", "src/app/[locale]/robots.ts"],
       "next": true,
       "project": ["src/**/*.{ts,tsx,css}"],
     },

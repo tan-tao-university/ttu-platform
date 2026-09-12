@@ -16,6 +16,7 @@ Read this file before modifying `apps/web` to understand implemented surfaces, c
 | --: | :-- | :-- | :-- | :-- |
 | 1 | **Application Scaffold** | ✅ Complete | None | Next.js 16 (App Router), React 19, Tailwind CSS 4 |
 | 2 | **Baseline Layout & Shell** | ✅ Complete | None | Global layout, base Header, Footer, not-found, robots, sitemap |
+| 13 | **Figma Homepage** | ✅ Complete | None | Localized homepage, responsive 375–1440px layout, exact Figma assets, navigation, footer, admissions form, and partner marquee |
 | 3 | **Public API Client & Caching** | 🟡 Next | `apps/api` public routes | Fetch wrapper with Next.js ISR/tag-based revalidation |
 | 4 | **Multilingual Routing (`vi`/`en`)** | 🟡 Next | None | Next.js localized subpaths or headers, locale switcher |
 | 5 | **Content & News Portal** | ⚪ Not started | `/api/v1/content` | News feed, event calendar, category filtering, search |

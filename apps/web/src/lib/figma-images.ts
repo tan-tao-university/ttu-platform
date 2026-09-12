@@ -1,9 +1,4 @@
-// Asset paths for the Home page, sourced from the Figma "Trang chủ" frame
-// (file key: Fekw3aQtCfQbHq2aoho859).
-//
-// Every entry below is a `public/figma/home/<file>.*` served by Next.js at
-// `/figma/home/<file>.*`. Source-of-truth node IDs are noted for each asset
-// so future Figma edits can be re-traced.
+/** Asset paths for the Home page, sourced from the Figma "Trang chủ" frame (file key: Fekw3aQtCfQbHq2aoho859). */
 
 export const HOME_IMAGES = {
   /** Hero section background — node 1387:181554, with a navy→green gradient overlay. */
@@ -76,5 +71,3 @@ export const HOME_IMAGES = {
   registrationChevron: '/figma/home/select-chevron.svg',
   registrationArrow: '/figma/home/registration-arrow.svg',
 } as const;
-
-export type HomeImageKey = keyof typeof HOME_IMAGES;

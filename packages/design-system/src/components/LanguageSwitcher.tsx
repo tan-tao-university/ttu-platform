@@ -1,6 +1,5 @@
 import { cn } from "../lib/cn";
 import type { Locale } from "@ttu/shared";
-import { DEFAULT_LOCALE } from "@ttu/shared";
 import Link from "next/link";
 
 export interface LanguageSwitcherProps {
@@ -61,5 +60,3 @@ export function LanguageSwitcher({
     </div>
   );
 }
-
-export { DEFAULT_LOCALE };
